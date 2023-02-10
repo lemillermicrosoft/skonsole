@@ -1,0 +1,9 @@
+[CONTENT]
+{{$input}}
+[END CONTENT]
+
+Task:
+Please combine the information from the list of results in [CONTENT].
+Match the formatting, tone, and style of the individual results.
+
+Result:
