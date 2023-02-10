@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
-using Microsoft.SemanticKernel.Kernel;
-using Microsoft.SemanticKernel.Kernel.Extensions;
-using Microsoft.SemanticKernel.Kernel.Orchestration;
-using Microsoft.SemanticKernel.Kernel.Registry;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.KernelExtensions;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Registry;
 
 namespace CondenseSkillLib;
 
@@ -13,7 +13,7 @@ public class CondenseSkill
     public static readonly string RESULTS_SEPARATOR = string.Format("\n====={0}=====\n", "EndResult");
     public const string SEMANTIC_FUNCTION_PATH = "CondenseSkill";
 
-    public CondenseSkill(ISemanticKernel kernel)
+    public CondenseSkill(IKernel kernel)
     {
         try
         {
@@ -28,14 +28,15 @@ public class CondenseSkill
     }
 
     [SKFunction(description: "Condense multiple chunks of text into a single chunk.")]
+    [SKFunctionInput(Description = "String of text that contains multiple chunks of similar formatting, style, and tone.", DefaultValue = "")]
     public async Task<SKContext> Condense(SKContext context)
     {
         try
         {
             var condenser = context.SFunc(SEMANTIC_FUNCTION_PATH, "Condenser");
 
-            // TODO  After #17446 Chunk it up and keep condensing until it's done.
-            context.WorkingMemory.Update($"{context.WorkingMemory.Input}{RESULTS_SEPARATOR}");
+            // TODO After we can get max tokens frm semantic functions, chunk the input.
+            context.WorkingMemory.Update(context.WorkingMemory.Input + RESULTS_SEPARATOR);
             return await condenser(context.WorkingMemory);
         }
         catch (Exception e)
