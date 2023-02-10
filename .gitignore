@@ -1,0 +1,50 @@
+
+*.tmp
+.DS_Store
+
+.idea/
+node_modules/
+obj/
+bin/
+_dev/
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+# build/
+[Bb]in/
+[Oo]bj/
+
+#**/build/
+**/tmp/
+**/temp/
+**/bin/
+**/obj/
+**/dist/
+**/venv
+**/.venv*
+**/testData/
+
+# Visual Studio files and directories
+.vs/
+#.vcxproj.filters
+*.user
+
+# VSCode
+**/.vscode/chrome
+**/.vscode/.ropeproject/objectdb
+
+# Python
+*.pyc
+.ipynb_checkpoints
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+#Teams fx
+.fx/
