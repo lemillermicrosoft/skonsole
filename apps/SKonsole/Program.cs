@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Kernel;
+using Microsoft.SemanticKernel;
 using Reliability;
 
 var loggerFactory = LoggerFactory.Create(builder =>
@@ -14,7 +14,7 @@ var loggerFactory = LoggerFactory.Create(builder =>
 // Get an instance of ILogger
 var logger = loggerFactory.CreateLogger<Program>();
 
-var _kernel = SemanticKernel.Build(logger);
+var _kernel = Kernel.Build(logger);
 
 // _kernel.Log.Log(LogLevel.Warning, "KernelSingleton.Instance: adding OpenAI backends");
 // _kernel.Config.AddOpenAICompletionBackend("text-davinci-003", "text-davinci-003", EnvVar("OPENAI_API_KEY"));
@@ -27,7 +27,7 @@ _kernel.Config.SetRetryMechanism(new PollyRetryMechanism());
 await RunCommitMessage(_kernel);
 // await RunPullRequestFeedback(_kernel);
 
-static async Task RunPullRequestFeedback(ISemanticKernel kernel)
+static async Task RunPullRequestFeedback(IKernel kernel)
 {
     var process = new Process
     {
@@ -50,7 +50,7 @@ static async Task RunPullRequestFeedback(ISemanticKernel kernel)
     Console.WriteLine(kernelResponse.ToString());
 }
 
-static async Task RunCommitMessage(ISemanticKernel kernel)
+static async Task RunCommitMessage(IKernel kernel)
 {
     var process = new Process
     {
