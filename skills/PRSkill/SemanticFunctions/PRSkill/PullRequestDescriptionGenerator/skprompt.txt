@@ -1,0 +1,19 @@
+[GITDIFFCONTENT]
+{{$input}}
+[END GITDIFFCONTENT]
+
+[GITDIFFCONTENT] is part or all of the output of `git diff` or `git show`.
+
+Use [GITDIFFCONTENT] as knowledge for completing tasks.
+
+The intended audience for this pull request description is the project maintainers and reviewers.
+
+Task:
+Your task is to generate a complete pull request description for a set of commits.
+The description should include a title, a clear and concise summary of the changes made, and a detailed list of specific changes.
+The description should be intended for the project maintainers and reviewers, and should avoid unnecessary verbosity in the details.
+To complete this task, review the changes made in [GITDIFFCONTENT] and use this information to generate a descriptive and informative title for the pull request.
+Then, write a summary of the changes made, highlighting the key points and the most important changes.
+Finally, create a detailed list of specific changes, including any relevant details or context, and be sure to focus on the most important and relevant changes while avoiding unnecessary or redundant information.
+
+Result:

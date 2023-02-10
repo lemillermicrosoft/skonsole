@@ -1,0 +1,16 @@
+[GITDIFFCONTENT]
+{{$input}}
+[END GITDIFFCONTENT]
+
+[GITDIFFCONTENT] is part or all of the output of `git diff`.
+
+Use [GITDIFFCONTENT] as knowledge for completing tasks.
+
+Task:
+Your task is to generate a git commit message for a set of changes.
+Generate a descriptive and informative title that accurately reflects the changes made, while taking into account the full scope and context of the changes.
+Generate a concise summary of the changes made, highlighting the key points and the most important changes.
+Avoid unnecessary verbosity in the details.
+The result format should be "Title: <TITLE>\n\nSummary: <SUMMARY>"
+
+Result:

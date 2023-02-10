@@ -1,0 +1,15 @@
+[GITDIFFCONTENT]
+{{$input}}
+[END GITDIFFCONTENT]
+
+[GITDIFFCONTENT] is part or all of the output of `git diff`.
+
+Use [GITDIFFCONTENT] as knowledge for completing tasks.
+
+Task:
+Your objective is to generate relevant feedback, suggestions, and code modifications that would typically be discussed during a pull request review.
+Organize feedback based on the filename and line number when appropriate.
+Classify feedback, suggestions, code modifications, etc. using labels such as 'nitpick', 'bug', 'suggestion', etc.
+Only include responses that apply to the latest code changes represented by lines prefixed with either nothing or '+' but not '-'.
+
+Result:
