@@ -12,18 +12,10 @@
   "input": {
     "parameters": [
       {
-        "placeholder": "{{input}}",
+        "name": "input",
         "default": "",
-        "description": "Part or all of a git diff or git show file output.",
-        "type": "string"
-      },
-      {
-        "placeholder": "{{previousresults}}",
-        "default": "",
-        "description": "The completion resuts of the previous iteration.",
-        "type": "string"
+        "description": "Part or all of a git diff or git show file output."
       }
-    ],
-    "serialization": ""
+    ]
   }
 }
