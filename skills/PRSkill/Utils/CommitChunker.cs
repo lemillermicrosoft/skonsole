@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.RegularExpressions;
-
 namespace PRSkill.Utils;
 
 public static class CommitChunker
