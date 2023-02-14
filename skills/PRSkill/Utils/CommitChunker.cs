@@ -57,8 +57,8 @@ public static class CommitChunker
                     }
                     else
                     {
-                        currChunk += fileDiff.Substring(0, Math.Min(limit, 0));
-                        fileDiff = fileDiff.Substring(Math.Min(limit, 0));
+                        currChunk += fileDiff.Substring(0, Math.Max(limit, 0));
+                        fileDiff = fileDiff.Substring(Math.Max(limit, 0));
                         chunkedInput.Add(currChunk);
                         currChunk = commit.commit + fd.fileDiffMetadata;
                     }
