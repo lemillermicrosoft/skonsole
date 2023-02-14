@@ -36,12 +36,12 @@ public class CondenseSkill
             var condenser = context.SFunc(SEMANTIC_FUNCTION_PATH, "Condenser");
 
             // TODO After we can get max tokens frm semantic functions, chunk the input.
-            context.WorkingMemory.Update(context.WorkingMemory.Input + RESULTS_SEPARATOR);
-            return await condenser(context.WorkingMemory);
+            context.Variables.Update(context.Variables.Input + RESULTS_SEPARATOR);
+            return await condenser(context);
         }
         catch (Exception e)
         {
-            return context.WorkingMemory.Fail(e.Message, e);
+            return context.Fail(e.Message, e);
         }
     }
 

@@ -15,13 +15,13 @@ public static class FunctionEx
 {
     public static async Task<SKContext> RollingChunkProcess(this Func<SKContext, Task<SKContext>> func, List<string> chunkedInput, SKContext context)
     {
-        context.WorkingMemory.Set("previousresults", string.Empty);
+        context.Variables.Set("previousresults", string.Empty);
         foreach (var chunk in chunkedInput)
         {
-            context.WorkingMemory.Update(chunk);
+            context.Variables.Update(chunk);
             context = await func(context);
 
-            context.WorkingMemory.Set("previousresults", context.WorkingMemory.ToString());
+            context.Variables.Set("previousresults", context.Variables.ToString());
         }
 
         return context;
@@ -32,19 +32,20 @@ public static class FunctionEx
         var results = new List<string>();
         foreach (var chunk in chunkedInput)
         {
-            context.WorkingMemory.Update(chunk);
+            context.Variables.Update(chunk);
             context = await func(context);
 
-            results.Add(context.WorkingMemory.ToString());
+            results.Add(context.Variables.ToString());
         }
 
         if (chunkedInput.Count <= 1)
         {
-            return context.WorkingMemory.Update(context.WorkingMemory.ToString());
+            context.Variables.Update(context.Variables.ToString());
+            return context;
         }
 
         // update memory with serialized list of results
-        context.WorkingMemory.Update(string.Join(CondenseSkill.RESULTS_SEPARATOR, results));
+        context.Variables.Update(string.Join(CondenseSkill.RESULTS_SEPARATOR, results));
         return await condenseSkill.Condense(context);
     }
 
@@ -53,13 +54,14 @@ public static class FunctionEx
         var results = new List<string>();
         foreach (var chunk in chunkedInput)
         {
-            context.WorkingMemory.Update(chunk);
+            context.Variables.Update(chunk);
             context = await func(context);
 
-            results.Add(context.WorkingMemory.ToString());
+            results.Add(context.Variables.ToString());
         }
 
-        return context.WorkingMemory.Update(string.Join("\n", results));
+        context.Variables.Update(string.Join("\n", results));
+        return context;
     }
 }
 
@@ -94,12 +96,12 @@ public class PullRequestSkill
             context.Log.Log(LogLevel.Information, "GeneratePullRequestFeedback called");
 
             var prFeedbackGenerator = context.SFunc(SEMANTIC_FUNCTION_PATH, "PullRequestFeedbackGenerator");
-            var chunkedInput = CommitChunker.ChunkCommitInfo(context.WorkingMemory.Input, CHUNK_SIZE);
+            var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
             return await prFeedbackGenerator.AggregateChunkProcess(chunkedInput, context);
         }
         catch (Exception e)
         {
-            return context.WorkingMemory.Fail(e.Message, e);
+            return context.Fail(e.Message, e);
         }
     }
 
@@ -112,12 +114,12 @@ public class PullRequestSkill
             context.Log.Log(LogLevel.Information, "GenerateCommitMessage called");
 
             var commitGenerator = context.SFunc(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
-            var chunkedInput = CommitChunker.ChunkCommitInfo(context.WorkingMemory.Input, CHUNK_SIZE);
+            var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
             return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
         }
         catch (Exception e)
         {
-            return context.WorkingMemory.Fail(e.Message, e);
+            return context.Fail(e.Message, e);
         }
     }
 
@@ -128,12 +130,12 @@ public class PullRequestSkill
         try
         {
             var prGenerator_Rolling = context.SFunc(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator_Rolling");
-            var chunkedInput = CommitChunker.ChunkCommitInfo(context.WorkingMemory.Input, CHUNK_SIZE);
+            var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
             return await prGenerator_Rolling.RollingChunkProcess(chunkedInput, context);
         }
         catch (Exception e)
         {
-            return context.WorkingMemory.Fail(e.Message, e);
+            return context.Fail(e.Message, e);
         }
     }
 
@@ -144,12 +146,12 @@ public class PullRequestSkill
         try
         {
             var prGenerator = context.SFunc(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
-            var chunkedInput = CommitChunker.ChunkCommitInfo(context.WorkingMemory.Input, CHUNK_SIZE);
+            var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
             return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
         }
         catch (Exception e)
         {
-            return context.WorkingMemory.Fail(e.Message, e);
+            return context.Fail(e.Message, e);
         }
     }
 
