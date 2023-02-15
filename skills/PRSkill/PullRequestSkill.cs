@@ -93,7 +93,7 @@ public class PullRequestSkill
     {
         try
         {
-            context.Log.Log(LogLevel.Information, "GeneratePullRequestFeedback called");
+            context.Log.LogTrace("GeneratePullRequestFeedback called");
 
             var prFeedbackGenerator = context.SFunc(SEMANTIC_FUNCTION_PATH, "PullRequestFeedbackGenerator");
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
@@ -111,7 +111,7 @@ public class PullRequestSkill
     {
         try
         {
-            context.Log.Log(LogLevel.Information, "GenerateCommitMessage called");
+            context.Log.LogTrace("GenerateCommitMessage called");
 
             var commitGenerator = context.SFunc(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);

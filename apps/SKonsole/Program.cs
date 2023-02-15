@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.CommandLine;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Reliability;
@@ -16,39 +17,37 @@ var logger = loggerFactory.CreateLogger<Program>();
 
 var _kernel = Kernel.Build(logger);
 
-// _kernel.Log.Log(LogLevel.Warning, "KernelSingleton.Instance: adding OpenAI backends");
+// _kernel.Log.LogTrace("KernelSingleton.Instance: adding OpenAI backends");
 // _kernel.Config.AddOpenAICompletionBackend("text-davinci-003", "text-davinci-003", EnvVar("OPENAI_API_KEY"));
 
-_kernel.Log.Log(LogLevel.Warning, "KernelSingleton.Instance: adding Azure OpenAI backends");
+_kernel.Log.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
 _kernel.Config.AddAzureOpenAICompletionBackend(EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"), EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"), EnvVar("AZURE_OPENAI_API_ENDPOINT"), EnvVar("AZURE_OPENAI_API_KEY"));
 
 _kernel.Config.SetRetryMechanism(new PollyRetryMechanism());
 
-await RunCommitMessage(_kernel);
-// await RunPullRequestFeedback(_kernel);
+var fileOption = new Option<FileInfo?>(
+    name: "--file",
+    description: "The file to read and display on the console.");
 
-static async Task RunPullRequestFeedback(IKernel kernel)
-{
-    var process = new Process
-    {
-        StartInfo = new ProcessStartInfo
-        {
-            FileName = "git",
-            Arguments = "show main..HEAD",
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            StandardOutputEncoding = System.Text.Encoding.UTF8
-        }
-    };
-    process.Start();
+var rootCommand = new RootCommand();
+var commitCommand = new Command("commit", "Commit subcommand");
+var prCommand = new Command("pr", "Pull Request feedback subcommand");
+var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
+var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
 
-    string output = process.StandardOutput.ReadToEnd();
+rootCommand.SetHandler(async () => await RunCommitMessage(_kernel));
+commitCommand.SetHandler(async () => await RunCommitMessage(_kernel));
+prCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
+prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel));
+prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
 
-    var pullRequestSkill = new PRSkill.PullRequestSkill(kernel);
-    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill.GeneratePullRequestFeedback);
-    Console.WriteLine(kernelResponse.ToString());
-}
+prCommand.Add(prFeedbackCommand);
+prCommand.Add(prDescriptionCommand);
+
+rootCommand.Add(commitCommand);
+rootCommand.Add(prCommand);
+
+return await rootCommand.InvokeAsync(args);
 
 static async Task RunCommitMessage(IKernel kernel)
 {
@@ -70,6 +69,51 @@ static async Task RunCommitMessage(IKernel kernel)
 
     var pullRequestSkill = new PRSkill.PullRequestSkill(kernel);
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill.GenerateCommitMessage);
+    Console.WriteLine(kernelResponse.ToString());
+}
+
+static async Task RunPullRequestDescription(IKernel kernel)
+{
+    var process = new Process
+    {
+        StartInfo = new ProcessStartInfo
+        {
+            FileName = "git",
+            Arguments = "show origin/main..HEAD",
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            StandardOutputEncoding = System.Text.Encoding.UTF8
+        }
+    };
+    process.Start();
+
+    string output = process.StandardOutput.ReadToEnd();
+    var pullRequestSkill = new PRSkill.PullRequestSkill(kernel);
+    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill.GeneratePR);
+    Console.WriteLine(kernelResponse.ToString());
+}
+
+static async Task RunPullRequestFeedback(IKernel kernel)
+{
+    var process = new Process
+    {
+        StartInfo = new ProcessStartInfo
+        {
+            FileName = "git",
+            Arguments = "show origin/main..HEAD",
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            StandardOutputEncoding = System.Text.Encoding.UTF8
+        }
+    };
+    process.Start();
+
+    string output = process.StandardOutput.ReadToEnd();
+
+    var pullRequestSkill = new PRSkill.PullRequestSkill(kernel);
+    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill.GeneratePullRequestFeedback);
     Console.WriteLine(kernelResponse.ToString());
 }
 
