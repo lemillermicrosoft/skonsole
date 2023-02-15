@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel.Reliability;
 using Polly;
 using Polly.Retry;
 
-namespace Reliability;
+namespace SKonsole.Reliability;
 
 /// <summary>
 /// An example of a retry mechanism that retries three times with backoff.

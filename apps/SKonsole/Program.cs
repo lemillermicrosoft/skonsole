@@ -2,7 +2,11 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Reliability;
+using Microsoft.SemanticKernel.CoreSkills;
+using Microsoft.SemanticKernel.Orchestration.Extensions;
+using SKonsole.Reliability;
+using SKonsole.Skills;
+using SKonsole.Utils;
 
 var loggerFactory = LoggerFactory.Create(builder =>
 {
@@ -25,27 +29,29 @@ _kernel.Config.AddAzureOpenAICompletionBackend(EnvVar("AZURE_OPENAI_DEPLOYMENT_L
 
 _kernel.Config.SetRetryMechanism(new PollyRetryMechanism());
 
-var fileOption = new Option<FileInfo?>(
-    name: "--file",
-    description: "The file to read and display on the console.");
-
 var rootCommand = new RootCommand();
 var commitCommand = new Command("commit", "Commit subcommand");
 var prCommand = new Command("pr", "Pull Request feedback subcommand");
 var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
 var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
+var plannerCommand = new Command("createplan", "Planner subcommand");
+var messageArgument = new Argument<string>
+    ("message", "An argument that is parsed as a string.");
+plannerCommand.Add(messageArgument);
 
 rootCommand.SetHandler(async () => await RunCommitMessage(_kernel));
 commitCommand.SetHandler(async () => await RunCommitMessage(_kernel));
 prCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
 prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel));
 prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
+plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, messageArgumentValue), messageArgument);
 
 prCommand.Add(prFeedbackCommand);
 prCommand.Add(prDescriptionCommand);
 
 rootCommand.Add(commitCommand);
 rootCommand.Add(prCommand);
+rootCommand.Add(plannerCommand);
 
 return await rootCommand.InvokeAsync(args);
 
@@ -116,6 +122,20 @@ static async Task RunPullRequestFeedback(IKernel kernel)
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill.GeneratePullRequestFeedback);
     Console.WriteLine(kernelResponse.ToString());
 }
+
+static async Task RunCreatePlan(IKernel kernel, string message)
+{
+    var plannerSkill = new PlannerSkill(kernel);
+
+    kernel.ImportSkill("email", new EmailSkill());
+    kernel.ImportSkill("git", new GitSkill());
+    kernel.ImportSkill("PullRequest", new PRSkill.PullRequestSkill(kernel));
+
+    var kernelResponse = await kernel.RunAsync(message, plannerSkill.CreatePlanAsync);
+
+    _ = await PlanUtils.ExecutePlanAsync(kernel, plannerSkill, kernelResponse);
+}
+
 
 static string EnvVar(string name)
 {

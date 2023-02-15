@@ -28,7 +28,7 @@ public class CondenseSkill
     }
 
     [SKFunction(description: "Condense multiple chunks of text into a single chunk.")]
-    [SKFunctionInput(Description = "String of text that contains multiple chunks of similar formatting, style, and tone.", DefaultValue = "")]
+    [SKFunctionContextParameter(Name = "Input", Description = "String of text that contains multiple chunks of similar formatting, style, and tone.")]
     public async Task<SKContext> Condense(SKContext context)
     {
         try

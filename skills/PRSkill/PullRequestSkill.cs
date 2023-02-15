@@ -88,7 +88,7 @@ public class PullRequestSkill
     }
 
     [SKFunction(description: "Generate feedback for a pull request based on a git diff or git show file output.")]
-    [SKFunctionInput(Description = "Output of a `git diff` or `git show` command.", DefaultValue = "")]
+    [SKFunctionContextParameter(Name = "Input", Description = "Output of a `git diff` or `git show` command.")]
     public async Task<SKContext> GeneratePullRequestFeedback(SKContext context)
     {
         try
@@ -106,7 +106,8 @@ public class PullRequestSkill
     }
 
     [SKFunction(description: "Generate a commit message based on a git diff file output.")]
-    [SKFunctionInput(Description = "Output of a `git diff` command.", DefaultValue = "")]
+    // [SKFunctionInput(Description = "Output of a `git diff` command.", DefaultValue = "")]
+    [SKFunctionContextParameter(Name = "Input", Description = "Output of a `git diff` command.")]
     public async Task<SKContext> GenerateCommitMessage(SKContext context)
     {
         try
@@ -124,7 +125,7 @@ public class PullRequestSkill
     }
 
     [SKFunction(description: "Generate a pull request description based on a git diff or git show file output using a rolling query mechanism.")]
-    [SKFunctionInput(Description = "Output of a `git diff` or `git show` command.", DefaultValue = "")]
+    [SKFunctionContextParameter(Name = "Input", Description = "Output of a `git diff` or `git show` command.")]
     public async Task<SKContext> GeneratePR_Rolling(SKContext context)
     {
         try
@@ -140,7 +141,8 @@ public class PullRequestSkill
     }
 
     [SKFunction(description: "Generate a pull request description based on a git diff or git show file output using a reduce mechanism.")]
-    [SKFunctionInput(Description = "Output of a `git diff` or `git show` command.", DefaultValue = "")]
+    // [SKFunctionInput(Description = "Output of a `git diff` or `git show` command.", DefaultValue = "")]
+    [SKFunctionContextParameter(Name = "Input", Description = "Output of a `git diff` or `git show` command.")]
     public async Task<SKContext> GeneratePR(SKContext context)
     {
         try
