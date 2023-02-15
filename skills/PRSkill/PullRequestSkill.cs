@@ -106,7 +106,6 @@ public class PullRequestSkill
     }
 
     [SKFunction(description: "Generate a commit message based on a git diff file output.")]
-    // [SKFunctionInput(Description = "Output of a `git diff` command.", DefaultValue = "")]
     [SKFunctionContextParameter(Name = "Input", Description = "Output of a `git diff` command.")]
     public async Task<SKContext> GenerateCommitMessage(SKContext context)
     {
@@ -141,7 +140,6 @@ public class PullRequestSkill
     }
 
     [SKFunction(description: "Generate a pull request description based on a git diff or git show file output using a reduce mechanism.")]
-    // [SKFunctionInput(Description = "Output of a `git diff` or `git show` command.", DefaultValue = "")]
     [SKFunctionContextParameter(Name = "Input", Description = "Output of a `git diff` or `git show` command.")]
     public async Task<SKContext> GeneratePR(SKContext context)
     {
