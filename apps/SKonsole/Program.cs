@@ -90,7 +90,7 @@ static async Task RunPullRequestDescription(IKernel kernel)
         StartInfo = new ProcessStartInfo
         {
             FileName = "git",
-            Arguments = "show origin/main..HEAD",
+            Arguments = "show --ignore-space-change origin/main..HEAD",
             RedirectStandardOutput = true,
             UseShellExecute = false,
             CreateNoWindow = true,
@@ -112,7 +112,7 @@ static async Task RunPullRequestFeedback(IKernel kernel)
         StartInfo = new ProcessStartInfo
         {
             FileName = "git",
-            Arguments = "show origin/main..HEAD",
+            Arguments = "show --ignore-space-change origin/main..HEAD",
             RedirectStandardOutput = true,
             UseShellExecute = false,
             CreateNoWindow = true,
