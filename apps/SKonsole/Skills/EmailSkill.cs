@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Registry;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SKonsole.Skills;
 

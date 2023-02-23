@@ -4,7 +4,7 @@ using System.Reflection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Registry;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace CondenseSkillLib;
 
@@ -33,11 +33,11 @@ public class CondenseSkill
     {
         try
         {
-            var condenser = context.SFunc(SEMANTIC_FUNCTION_PATH, "Condenser");
+            var condenser = context.Func(SEMANTIC_FUNCTION_PATH, "Condenser");
 
             // TODO After we can get max tokens frm semantic functions, chunk the input.
             context.Variables.Update(context.Variables.Input + RESULTS_SEPARATOR);
-            return await condenser(context);
+            return await condenser.InvokeAsync(context);
         }
         catch (Exception e)
         {

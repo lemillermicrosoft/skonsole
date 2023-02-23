@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Orchestration.Extensions;
 
@@ -8,7 +7,7 @@ namespace SKonsole.Utils;
 
 public static class PlanUtils
 {
-    public static async Task<SKContext> ExecutePlanAsync(IKernel kernel, PlannerSkill planner, SKContext executionResults, int maxSteps = 10)
+    public static async Task<SKContext> ExecutePlanAsync(IKernel kernel, IDictionary<string, ISKFunction> planner, SKContext executionResults, int maxSteps = 10)
     {
         Console.WriteLine("Executing plan:");
         Console.WriteLine(executionResults.Variables.ToPlan().PlanString);
@@ -19,7 +18,7 @@ public static class PlanUtils
         // loop until complete or at most N steps
         for (int step = 1; !executionResults.Variables.ToPlan().IsComplete && step < maxSteps; step++)
         {
-            var results = await kernel.RunAsync(executionResults.Variables, planner.ExecutePlanAsync);
+            var results = await kernel.RunAsync(executionResults.Variables, planner["ExecutePlan"]);
             if (results.Variables.ToPlan().IsSuccessful)
             {
                 if (results.Variables.ToPlan().IsComplete)

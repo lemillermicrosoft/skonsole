@@ -20,7 +20,7 @@ var loggerFactory = LoggerFactory.Create(builder =>
 // Get an instance of ILogger
 var logger = loggerFactory.CreateLogger<Program>();
 
-var _kernel = Kernel.Build(logger);
+var _kernel = Kernel.Builder.WithLogger(logger).Build();
 
 // _kernel.Log.LogTrace("KernelSingleton.Instance: adding OpenAI backends");
 // _kernel.Config.AddOpenAICompletionBackend("text-davinci-003", "text-davinci-003", EnvVar("OPENAI_API_KEY"));
@@ -48,7 +48,6 @@ prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel));
 prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
 plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, messageArgumentValue), messageArgument);
 promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel));
-
 
 prCommand.Add(prFeedbackCommand);
 prCommand.Add(prDescriptionCommand);
@@ -78,8 +77,10 @@ static async Task RunCommitMessage(IKernel kernel)
 
     string output = process.StandardOutput.ReadToEnd();
 
-    var pullRequestSkill = new PRSkill.PullRequestSkill(kernel);
-    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill.GenerateCommitMessage);
+    var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
+
+    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateCommitMessage"]);
+
     Console.WriteLine(kernelResponse.ToString());
 }
 
@@ -100,8 +101,9 @@ static async Task RunPullRequestDescription(IKernel kernel)
     process.Start();
 
     string output = process.StandardOutput.ReadToEnd();
-    var pullRequestSkill = new PRSkill.PullRequestSkill(kernel);
-    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill.GeneratePR);
+    var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
+
+    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePR"]);
     Console.WriteLine(kernelResponse.ToString());
 }
 
@@ -123,20 +125,22 @@ static async Task RunPullRequestFeedback(IKernel kernel)
 
     string output = process.StandardOutput.ReadToEnd();
 
-    var pullRequestSkill = new PRSkill.PullRequestSkill(kernel);
-    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill.GeneratePullRequestFeedback);
+    var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
+
+    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePullRequestFeedback"]);
+
     Console.WriteLine(kernelResponse.ToString());
 }
 
 static async Task RunCreatePlan(IKernel kernel, string message)
 {
-    var plannerSkill = new PlannerSkill(kernel);
+    var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
-    kernel.ImportSkill("email", new EmailSkill());
-    kernel.ImportSkill("git", new GitSkill());
-    kernel.ImportSkill("PullRequest", new PRSkill.PullRequestSkill(kernel));
+    kernel.ImportSkill(new EmailSkill(), "email");
+    kernel.ImportSkill(new GitSkill(), "git");
+    kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel), "PullRequest");
 
-    var kernelResponse = await kernel.RunAsync(message, plannerSkill.CreatePlanAsync);
+    var kernelResponse = await kernel.RunAsync(message, plannerSkill["CreatePlan"]);
 
     _ = await PlanUtils.ExecutePlanAsync(kernel, plannerSkill, kernelResponse);
 }

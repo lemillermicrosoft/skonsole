@@ -5,21 +5,21 @@ using Microsoft.Extensions.Logging;
 using CondenseSkillLib;
 using PRSkill.Utils;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Registry;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.KernelExtensions;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace PRSkill;
 
 public static class FunctionEx
 {
-    public static async Task<SKContext> RollingChunkProcess(this Func<SKContext, Task<SKContext>> func, List<string> chunkedInput, SKContext context)
+    public static async Task<SKContext> RollingChunkProcess(this ISKFunction func, List<string> chunkedInput, SKContext context)
     {
         context.Variables.Set("previousresults", string.Empty);
         foreach (var chunk in chunkedInput)
         {
             context.Variables.Update(chunk);
-            context = await func(context);
+            context = await func.InvokeAsync(context);
 
             context.Variables.Set("previousresults", context.Variables.ToString());
         }
@@ -27,13 +27,13 @@ public static class FunctionEx
         return context;
     }
 
-    public static async Task<SKContext> CondenseChunkProcess(this Func<SKContext, Task<SKContext>> func, CondenseSkill condenseSkill, List<string> chunkedInput, SKContext context)
+    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondenseSkill condenseSkill, List<string> chunkedInput, SKContext context)
     {
         var results = new List<string>();
         foreach (var chunk in chunkedInput)
         {
             context.Variables.Update(chunk);
-            context = await func(context);
+            context = await func.InvokeAsync(context);
 
             results.Add(context.Variables.ToString());
         }
@@ -49,13 +49,13 @@ public static class FunctionEx
         return await condenseSkill.Condense(context);
     }
 
-    public static async Task<SKContext> AggregateChunkProcess(this Func<SKContext, Task<SKContext>> func, List<string> chunkedInput, SKContext context)
+    public static async Task<SKContext> AggregateChunkProcess(this ISKFunction func, List<string> chunkedInput, SKContext context)
     {
         var results = new List<string>();
         foreach (var chunk in chunkedInput)
         {
             context.Variables.Update(chunk);
-            context = await func(context);
+            context = await func.InvokeAsync(context);
 
             results.Add(context.Variables.ToString());
         }
@@ -95,7 +95,7 @@ public class PullRequestSkill
         {
             context.Log.LogTrace("GeneratePullRequestFeedback called");
 
-            var prFeedbackGenerator = context.SFunc(SEMANTIC_FUNCTION_PATH, "PullRequestFeedbackGenerator");
+            var prFeedbackGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestFeedbackGenerator");
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
             return await prFeedbackGenerator.AggregateChunkProcess(chunkedInput, context);
         }
@@ -113,7 +113,7 @@ public class PullRequestSkill
         {
             context.Log.LogTrace("GenerateCommitMessage called");
 
-            var commitGenerator = context.SFunc(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
+            var commitGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
             return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
         }
@@ -129,7 +129,7 @@ public class PullRequestSkill
     {
         try
         {
-            var prGenerator_Rolling = context.SFunc(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator_Rolling");
+            var prGenerator_Rolling = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator_Rolling");
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
             return await prGenerator_Rolling.RollingChunkProcess(chunkedInput, context);
         }
@@ -145,7 +145,7 @@ public class PullRequestSkill
     {
         try
         {
-            var prGenerator = context.SFunc(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
+            var prGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
             return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
         }
