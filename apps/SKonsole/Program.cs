@@ -2,9 +2,11 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Bing;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.Skills.Web;
 using SKonsole.Reliability;
 using SKonsole.Skills;
 using SKonsole.Utils;
@@ -136,9 +138,18 @@ static async Task RunCreatePlan(IKernel kernel, string message)
 {
     var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
 
-    kernel.ImportSkill(new EmailSkill(), "email");
-    kernel.ImportSkill(new GitSkill(), "git");
-    kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel), "PullRequest");
+    // Eventually, Kernel will be smarter about what skills it uses for an ask.
+    // kernel.ImportSkill(new EmailSkill(), "email");
+    // kernel.ImportSkill(new GitSkill(), "git");
+    // kernel.ImportSkill(new SearchUrlSkill(), "url");
+    // kernel.ImportSkill(new HttpSkill(), "http");
+    // kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel), "PullRequest");
+
+    kernel.ImportSkill(new WriterSkill(kernel), "writer");
+
+    using var bingConnector = new BingConnector(EnvVar("BING_API_KEY"));
+    var bing = new WebSearchEngineSkill(bingConnector);
+    var search = kernel.ImportSkill(bing, "bing");
 
     var kernelResponse = await kernel.RunAsync(message, plannerSkill["CreatePlan"]);
 
