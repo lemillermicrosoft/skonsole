@@ -8,9 +8,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="0.7.144.1-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills" Version="0.7.144.1-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Bing" Version="0.7.144.1-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="0.8.11.1-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.8.11.1-preview" />
     <PackageReference Include="Polly" Version="7.2.3" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>

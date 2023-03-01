@@ -2,11 +2,11 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Bing;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Skills.Web;
+using Microsoft.SemanticKernel.Skills.Web.Bing;
 using SKonsole.Reliability;
 using SKonsole.Skills;
 using SKonsole.Utils;

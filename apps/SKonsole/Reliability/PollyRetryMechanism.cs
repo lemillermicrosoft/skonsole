@@ -11,10 +11,10 @@ namespace SKonsole.Reliability;
 /// </summary>
 public class PollyRetryMechanism : IRetryMechanism
 {
-    public Task ExecuteWithRetryAsync(Func<Task> action, ILogger log)
+    public Task ExecuteWithRetryAsync(Func<Task> action, ILogger log, CancellationToken cancellationToken = default)
     {
         var policy = GetPolicy(log);
-        return policy.ExecuteAsync(action);
+        return policy.ExecuteAsync((_) => action(), cancellationToken);
     }
 
     private static AsyncRetryPolicy GetPolicy(ILogger log)
