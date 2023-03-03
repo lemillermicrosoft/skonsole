@@ -41,14 +41,6 @@ public class CQMSkill
         return context;
     }
 
-    [SKFunction(description: "Lookup a fact")]
-    public Task<SKContext> Lookup(SKContext context)
-    {
-        var fact = context.Variables.Input;
-        context.Variables.Update("i've looked up: " + fact);
-        return Task.FromResult(context);
-    }
-
     private static string CQMSkillPath()
     {
         const string PARENT = "SemanticFunctions";
