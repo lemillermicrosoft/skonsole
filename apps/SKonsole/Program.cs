@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
+using CQMSkillLib;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
@@ -14,8 +15,9 @@ using SKonsole.Utils;
 var loggerFactory = LoggerFactory.Create(builder =>
 {
     builder
-        .AddFilter("Microsoft", LogLevel.Warning)
-        .AddFilter("System", LogLevel.Warning)
+        .AddFilter("Microsoft", LogLevel.Error)
+        .AddFilter("System", LogLevel.Error)
+        .AddFilter("Program", LogLevel.Error)
         .AddConsole();
 });
 
@@ -39,9 +41,13 @@ var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcomman
 var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
 var plannerCommand = new Command("createplan", "Planner subcommand");
 var promptChatCommand = new Command("promptchat", "Prompt chat subcommand");
+var contextQueryCommand = new Command("contextquery", "ContextQuery subcommand");
+var markupCommand = new Command("markup", "Markup subcommand");
 var messageArgument = new Argument<string>
     ("message", "An argument that is parsed as a string.");
 plannerCommand.Add(messageArgument);
+contextQueryCommand.Add(messageArgument);
+markupCommand.Add(messageArgument);
 
 rootCommand.SetHandler(async () => await RunCommitMessage(_kernel));
 commitCommand.SetHandler(async () => await RunCommitMessage(_kernel));
@@ -50,6 +56,8 @@ prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel));
 prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
 plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, messageArgumentValue), messageArgument);
 promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel));
+contextQueryCommand.SetHandler(async (messageArgumentValue) => await RunContextQuery(_kernel, messageArgumentValue), messageArgument);
+markupCommand.SetHandler(async (messageArgumentValue) => await RunMarkup(_kernel, messageArgumentValue), messageArgument);
 
 prCommand.Add(prFeedbackCommand);
 prCommand.Add(prDescriptionCommand);
@@ -58,6 +66,8 @@ rootCommand.Add(commitCommand);
 rootCommand.Add(prCommand);
 rootCommand.Add(plannerCommand);
 rootCommand.Add(promptChatCommand);
+rootCommand.Add(contextQueryCommand);
+rootCommand.Add(markupCommand);
 
 return await rootCommand.InvokeAsync(args);
 
@@ -201,6 +211,37 @@ AI:
 
         botMessage = await kernel.RunAsync(contextVariables, chatFunction);
     }
+}
+
+static async Task RunContextQuery(IKernel kernel, string message)
+{
+    // TODO Can I do this another way?
+    var cqm = new CQMSkill(kernel);
+
+    var contextQuerySkill = kernel.ImportSkill(cqm);
+    kernel.ImportSkill(new TimeSkill(), "time");
+
+    // TODO Recall?
+
+    // TODO Make these variables
+    var variables = new ContextVariables(message);
+    variables.Set("firstname", "John");
+    variables.Set("lastname", "Doe");
+    variables.Set("city", "Tacoma");
+    variables.Set("state", "WA");
+    variables.Set("country", "USA");
+    var kernelResponse = await kernel.RunAsync(variables, cqm.SemanticFunctions["ContextQuery"]);
+
+    Console.WriteLine(kernelResponse.ToString());
+}
+
+static async Task RunMarkup(IKernel kernel, string message)
+{
+    var markupSkill = kernel.ImportSkill(new CQMSkill(kernel));
+
+    var kernelResponse = await kernel.RunAsync(message, markupSkill["RunMarkup"]);
+
+    Console.WriteLine(kernelResponse.ToString());
 }
 
 static string EnvVar(string name)
