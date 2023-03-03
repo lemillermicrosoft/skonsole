@@ -245,6 +245,10 @@ static async Task RunMarkup(IKernel kernel, string message)
 {
     var markupSkill = kernel.ImportSkill(new CQMSkill(kernel));
 
+    using var bingConnector = new BingConnector(EnvVar("BING_API_KEY"));
+    var bing = new WebSearchEngineSkill(bingConnector);
+    var search = kernel.ImportSkill(bing);
+
     var kernelResponse = await kernel.RunAsync(message, markupSkill["RunMarkup"]);
 
     kernel.Log.LogInformation("Markup:\n{result}", kernelResponse.Result);
