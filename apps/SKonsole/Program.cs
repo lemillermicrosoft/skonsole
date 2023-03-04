@@ -1,5 +1,7 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
+using System.Text.Json;
+using CodeRewriteSkillLib;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
@@ -44,6 +46,13 @@ var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcomman
 var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
 var plannerCommand = new Command("createplan", "Planner subcommand");
 var promptChatCommand = new Command("promptchat", "Prompt chat subcommand");
+var generalChatCommand = new Command("chat", "General chat subcommand");
+var runCodeGenCommand = new Command("codegen", "Code generation subcommand");
+var runCodeRewriteCommand = new Command("coderewrite", "Code rewrite subcommand");
+var pathArgument = new Argument<string>
+    ("path", "An argument that is parsed as a string.");
+runCodeGenCommand.Add(pathArgument);
+runCodeRewriteCommand.Add(pathArgument);
 var messageArgument = new Argument<string>
     ("message", "An argument that is parsed as a string.");
 plannerCommand.Add(messageArgument);
@@ -55,6 +64,10 @@ prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel));
 prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
 plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, messageArgumentValue), messageArgument);
 promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel));
+generalChatCommand.SetHandler(async () => await RunGeneralChat(_kernel));
+
+runCodeGenCommand.SetHandler(async (pathArgumentValue) => await RunCodeGen(_kernel, pathArgumentValue), pathArgument);
+runCodeRewriteCommand.SetHandler(async (pathArgumentValue) => await RunCodeRewrite(_kernel, pathArgumentValue), pathArgument);
 
 prCommand.Add(prFeedbackCommand);
 prCommand.Add(prDescriptionCommand);
@@ -63,6 +76,9 @@ rootCommand.Add(commitCommand);
 rootCommand.Add(prCommand);
 rootCommand.Add(plannerCommand);
 rootCommand.Add(promptChatCommand);
+rootCommand.Add(generalChatCommand);
+rootCommand.Add(runCodeGenCommand);
+rootCommand.Add(runCodeRewriteCommand);
 
 return await rootCommand.InvokeAsync(args);
 
@@ -139,6 +155,67 @@ static async Task RunPullRequestFeedback(IKernel kernel)
     Console.WriteLine(kernelResponse.ToString());
 }
 
+static async Task RunCodeRewrite(IKernel kernel, string rootPath)
+{
+    var codeRewriteSkill = kernel.ImportSkill(new CodeRewriteSkill(kernel));
+
+    // loop through files
+    var fileList = (await codeRewriteSkill["FindAllFiles"].InvokeAsync(rootPath)).Result;
+
+    var files = JsonSerializer.Deserialize<string[]>(fileList) ?? Array.Empty<string>();
+
+    // rewrite each file
+    foreach (var file in files)
+    {
+        var kernelResponse = await kernel.RunAsync(file, codeRewriteSkill["CSharpToTypescript"]);
+
+        var result = kernelResponse.Result;
+
+        Console.WriteLine("Read file: " + file);
+        // Console.WriteLine(result);
+
+        // write the file to a relative path
+        var relativePath = file.Replace(rootPath, "").Replace(".cs", ".ts");
+        // var currentDirectory = Directory.GetCurrentDirectory();
+        var currentDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var outputPath = Path.Combine(currentDirectory, "SKonsole", "output", relativePath);
+        // var outputDirectory = Path.GetDirectoryName(outputPath); // this is wrong
+        // Console.Write("Creating directory: " + Directory.GetParent(outputPath)?.FullName);
+        Directory.CreateDirectory(Directory.GetParent(outputPath)?.FullName ?? throw new InvalidOperationException());
+        Console.WriteLine("Writing file: " + outputPath);
+        File.WriteAllText(outputPath, result);
+    }
+}
+
+static async Task RunCodeGen(IKernel kernel, string rootPath)
+{
+    // Given a root path, iterate over files and generate code.
+    var codeGenSkill = kernel.ImportSkill(new CodeGenSkill(kernel));
+
+    // loop through files
+    var files = Directory.GetFiles(rootPath, "*.cs", SearchOption.AllDirectories);
+    foreach (var file in files)
+    {
+        var kernelResponse = await kernel.RunAsync(file, codeGenSkill["CodeGen"]);
+
+        var result = kernelResponse.Result.Replace("[END TYPESCRIPT CODE]", "");
+
+        Console.WriteLine("Read file: " + file);
+        Console.WriteLine(result);
+
+        // write the file to a relative path
+        var relativePath = file.Replace(rootPath, "").Replace(".cs", ".ts");
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var outputPath = Path.Combine(currentDirectory, "output", relativePath);
+        // var outputDirectory = Path.GetDirectoryName(outputPath); // this is wrong
+        Console.Write("Creating directory: output");
+        var createdDir = Directory.CreateDirectory("output");
+        Console.WriteLine("Directory created: " + createdDir.FullName);
+        Console.WriteLine("Writing file: " + outputPath);
+        File.WriteAllText(outputPath, result);
+    }
+}
+
 static async Task RunCreatePlan(IKernel kernel, string message)
 {
     var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
@@ -159,6 +236,31 @@ static async Task RunCreatePlan(IKernel kernel, string message)
     var kernelResponse = await kernel.RunAsync(message, plannerSkill["CreatePlan"]);
 
     _ = await PlanUtils.ExecutePlanAsync(kernel, plannerSkill, kernelResponse);
+}
+
+static async Task RunGeneralChat(IKernel kernel)
+{
+    const string skPrompt =
+        @"You are a GPT model that can chat with users on various topics that interest them. You need to engage the user in a friendly and informative conversation. The prompt should include a greeting, a brief introduction of your capabilities, and a request for the user to choose a topic. You should also acknowledge your limitations and invite feedback from the user. You are able to produce code and advise solutions for software design. Prefix messages with 'AI: '.
+
+{{$history}}
+AI:";
+
+    var promptConfig = new PromptTemplateConfig
+    {
+        Completion =
+        {
+            MaxTokens = 2000,
+            Temperature = 0.7,
+            TopP = 0.5,
+            StopSequences = new List<string> { "Human:", "AI:" },
+        }
+    };
+    var promptTemplate = new PromptTemplate(skPrompt, promptConfig, kernel);
+    var functionConfig = new SemanticFunctionConfig(promptConfig, promptTemplate);
+    var function = kernel.RegisterSemanticFunction("ChatBot", "chat", functionConfig);
+
+    await RunChat(kernel, function);
 }
 
 static async Task RunPromptChat(IKernel kernel)
@@ -183,7 +285,18 @@ AI:
     var promptTemplate = new PromptTemplate(skPrompt, promptConfig, kernel);
     var functionConfig = new SemanticFunctionConfig(promptConfig, promptTemplate);
     var chatFunction = kernel.RegisterSemanticFunction("PromptBot", "Chat", functionConfig);
+    await RunChat(kernel, chatFunction);
+}
 
+static string EnvVar(string name)
+{
+    var value = Environment.GetEnvironmentVariable(name);
+    if (string.IsNullOrEmpty(value)) throw new Exception($"Env var not set: {name}");
+    return value;
+}
+
+static async Task RunChat(IKernel kernel, ISKFunction chatFunction)
+{
     var contextVariables = new ContextVariables();
 
     var history = "";
@@ -198,7 +311,7 @@ AI:
         Console.WriteLine(botMessageFormatted);
         Console.Write(">>>");
 
-        userMessage = Console.ReadLine();
+        userMessage = Console.ReadLine(); // TODO -- How to support multi-line input?
         if (userMessage == "exit") break;
 
         history += $"{botMessageFormatted}Human: {userMessage}\nAI:";
@@ -206,11 +319,4 @@ AI:
 
         botMessage = await kernel.RunAsync(contextVariables, chatFunction);
     }
-}
-
-static string EnvVar(string name)
-{
-    var value = Environment.GetEnvironmentVariable(name);
-    if (string.IsNullOrEmpty(value)) throw new Exception($"Env var not set: {name}");
-    return value;
 }

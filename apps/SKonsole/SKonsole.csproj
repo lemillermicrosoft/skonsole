@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\skills\PRSkill\PRSkill.csproj" />
+    <ProjectReference Include="..\..\skills\CodeRewriteSkill\CodeRewriteSkill.csproj" />
   </ItemGroup>
 
 </Project>

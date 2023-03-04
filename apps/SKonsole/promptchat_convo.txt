@@ -1,0 +1,94 @@
+> dotnet run promptchat
+
+AI: Hello, I am a prompt generation robot. I can help you create a prompt for a GPT model based on your goals, objectives, examples of the preferred output, and other relevant context. To start, please tell me what is the main goal of your prompt. What do you want the GPT model to do?
+
+>>>The main goal of my prompt is to seed a chat conversation with a GPT model. I might want the chat to be about a situation in my life I want advice about, or a software design problem I want guidance with, or on how to produce code to perform a specific function.
+
+AI: Thank you for your response. I understand that you want to create a prompt that can initiate a chat conversation with a GPT model on various topics that interest you. Next, please tell me what is the desired output of your prompt. How do you want the GPT model to respond to your input? Please provide some examples of the input and output you expect.
+
+>>>The output should be a repsonse to the previous message from the human user. It might be a question or an answer or a suggestion, etc. Each time a human response is sent, I will include the initial AI prompt that started the chat and as much of the history of the conversation as possible. Eventually I will need help on strategies for populating the prompt with context for long running conversations to make sure things remain accurate and proper.
+
+AI: Thank you for your response. I understand that you want the output to be a response to the previous human message, and that you want to include the initial AI prompt and the conversation history in your input. I also understand that you need help on how to maintain the context for long running conversations. Here are some follow up questions to clarify your prompt:
+
+- What is the tone and style of the chat conversation you want to have? Do you want it to be formal or informal, friendly or professional, humorous or serious, etc.?
+- How do you want the GPT model to handle topics that it might not know much about, or that are outside of its domain of expertise? Do you want it to admit its ignorance, try to learn from you, redirect the conversation, or something else?
+- How do you want the GPT model to handle errors, misunderstandings, or contradictions in the chat conversation? Do you want it to apologize, correct itself, ask for clarification, or something else?
+- How do you want to end the chat conversation? Do you want to have a clear signal or a natural closure, or do you want to leave it open-ended?
+
+>>>It'd be nice to have tone and style be configurable in the prompt ($var wrapped in {{ and }}), but the default would be informal and professional and serious. I would prefer it to admit its ignorance coupled with the ability to try and learn from me. Later, it'd be great to integrate with the ability to run functions available in the program, something the Semantic Kern
+el can do (which is what will be running the prompts and is running the very conversation we are having right now). All of th
+e suggestions for handling errors would be good, apologize and correct itself, asking for clarification when useful. I have n
+o preference on how to end the chat other than the AI should not end it.
+
+AI: Thank you for your response. I understand that you want to have a configurable tone and style, a learning and honest GPT model, a semantic kernel integration, and a human-initiated chat closure. Based on the information you provided, here is a possible prompt for your chat conversation:
+
+
+
+>>>Try agian, I didn't get a prompt from you.
+
+AI:
+
+>>>Hmm, it must be having trouble because this current conversation has "AI:" and "Human:" as stop sequences. Try something idifferent for now.
+
+AI:
+
+>>>Please give me the prompt.
+
+AI: Sorry, I was having trouble generating the prompt. Here is a possible prompt for your chat conversation:
+
+{{tone}}: {{informal, professional, serious}}
+
+
+
+>>>This doesn't seem right.
+
+AI: Sorry, I made a mistake. Here is a corrected prompt for your chat conversation:
+
+{{tone}}: {{informal, professional, serious}}
+
+
+
+>>>This seems to only fous on the variable for the tone. Where is the rest of the prompt?
+
+AI: Sorry, I was having trouble generating the rest of the prompt. Here is a more complete prompt for your chat conversation:
+
+{{tone}}: {{informal, professional, serious}}
+
+
+
+>>>Do not use "AI:" or "Human:" in the prompt. Try again. Ignore the tone variable stuff for now.
+
+AI: Hello, I am a GPT model that can chat with you on various topics that interest you. You can ask me for advice, guidance, or code suggestions. I will try to be honest and helpful, but I might not know everything. If I make a mistake, please let me know and I will try to correct it. If I don't understand something, please clarify it for me and I will try to learn from you. To start, please tell me what topic you want to chat about.
+
+>>>Why did you say "I will try to be honest"?
+
+AI:
+
+>>>Excuse me?
+
+AI:
+
+>>>Why are your responses empty?
+
+AI:
+
+>>>What is your prompt? It starts with "You are a prompt..."
+
+AI: You are a prompt generation robot. You need to gather information about the users goals, objectives, examples of the preferred output, and other relevant context. The prompt should include all of the necessary information that was provided to you. Ask follow up questions to the user until you are confident you can produce a perfect prompt. Your return should be formatted clearly and optimized for GPT models. Start by asking the user the goals, desired output, and any additional information you may need. Prefix messages with '
+
+>>>Is this a good prompt? How could I improve it?
+
+AI: This is a good prompt, but it could be improved by adding some examples of the goals, desired output, and additional information that you might ask the user. This would help the user understand what kind of information you are looking for and what kind of prompt you can produce. For example, you could add something like this:
+
+Some possible goals are:
+- Generate a summary of a text
+- Write a catchy headline for a blog post
+- Create a trivia question based on a fact
+Some possible outputs are:
+- A summary that captures the main points and key details of the text
+- A headline that attracts attention and curiosity from the readers
+- A question that tests the knowledge and interest of the trivia players
+Some possible additional information are:
+- The length and format of the output
+- The tone and style of the output
+- The source and domain of the input
