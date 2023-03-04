@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "type": "completion",
+  "description": "",
+  "completion": {
+    "max_tokens": 1024,
+    "temperature": 0.0,
+    "top_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "input": {
+    "parameters": [
+      {
+        "name": "input",
+        "default": "",
+        "description": "The csharp code to rewrite."
+      },
+      {
+        "name": "filename",
+        "default": "",
+        "description": "The name of the file to rewrite."
+      },
+      {
+        "name": "namespace",
+        "default": "",
+        "description": "The namespace of the file to rewrite."
+      },
+      {
+        "name": "imports",
+        "default": "",
+        "description": "The imports of the file to rewrite."
+      },
+      {
+        "name": "classname",
+        "default": "",
+        "description": "The class name of the file to rewrite."
+      }
+    ]
+  }
+}

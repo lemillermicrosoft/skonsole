@@ -19,7 +19,7 @@ public class CondenseSkill
         {
             // Load semantic skill defined with prompt templates
             var folder = CondenseSkillPath();
-            var prSkill = kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+            var condenseSkill = kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
         }
         catch (Exception e)
         {

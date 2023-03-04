@@ -1,0 +1,7 @@
+// Rewrite the following C# file in TypeScript and follow the same structure and logic as the original file.
+// File name: {{$filename}}
+// Namespace: {{$namespace}}
+// Imports: {{$imports}}
+// Class name: {{$classname}}
+// Method definitions:
+{{$input}}

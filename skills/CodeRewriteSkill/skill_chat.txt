@@ -1,0 +1,74 @@
+dotnet run chat
+
+AI:  Hello, and welcome to the GPT chatbot. I am a model that can chat with you on various topics that interest you. I can also produce code and advise solutions for software design. I am always learning and improving, so please feel free to give me feedback on how I can do better. To start, please choose a topic from the following list:
+
+- Sports
+- Movies
+- Music
+- Books
+- Technology
+- Politics
+- Art
+- Travel
+- Food
+- Pets
+
+You can also type 'quit' at any time to end the chat. What would you like to talk about?
+
+>>>I'd like to talk about designing a piece of software.
+
+AI:  Sure, that sounds interesting. What kind of software are you working on or planning to create?
+
+>>>I want to create a library that contains functions to help enable a scenario. The scenario is the automation of rewriting
+a C# library into its typescript equivalent. The primary way the rewriting will be done is by calling a GPT LLM and having it
+ do the rewrite. The library will need functions that can help populate the prompt with context about the file to be rewritten and expose the ability to 'remember' a file or class by generating embedddings and storing them. Help me define these and o
+ther functions that will be neccesary.
+
+AI:   Wow, that sounds like a challenging and exciting project. I can try to help you define some of the functions that you will need, but please keep in mind that I am not an expert in C# or TypeScript, and I may not be able to provide the best or most optimal solutions. Also, you will need to test and debug the code that I produce, as I cannot guarantee its correctness or quality. Is that okay with you?
+
+>>>Absolutley!
+
+AI:   Great, then let's begin. I assume that you already have a way to access and call the GPT LLM that you want to use for the rewriting, and that you have some way to read and write the C# and TypeScript files. If not, you will need to set up those components first. For the library that you want to create, I suggest that you define the following functions:
+
+- A function that takes a C# file as input and returns a string that contains the prompt for the GPT LLM. The prompt should include the file name, the namespace, the imports, the class name, and the method signatures of the C# file. It should also include a comment that instructs the GPT LLM to rewrite the file in TypeScript and follow the same structure and logic as the original file. For example, if the input file is called Calculator.cs and contains a class called Calculator with two methods, Add and Subtract, the prompt could look something like this:
+
+// Rewrite the following C# file in TypeScript and follow the same structure and logic as the original file.
+// File name: Calculator.cs
+// Namespace: MyProject
+// Imports: System
+// Class name: Calculator
+// Method signatures:
+public class Calculator
+{
+    public int Add(int a, int b)
+    {
+        // ...
+    }
+
+    public int Subtract(int a, int b)
+    {
+        // ...
+    }
+}
+
+- A function that takes the output of the GPT LLM as input and returns a TypeScript file. The function should parse the output string and extract the relevant information, such as the file name, the imports, the class name, and the method definitions. It should also check for any syntax errors or inconsistencies and fix them if possible. For example, if the output of the GPT LLM is something like this:
+
+// File name: Calculator.ts
+// Imports: none
+// Class name: Calculator
+// Method definitions:
+class Calculator {
+    add(a: number, b: number): number {
+        // ...
+    }
+
+    subtract(a: number, b: number): number {
+        // ...
+    }
+}
+
+The function should return a TypeScript file with the same name and content as the output string.
+
+- A function that takes a C# file or a class as input and returns an embedding that represents its semantic and syntactic features. The function should use a pre-trained model that can generate embeddings for code, such as CodeBERT or Code2Vec. The embedding should capture the meaning and structure of the code, and be able to compare and contrast it with other embeddings. For example, if the input is the Calculator class from the previous example, the function should return an embedding that is similar to other embeddings of classes that perform arithmetic operations, and different from embeddings of classes that perform other tasks.
+
+- A function that takes an embedding as input and returns a C# file or a class that matches the embedding. The function should use a pre-trained model that can generate code from embeddings, such as CodeBERT or Code2Vec. The function should try to produce code that is consistent and coherent with the embedding, and follow the conventions and style of C#. For example, if the input is an embedding of a class that performs arithmetic operations, the function should return a C# file or a class that contains methods for addition, subtraction, multiplication, and division.

@@ -1,0 +1,80 @@
+
+AI: Hello, I am a prompt generation robot. I can help you create a prompt for a GPT model based on your goals, objectives, examples of the preferred output, and other relevant context. To start, please tell me what is the main goal of your prompt. What do you want the GPT model to do?
+
+>>>I'm going to generate one or more prompts to help take an existing csharp codebase and convert it to an equivalent typescript library.
+
+AI: Thank you for your response. I understand that your goal is to generate prompts that can help you convert a csharp codebase to a typescript library. That sounds like a challenging and interesting task. To help me create a suitable prompt, please answer the following questions:
+
+- What is the name and purpose of the csharp codebase that you want to convert? How large and complex is it?
+- What are the main features and benefits of typescript that you want to leverage in your conversion? How familiar are you with typescript syntax and conventions?
+- Do you have any examples of the preferred output that you want the GPT model to produce? For instance, can you provide a snippet of csharp code and the corresponding typescript code that you would like to see?
+- How do you want the prompt to instruct the GPT model to perform the conversion? Do you want it to use natural language, pseudocode, or some other format? Do you want it to explain the logic and reasoning behind the conversion, or just provide the code?
+
+>>>The csharp codebase is called Semantic Kernel. It's an SDK that helps enable developers to create and call functions
+ that leverage the power of LLM like OpenAI GPT models. Not only does the SDK make it easy to build prompts and call LL
+M endpoints with those prompts, but it also enables users to create plans that leverage both semantic and native functi
+ons. I am somewhat familiar with typescript syntax and conventions. The main feature of typescript we want to leverage
+is the breadth of its developer userbase. I worry putting examples here right now might be confusing, ask me again late
+r. I'd prefer the prompt instruct the GPT model to create the actual code, typescript, based on actual csharp input. Ex
+planation would be nice but not neccesary, maybe this is a different prompt for use when debugging.
+
+AI: Thank you for the additional information. I have a better understanding of your project and your expectations. Based on what you have told me, I have generated a possible prompt for your task. Please review it and let me know if it meets your needs or if you have any feedback or suggestions. Here is the prompt:
+
+---
+
+Possible prompt:
+
+Convert the following csharp code to typescript code that performs the same function. Use the Semantic Kernel SDK to create and call functions that leverage the power of LLM models. Assume that the typescript code will be part of a library that exports the Semantic Kernel class and its methods. Comment your code to explain the main steps and logic.
+
+Csharp code:
+
+using SemanticKernel;
+using System;
+using System.Threading.Tasks;
+
+namespace Example
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            // Create a new instance of the Semantic Kernel class
+            var sk = new SemanticKernel();
+
+            // Define a semantic function that generates a summary of a text
+            var summarize = sk.Function("summarize", "text");
+
+            // Define a native function that prints the summary to the console
+            var print = sk.Native((summary) => Console.WriteLine(summary));
+
+            // Create a plan that combines the semantic and native functions
+            var plan = sk.Plan(summarize, print);
+
+            // Execute the plan with some input text
+            await plan.ExecuteAsync("This is a long and boring text that needs to be summarized. It has no interesting or relevant information. It just goes on and on without making any point. It is a waste of time and space.");
+        }
+    }
+}
+
+>>>This might work, however, not only will it convert coe using the Semantic Kernel, the primary focus will be converti
+ng the actual Semantic Kernel Code. Here's some example of what it will need to convert:
+
+AI: I see. So you want the prompt to focus on converting the Semantic Kernel code itself, not just the code that uses it. In that case, I will need some more information and examples to generate a more suitable prompt. Please answer the following questions:
+
+- What are the main differences and similarities between the csharp and typescript versions of the Semantic Kernel SDK? How do they handle types, classes, methods, parameters, and returns?
+- How do you want the prompt to handle the conversion of semantic and native functions? Do you want them to be defined as typescript functions, classes, interfaces, or something else?
+- How do you want the prompt to handle the conversion of plans? Do you want them to be defined as typescript functions, classes, interfaces, or something else?
+- Can you provide a snippet of the Semantic Kernel code in csharp and the corresponding typescript code that you would like to see? This will help me understand the structure and logic of the SDK and how it translates to typescript.
+
+>>>
+
+AI: Thank you for your response. I understand that your goal is to generate prompts that can help you convert the Semantic Kernel codebase from csharp to typescript. That sounds like a challenging and interesting task. To help me create a suitable prompt, please answer the following questions:
+
+- What are the main differences and similarities between the csharp and typescript versions of the Semantic Kernel SDK? How do they handle types, classes, methods, parameters, and returns?
+- How do you want the prompt to handle the conversion of semantic and native functions? Do you want them to be defined as typescript functions, classes, interfaces, or something else?
+- How do you want the prompt to handle the conversion of plans? Do you want them to be defined as typescript functions, classes, interfaces, or something else?
+- Can you provide a snippet of the Semantic Kernel code in csharp and the corresponding typescript code that you would like to see? This will help me understand the structure and logic of the SDK and how it translates to typescript.
+
+>>>// Copyright (c) Microsoft. All rights reserved.
+
+AI: Thank you for providing a snippet of the Semantic Kernel code in csharp. However, I also need the corresponding typescript code that you would like to see as the output of the conversion. This will help me generate a prompt that can instruct the GPT model to produce the desired typescript code. Please provide a snippet of the typescript code that matches the csharp code that you have given me.
