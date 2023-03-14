@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace CondenseSkillLib;
@@ -12,7 +14,7 @@ public class CondenseSkill
 {
     public static readonly string RESULTS_SEPARATOR = string.Format("\n====={0}=====\n", "EndResult");
     public const string SEMANTIC_FUNCTION_PATH = "CondenseSkill";
-
+    private const int CHUNK_SIZE = 8000; // Eventually this should come from the kernel
     public CondenseSkill(IKernel kernel)
     {
         try
@@ -35,9 +37,28 @@ public class CondenseSkill
         {
             var condenser = context.Func(SEMANTIC_FUNCTION_PATH, "Condenser");
 
-            // TODO After we can get max tokens frm semantic functions, chunk the input.
-            context.Variables.Update(context.Variables.Input + RESULTS_SEPARATOR);
-            return await condenser.InvokeAsync(context);
+            var input = context.Variables.Input;
+
+            List<string> lines = SemanticTextPartitioner.SplitPlainTextLines(input, CHUNK_SIZE);
+            List<string> paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, CHUNK_SIZE);
+
+            var condenseResult = new List<string>();
+            foreach (var paragraph in paragraphs)
+            {
+                context.Variables.Update(paragraph + RESULTS_SEPARATOR);
+                context = await condenser.InvokeAsync(context);
+                condenseResult.Add(context.Result);
+            }
+
+            if (paragraphs.Count <= 1)
+            {
+                return context;
+            }
+
+            // update memory with serialized list of results and call condense again
+            context.Variables.Update(string.Join("\n", condenseResult));
+            context.Log.LogWarning($"Condensing {paragraphs.Count} paragraphs");
+            return await Condense(context);
         }
         catch (Exception e)
         {
