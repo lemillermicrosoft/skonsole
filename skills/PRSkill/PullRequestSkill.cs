@@ -139,6 +139,73 @@ public class PullRequestSkill
         }
     }
 
+    // DesignDocGenerator wrapper
+    [SKFunction(description: "Generate a design doc based on a git diff or git show file output using a rolling query mechanism.")]
+    [SKFunctionContextParameter(Name = "Input", Description = "Output of a `git diff` or `git show` command.")]
+    public async Task<SKContext> GenerateDesignDoc(SKContext context)
+    {
+        try
+        {
+            context.Log.LogTrace("GenerateDesignDoc called");
+
+            var designDocGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "DesignDocGenerator");
+            var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
+            return await designDocGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
+        }
+        catch (Exception e)
+        {
+            return context.Fail(e.Message, e);
+        }
+    }
+
+    // MotivationAndContextGenerator wrapper
+    [SKFunction(description: "Generate a motivation and context based on a git diff or git show file output using a rolling query mechanism.")]
+    [SKFunctionContextParameter(Name = "Input", Description = "Output of a `git diff` or `git show` command.")]
+    public async Task<SKContext> GenerateMotivationAndContext(SKContext context)
+    {
+        try
+        {
+            context.Log.LogTrace("GenerateMotivationAndContext called");
+
+            var motivationAndContextGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "MotivationAndContextGenerator");
+            var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
+            // if chunkedInput count is above 5 log warning with # of chunks
+            if (chunkedInput.Count > 5)
+            {
+                context.Log.LogWarning($"ChunkedInput count is {chunkedInput.Count} which is above 5.");
+            }
+            return await motivationAndContextGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
+        }
+        catch (Exception e)
+        {
+            return context.Fail(e.Message, e);
+        }
+    }
+
+    // DescriptionGenerator wrapper
+    [SKFunction(description: "Generate a description based on a git diff or git show file output using a rolling query mechanism.")]
+    [SKFunctionContextParameter(Name = "Input", Description = "Output of a `git diff` or `git show` command.")]
+    public async Task<SKContext> GenerateDescription(SKContext context)
+    {
+        try
+        {
+            context.Log.LogTrace("GenerateDescription called");
+
+            var descriptionGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "DescriptionGenerator");
+            var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
+            // if chunkedInput count is above 5 log warning with # of chunks
+            if (chunkedInput.Count > 5)
+            {
+                context.Log.LogWarning($"ChunkedInput count is {chunkedInput.Count} which is above 5.");
+            }
+            return await descriptionGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
+        }
+        catch (Exception e)
+        {
+            return context.Fail(e.Message, e);
+        }
+    }
+
     [SKFunction(description: "Generate a pull request description based on a git diff or git show file output using a reduce mechanism.")]
     [SKFunctionContextParameter(Name = "Input", Description = "Output of a `git diff` or `git show` command.")]
     public async Task<SKContext> GeneratePR(SKContext context)
