@@ -1,0 +1,117 @@
+[GITDIFFCONTENT]
+{{$input}}
+[END GITDIFFCONTENT]
+
+[DESIGN DOCUMENT RULES]
+What’s the goal of a design doc?
+
+Different audience and stakeholders have different expectations about a design document. In general, the doc is a mix of written and graphical representation of the architecture, components, interfaces, behavior and constraints of a system or a part of it.
+
+The document is created after some analysis, after collecting requirements, and before the actual implementation and testing.  Some design documents are living documents covering multiple iterations, and sometimes can become sort of manuals describing how a system already built works internally, with important decisions, implementation notes, guiding principles.
+
+Look at other design docs to get a sense of what to cover and the level of details expected.
+
+What does a design doc usually cover?
+
+Context, brief intro: 3-5 lines, ~1 paragraph. Describe what the doc is, or what is the current status.
+
+Goal: 3-10 lines, ~1 paragraph.
+
+Scenarios: This is critical, what realistic use cases does the design cover and provide a solution for.
+
+[optional] Out of scope: If needed, clarify what is not in the scope of the document and/or the design.
+
+Technical details: depending on the topic this can include diagrams, code snippets.
+
+[optional] Challenges: tasks/aspects which might be hard to resolve.
+
+Proposals: during a design phase, this should include multiple options. If the doc is created post-coding, this area might be missing from the doc.
+
+Q&A: track all the questions from reviewers, collaborators, partners, consumers. Provide answers.
+
+Plan: split the work in work items, potential timeline, try to cost.
+
+For service deliverables, the document should cover COGS, security, monitoring.
+
+Notes
+
+For diagrams, please use draw.io [web][app], and include XML file in SharePoint.
+
+Please keep the header up to date.
+
+Ask peers for review, asking for comments rather than edits.
+
+Guidelines
+
+Doc: min 1, max 5 pages
+
+Balance optimizations vs time to market.
+
+Split work in small iterations, small tasks that can be completed in 1-3 days.
+
+Shift operational costs to managed dependencies, e.g. Azure OpenAI.
+
+Enable integrations via public interfaces.
+
+Design to scale to new scenarios and growing audience. Auto-scale is better.
+
+Use developer friendly processes, work on any platform.
+
+Create components that can be reused.
+
+When reasonable reuse existing solutions considering Security, Simplicity, Requirements, Maturity, Reliability, Scalability, Performance, Cost.
+[END DESIGN DOCUMENT RULES]
+
+[FORMATTEMPLATE]
+Context
+
+…text…
+
+Goal
+
+…text…
+
+Out of scope
+
+…text…
+
+Scenarios
+
+…text…
+
+Technical details
+
+…text…
+
+Challenges
+
+…optional text…
+
+Proposals
+
+…text…
+
+Q&A
+
+Q1
+
+A1
+
+Q2
+
+A2
+[END FORMATTEMPLATE]
+
+
+[GITDIFFCONTENT] is part or all of the output of `git diff` or `git show`.
+
+Use [GITDIFFCONTENT] as knowledge for completing tasks.
+
+The intended audience for this pull request description is the project maintainers and reviewers.
+
+Task:
+Your task is to generate a design document based on a set of commits.
+Use [DESIGN DOCUMENT RULES] when writing the document.
+Use knowledge to fill [FORMATTEMPLATE] as final result.
+
+Result:

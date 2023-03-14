@@ -1,4 +1,4 @@
-﻿using System.CommandLine;
+using System.CommandLine;
 using System.Diagnostics;
 using System.Text.Json;
 using CodeRewriteSkillLib;
@@ -41,6 +41,7 @@ _kernel.Config.SetDefaultHttpRetryConfig(new HttpRetryConfig
 
 var rootCommand = new RootCommand();
 var commitCommand = new Command("commit", "Commit subcommand");
+var designCommand = new Command("designdoc", "Design document subcommand");
 var prCommand = new Command("pr", "Pull Request feedback subcommand");
 var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
 var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
@@ -60,6 +61,7 @@ plannerCommand.Add(messageArgument);
 rootCommand.SetHandler(async () => await RunCommitMessage(_kernel));
 commitCommand.SetHandler(async () => await RunCommitMessage(_kernel));
 prCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
+designCommand.SetHandler(async () => await RunGenerateDesignDoc(_kernel));
 prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel));
 prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
 plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, messageArgumentValue), messageArgument);
@@ -79,6 +81,7 @@ rootCommand.Add(promptChatCommand);
 rootCommand.Add(generalChatCommand);
 rootCommand.Add(runCodeGenCommand);
 rootCommand.Add(runCodeRewriteCommand);
+rootCommand.Add(designCommand);
 
 return await rootCommand.InvokeAsync(args);
 
@@ -127,6 +130,31 @@ static async Task RunPullRequestDescription(IKernel kernel)
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePR"]);
+    Console.WriteLine(kernelResponse.ToString());
+}
+
+//GenerateDesignDoc
+static async Task RunGenerateDesignDoc(IKernel kernel)
+{
+    var process = new Process
+    {
+        StartInfo = new ProcessStartInfo
+        {
+            FileName = "git",
+            Arguments = "diff --ignore-space-change origin/main..HEAD",
+            RedirectStandardOutput = true,
+            WorkingDirectory = "D:/repos/semantic-kernel/dotnet/src/SemanticKernel/",
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            StandardOutputEncoding = System.Text.Encoding.UTF8
+        }
+    };
+    process.Start();
+
+    string output = process.StandardOutput.ReadToEnd();
+    var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
+
+    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateDesignDoc"]);
     Console.WriteLine(kernelResponse.ToString());
 }
 

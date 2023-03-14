@@ -19,6 +19,17 @@
       "stopAtEntry": false
     },
     {
+      "name": ".NET Core Launch (designdoc)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/apps/SKonsole/bin/Debug/net7.0/SKonsole.dll",
+      "args": ["designdoc"],
+      "cwd": "${workspaceFolder}/apps/SKonsole",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
       "name": ".NET Core Attach",
       "type": "coreclr",
       "request": "attach"
