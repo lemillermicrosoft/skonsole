@@ -14,8 +14,9 @@ using SKonsole.Utils;
 var loggerFactory = LoggerFactory.Create(builder =>
 {
     builder
-        .AddFilter("Microsoft", LogLevel.Warning)
-        .AddFilter("System", LogLevel.Warning)
+        .AddFilter("Microsoft", LogLevel.Error)
+        .AddFilter("System", LogLevel.Error)
+        .AddFilter("Program", LogLevel.Information)
         .AddConsole();
 });
 
@@ -42,10 +43,11 @@ var commitCommand = new Command("commit", "Commit subcommand");
 var prCommand = new Command("pr", "Pull Request feedback subcommand");
 var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
 var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
-var plannerCommand = new Command("createplan", "Planner subcommand");
-var promptChatCommand = new Command("promptchat", "Prompt chat subcommand");
+var plannerCommand = new Command("createPlan", "Planner subcommand");
+var promptChatCommand = new Command("promptChat", "Prompt chat subcommand");
 var messageArgument = new Argument<string>
     ("message", "An argument that is parsed as a string.");
+
 plannerCommand.Add(messageArgument);
 
 rootCommand.SetHandler(async () => await RunCommitMessage(_kernel));
@@ -88,7 +90,7 @@ static async Task RunCommitMessage(IKernel kernel)
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateCommitMessage"]);
 
-    Console.WriteLine(kernelResponse.ToString());
+    kernel.Log.LogInformation("Commit Message:\n{result}", kernelResponse.Result);
 }
 
 static async Task RunPullRequestDescription(IKernel kernel)
@@ -111,7 +113,7 @@ static async Task RunPullRequestDescription(IKernel kernel)
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePR"]);
-    Console.WriteLine(kernelResponse.ToString());
+    kernel.Log.LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);
 }
 
 static async Task RunPullRequestFeedback(IKernel kernel)
@@ -136,7 +138,7 @@ static async Task RunPullRequestFeedback(IKernel kernel)
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePullRequestFeedback"]);
 
-    Console.WriteLine(kernelResponse.ToString());
+    kernel.Log.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
 }
 
 static async Task RunCreatePlan(IKernel kernel, string message)
@@ -195,8 +197,8 @@ AI:
     while (userMessage != "exit")
     {
         var botMessageFormatted = "\nAI: " + botMessage.ToString() + "\n";
-        Console.WriteLine(botMessageFormatted);
-        Console.Write(">>>");
+        kernel.Log.LogInformation("{botMessage}", botMessageFormatted);
+        kernel.Log.LogInformation(">>>");
 
         userMessage = Console.ReadLine();
         if (userMessage == "exit") break;
