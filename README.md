@@ -24,7 +24,6 @@ This repository contains several projects and classes, including:
 This project requires the following dependencies:
 
 - [Semantic Kernel](https://github.com/microsoft/semantic-kernel)
-- [Polly](https://github.com/App-vNext/Polly)
 
 ## Future Work
 In the future, the SKonsole app could be expanded to support more skills and to parse arguments on launch. Additionally, the repository could include instructions for setting up NuGet credentials and using a GitHub Package source.
@@ -32,4 +31,4 @@ In the future, the SKonsole app could be expanded to support more skills and to 
 I hope this README is helpful for you and others who may use your repository in the future. Let me know if there's anything else I can do to help!
 
 
-######_This README was generated using Semantic Kernel_
+####_This README was generated using Semantic Kernel_
