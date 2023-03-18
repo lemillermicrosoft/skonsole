@@ -4,10 +4,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
-using SKonsole.Reliability;
 using SKonsole.Skills;
 using SKonsole.Utils;
 
@@ -30,7 +30,12 @@ var _kernel = Kernel.Builder.WithLogger(logger).Build();
 _kernel.Log.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
 _kernel.Config.AddAzureOpenAICompletionBackend(EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"), EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"), EnvVar("AZURE_OPENAI_API_ENDPOINT"), EnvVar("AZURE_OPENAI_API_KEY"));
 
-_kernel.Config.SetRetryMechanism(new PollyRetryMechanism());
+_kernel.Config.SetDefaultHttpRetryConfig(new HttpRetryConfig
+{
+    MaxRetryCount = 3,
+    MinRetryDelay = TimeSpan.FromSeconds(8),
+    UseExponentialBackoff = true,
+});
 
 var rootCommand = new RootCommand();
 var commitCommand = new Command("commit", "Commit subcommand");
