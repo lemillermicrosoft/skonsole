@@ -117,7 +117,8 @@ static async Task RunCommitMessage(IKernel kernel)
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateCommitMessage"]);
 
-    Console.WriteLine(kernelResponse.ToString());
+    // kernel.Log.LogInformation(kernelResponse.ToString());
+    kernel.Log.LogInformation(kernelResponse.ToString());
 }
 
 static async Task RunPullRequestDescription(IKernel kernel)
@@ -140,7 +141,7 @@ static async Task RunPullRequestDescription(IKernel kernel)
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePR"]);
-    Console.WriteLine(kernelResponse.ToString());
+    kernel.Log.LogInformation(kernelResponse.ToString());
 }
 
 //GenerateDesignDoc
@@ -165,7 +166,7 @@ static async Task RunGenerateDesignDoc(IKernel kernel)
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateDesignDoc"]);
-    Console.WriteLine(kernelResponse.ToString());
+    kernel.Log.LogInformation(kernelResponse.ToString());
 }
 
 //GenerateMotivationAndContext
@@ -189,7 +190,7 @@ static async Task RunGenerateMotivationAndContext(IKernel kernel)
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateMotivationAndContext"]);
-    Console.WriteLine(kernelResponse.ToString());
+    kernel.Log.LogInformation(kernelResponse.ToString());
 }
 //GenerateDescription
 static async Task RunGenerateDescription(IKernel kernel)
@@ -212,7 +213,7 @@ static async Task RunGenerateDescription(IKernel kernel)
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateDescription"]);
-    Console.WriteLine(kernelResponse.ToString());
+    kernel.Log.LogInformation(kernelResponse.ToString());
 }
 
 static async Task RunPullRequestFeedback(IKernel kernel)
@@ -237,7 +238,7 @@ static async Task RunPullRequestFeedback(IKernel kernel)
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePullRequestFeedback"]);
 
-    Console.WriteLine(kernelResponse.ToString());
+    kernel.Log.LogInformation(kernelResponse.ToString());
 }
 
 static async Task RunCodeRewrite(IKernel kernel, string rootPath)
@@ -256,8 +257,8 @@ static async Task RunCodeRewrite(IKernel kernel, string rootPath)
 
         var result = kernelResponse.Result;
 
-        Console.WriteLine("Read file: " + file);
-        // Console.WriteLine(result);
+        kernel.Log.LogInformation("Read file: " + file);
+        // kernel.Log.LogInformation(result);
 
         // write the file to a relative path
         var relativePath = file.Replace(rootPath, "").Replace(".cs", ".ts");
@@ -267,7 +268,7 @@ static async Task RunCodeRewrite(IKernel kernel, string rootPath)
         // var outputDirectory = Path.GetDirectoryName(outputPath); // this is wrong
         // Console.Write("Creating directory: " + Directory.GetParent(outputPath)?.FullName);
         Directory.CreateDirectory(Directory.GetParent(outputPath)?.FullName ?? throw new InvalidOperationException());
-        Console.WriteLine("Writing file: " + outputPath);
+        kernel.Log.LogInformation("Writing file: " + outputPath);
         File.WriteAllText(outputPath, result);
     }
 }
@@ -285,8 +286,8 @@ static async Task RunCodeGen(IKernel kernel, string rootPath)
 
         var result = kernelResponse.Result.Replace("[END TYPESCRIPT CODE]", "");
 
-        Console.WriteLine("Read file: " + file);
-        Console.WriteLine(result);
+        kernel.Log.LogInformation("Read file: " + file);
+        kernel.Log.LogInformation(result);
 
         // write the file to a relative path
         var relativePath = file.Replace(rootPath, "").Replace(".cs", ".ts");
@@ -295,8 +296,8 @@ static async Task RunCodeGen(IKernel kernel, string rootPath)
         // var outputDirectory = Path.GetDirectoryName(outputPath); // this is wrong
         Console.Write("Creating directory: output");
         var createdDir = Directory.CreateDirectory("output");
-        Console.WriteLine("Directory created: " + createdDir.FullName);
-        Console.WriteLine("Writing file: " + outputPath);
+        kernel.Log.LogInformation("Directory created: " + createdDir.FullName);
+        kernel.Log.LogInformation("Writing file: " + outputPath);
         File.WriteAllText(outputPath, result);
     }
 }
@@ -393,7 +394,7 @@ static async Task RunChat(IKernel kernel, ISKFunction chatFunction)
     while (userMessage != "exit")
     {
         var botMessageFormatted = "\nAI: " + botMessage.ToString() + "\n";
-        Console.WriteLine(botMessageFormatted);
+        kernel.Log.LogInformation(botMessageFormatted);
         Console.Write(">>>");
 
         userMessage = Console.ReadLine(); // TODO -- How to support multi-line input?
