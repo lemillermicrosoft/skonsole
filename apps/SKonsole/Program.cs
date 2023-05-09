@@ -113,6 +113,25 @@ static async Task RunCommitMessage(IKernel kernel)
 
     string output = process.StandardOutput.ReadToEnd();
 
+    if (string.IsNullOrEmpty(output))
+    {
+        process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = "diff HEAD~1",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8
+            }
+        };
+        process.Start();
+
+        output = process.StandardOutput.ReadToEnd();
+    }
+
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateCommitMessage"]);
