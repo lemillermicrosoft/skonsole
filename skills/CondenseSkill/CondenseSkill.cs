@@ -3,10 +3,9 @@
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions.Partitioning;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Text;
 
 namespace CondenseSkillLib;
 
@@ -39,8 +38,8 @@ public class CondenseSkill
 
             var input = context.Variables.Input;
 
-            List<string> lines = SemanticTextPartitioner.SplitPlainTextLines(input, CHUNK_SIZE);
-            List<string> paragraphs = SemanticTextPartitioner.SplitPlainTextParagraphs(lines, CHUNK_SIZE);
+            List<string> lines = TextChunker.SplitPlainTextLines(input, CHUNK_SIZE);
+            List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, CHUNK_SIZE);
 
             var condenseResult = new List<string>();
             foreach (var paragraph in paragraphs)

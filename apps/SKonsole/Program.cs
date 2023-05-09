@@ -1,17 +1,20 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using CodeRewriteSkillLib;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using SKonsole.Skills;
-using SKonsole.Utils;
+
+Console.OutputEncoding = Encoding.Unicode;
 
 var loggerFactory = LoggerFactory.Create(builder =>
 {
@@ -30,7 +33,7 @@ var _kernel = Kernel.Builder.WithLogger(logger).Build();
 // _kernel.Config.AddOpenAICompletionBackend("text-davinci-003", "text-davinci-003", EnvVar("OPENAI_API_KEY"));
 
 _kernel.Log.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
-_kernel.Config.AddAzureOpenAICompletionBackend(EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"), EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"), EnvVar("AZURE_OPENAI_API_ENDPOINT"), EnvVar("AZURE_OPENAI_API_KEY"));
+_kernel.Config.AddAzureTextCompletionService(EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"), EnvVar("AZURE_OPENAI_API_ENDPOINT"), EnvVar("AZURE_OPENAI_API_KEY"), EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"));
 
 _kernel.Config.SetDefaultHttpRetryConfig(new HttpRetryConfig
 {
@@ -323,8 +326,6 @@ static async Task RunCodeGen(IKernel kernel, string rootPath)
 
 static async Task RunCreatePlan(IKernel kernel, string message)
 {
-    var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
-
     // Eventually, Kernel will be smarter about what skills it uses for an ask.
     // kernel.ImportSkill(new EmailSkill(), "email");
     // kernel.ImportSkill(new GitSkill(), "git");
@@ -338,9 +339,11 @@ static async Task RunCreatePlan(IKernel kernel, string message)
     var bing = new WebSearchEngineSkill(bingConnector);
     var search = kernel.ImportSkill(bing, "bing");
 
-    var kernelResponse = await kernel.RunAsync(message, plannerSkill["CreatePlan"]);
+    // var planner = new ActionPlanner();
+    var planner = new SequentialPlanner(kernel);
+    var plan = await planner.CreatePlanAsync(message);
 
-    _ = await PlanUtils.ExecutePlanAsync(kernel, plannerSkill, kernelResponse);
+    await plan.InvokeAsync();
 }
 
 static async Task RunGeneralChat(IKernel kernel)

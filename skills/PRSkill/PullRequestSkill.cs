@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using PRSkill.Utils;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using CondenseSkillLib;
 
