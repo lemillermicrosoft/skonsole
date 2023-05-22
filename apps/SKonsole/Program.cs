@@ -212,31 +212,6 @@ static async Task RunCreatePlan(IKernel kernel, string message)
     await plan.InvokeAsync();
 }
 
-static async Task RunGeneralChat(IKernel kernel)
-{
-    const string skPrompt =
-        @"You are a GPT model that can chat with users on various topics that interest them. You need to engage the user in a friendly and informative conversation. The prompt should include a greeting, a brief introduction of your capabilities, and a request for the user to choose a topic. You should also acknowledge your limitations and invite feedback from the user. You are able to produce code and advise solutions for software design. Prefix messages with 'AI: '.
-
-{{$history}}
-AI:";
-
-    var promptConfig = new PromptTemplateConfig
-    {
-        Completion =
-        {
-            MaxTokens = 2000,
-            Temperature = 0.7,
-            TopP = 0.5,
-            StopSequences = new List<string> { "Human:", "AI:" },
-        }
-    };
-    var promptTemplate = new PromptTemplate(skPrompt, promptConfig, kernel);
-    var functionConfig = new SemanticFunctionConfig(promptConfig, promptTemplate);
-    var function = kernel.RegisterSemanticFunction("ChatBot", "chat", functionConfig);
-
-    await RunChat(kernel, function);
-}
-
 static async Task RunPromptChat(IKernel kernel)
 {
     const string skPrompt = @"
