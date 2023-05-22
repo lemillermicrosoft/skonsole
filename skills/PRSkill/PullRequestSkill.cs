@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using CondenseSkillLib;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace PRSkill;
 
@@ -26,7 +27,7 @@ public static class FunctionEx
         return context;
     }
 
-    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondenseSkill condenseSkill, List<string> chunkedInput, SKContext context)
+    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondenseSkill condenseSkill, List<string> chunkedInput, string prompt, SKContext context)
     {
         var results = new List<string>();
         foreach (var chunk in chunkedInput)
@@ -45,6 +46,7 @@ public static class FunctionEx
 
         // update memory with serialized list of results
         context.Variables.Update(string.Join(CondenseSkill.RESULTS_SEPARATOR, results));
+        context.Variables.Set("prompt", prompt);
         return await condenseSkill.Condense(context);
     }
 
@@ -113,8 +115,13 @@ public class PullRequestSkill
             context.Log.LogTrace("GenerateCommitMessage called");
 
             var commitGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
+
+            var commitGeneratorCapture = context.Func(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
+            commitGeneratorCapture.SetAIService(() => new RedirectTextCompletion());
+            var prompt = (await commitGeneratorCapture.InvokeAsync()).Result;
+
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
-            return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
+            return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context);
         }
         catch (Exception e)
         {
@@ -148,8 +155,13 @@ public class PullRequestSkill
             context.Log.LogTrace("GenerateDesignDoc called");
 
             var designDocGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "DesignDocGenerator");
+
+            var designDocGeneratorCapture = context.Func(SEMANTIC_FUNCTION_PATH, "DesignDocGenerator");
+            designDocGeneratorCapture.SetAIService(() => new RedirectTextCompletion());
+            var prompt = (await designDocGeneratorCapture.InvokeAsync()).Result;
+
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
-            return await designDocGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
+            return await designDocGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context);
         }
         catch (Exception e)
         {
@@ -167,13 +179,18 @@ public class PullRequestSkill
             context.Log.LogTrace("GenerateMotivationAndContext called");
 
             var motivationAndContextGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "MotivationAndContextGenerator");
+
+            var motivationAndContextGeneratorCapture = context.Func(SEMANTIC_FUNCTION_PATH, "MotivationAndContextGenerator");
+            motivationAndContextGeneratorCapture.SetAIService(() => new RedirectTextCompletion());
+            var prompt = (await motivationAndContextGeneratorCapture.InvokeAsync()).Result;
+
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
             // if chunkedInput count is above 5 log warning with # of chunks
             if (chunkedInput.Count > 5)
             {
                 context.Log.LogWarning($"ChunkedInput count is {chunkedInput.Count} which is above 5.");
             }
-            return await motivationAndContextGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
+            return await motivationAndContextGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context);
         }
         catch (Exception e)
         {
@@ -191,13 +208,18 @@ public class PullRequestSkill
             context.Log.LogTrace("GenerateDescription called");
 
             var descriptionGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "DescriptionGenerator");
+
+            var descriptionGeneratorCapture = context.Func(SEMANTIC_FUNCTION_PATH, "DescriptionGenerator");
+            descriptionGeneratorCapture.SetAIService(() => new RedirectTextCompletion());
+            var prompt = (await descriptionGeneratorCapture.InvokeAsync()).Result;
+
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
             // if chunkedInput count is above 5 log warning with # of chunks
             if (chunkedInput.Count > 5)
             {
                 context.Log.LogWarning($"ChunkedInput count is {chunkedInput.Count} which is above 5.");
             }
-            return await descriptionGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
+            return await descriptionGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context);
         }
         catch (Exception e)
         {
@@ -212,8 +234,13 @@ public class PullRequestSkill
         try
         {
             var prGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
+
+            var prGeneratorCapture = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
+            prGeneratorCapture.SetAIService(() => new RedirectTextCompletion());
+            var prompt = (await prGeneratorCapture.InvokeAsync()).Result;
+
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
-            return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
+            return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context);
         }
         catch (Exception e)
         {
@@ -247,4 +274,17 @@ public class PullRequestSkill
         return path;
     }
     #endregion MISC
+}
+
+public class RedirectTextCompletion : ITextCompletion
+{
+    public Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(text);
+    }
+
+    public IAsyncEnumerable<string> CompleteStreamAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    {
+        return AsyncEnumerable.Empty<string>(); // TODO
+    }
 }

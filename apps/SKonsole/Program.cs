@@ -60,12 +60,18 @@ var pathArgument = new Argument<string>
     ("path", "An argument that is parsed as a string.");
 runCodeGenCommand.Add(pathArgument);
 runCodeRewriteCommand.Add(pathArgument);
+
 var messageArgument = new Argument<string>
     ("message", "An argument that is parsed as a string.");
 plannerCommand.Add(messageArgument);
 
-rootCommand.SetHandler(async () => await RunCommitMessage(_kernel));
-commitCommand.SetHandler(async () => await RunCommitMessage(_kernel));
+var commitArgument = new Argument<string>
+    ("commitHash", () => { return string.Empty; }, "An argument that is parsed as a string.");
+rootCommand.Add(commitArgument);
+commitCommand.Add(commitArgument);
+
+rootCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, commitArgumentValue), commitArgument);
+commitCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, commitArgumentValue), commitArgument);
 prCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
 designCommand.SetHandler(async () => await RunGenerateDesignDoc(_kernel));
 //RunGenerateMotivationAndContext
@@ -98,32 +104,17 @@ rootCommand.Add(descriptionCommand);
 
 return await rootCommand.InvokeAsync(args);
 
-static async Task RunCommitMessage(IKernel kernel)
+static async Task RunCommitMessage(IKernel kernel, string commitHash = "")
 {
-    var process = new Process
+    string output = string.Empty;
+    if (!string.IsNullOrEmpty(commitHash))
     {
-        StartInfo = new ProcessStartInfo
-        {
-            FileName = "git",
-            Arguments = "diff --staged",
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            StandardOutputEncoding = System.Text.Encoding.UTF8
-        }
-    };
-    process.Start();
-
-    string output = process.StandardOutput.ReadToEnd();
-
-    if (string.IsNullOrEmpty(output))
-    {
-        process = new Process
+        var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = "git",
-                Arguments = "diff HEAD~1",
+                Arguments = $"show {commitHash}",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -134,13 +125,50 @@ static async Task RunCommitMessage(IKernel kernel)
 
         output = process.StandardOutput.ReadToEnd();
     }
+    else
+    {
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = "diff --staged",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8
+            }
+        };
+        process.Start();
+
+        output = process.StandardOutput.ReadToEnd();
+
+        if (string.IsNullOrEmpty(output))
+        {
+            process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "git",
+                    Arguments = "diff HEAD~1",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = System.Text.Encoding.UTF8
+                }
+            };
+            process.Start();
+
+            output = process.StandardOutput.ReadToEnd();
+        }
+    }
 
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateCommitMessage"]);
 
     // kernel.Log.LogInformation(kernelResponse.ToString());
-    kernel.Log.LogInformation(kernelResponse.ToString());
+    kernel.Log.LogInformation("{response}", kernelResponse.ToString());
 }
 
 static async Task RunPullRequestDescription(IKernel kernel)

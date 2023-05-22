@@ -2,14 +2,55 @@
 {{$input}}
 [END GITDIFFCONTENT]
 
-[GITDIFFCONTENT] is part or all of the output of `git diff`.
+[DESIGN DOC TEMPLATE]
+Context
 
+…text…
+
+Goal
+
+…text…
+
+Out of scope
+
+…text…
+
+Scenarios
+
+…text…
+
+Technical details
+
+…text…
+
+Challenges
+
+…optional text…
+
+Proposals
+
+…text…
+
+Q&A
+[END DESIGN DOC TEMPLATE]
+
+[NOTES]
+What does a design doc usually cover?
+Context, brief intro: 3-5 lines, ~1 paragraph. Describe what the doc is, or what is the current status.
+Goal: 3-10 lines, ~1 paragraph.
+Scenarios: This is critical, what realistic use cases does the design cover and provide a solution for.
+[optional] Out of scope: If needed, clarify what is not in the scope of the document and/or the design.
+Technical details: depending on the topic this can include high-level architectural diagrams, high-level sequence diagrams, even code snippets, etc. Unless the document is about implementation details (e.g. how to write a unit test, public interfaces for a 3p integration), the document should not contain code. Pseudo-code can be useful to describe an idea, use your judgement balancing the need for clarity with the time available.
+[optional] Challenges: tasks/aspects which might be hard to resolve.
+Proposals: during a design phase, this should include multiple options. If the doc is created post-coding, this area might be missing from the doc.
+Q&A: track all the questions from reviewers, collaborators, partners, consumers. Provide answers.
+[END NOTES]
+
+[GITDIFFCONTENT] is part or all of the output of `git diff`.
 Use [GITDIFFCONTENT] as knowledge for completing tasks.
+Use the [NOTES] about design doc as reference.
 
 Task:
-Your objective is to generate relevant feedback, suggestions, and code modifications that would typically be discussed during a pull request review.
-Organize feedback based on the filename and line number when appropriate.
-Classify feedback, suggestions, code modifications, etc. using labels such as 'nitpick', 'bug', 'suggestion', etc.
-Only include responses that apply to the latest code changes represented by lines prefixed with either nothing or '+' but not '-'.
+Your objective is to write a design doc for review with the team based on the [DESIGN DOC TEMPLATE].
 
 Result:
