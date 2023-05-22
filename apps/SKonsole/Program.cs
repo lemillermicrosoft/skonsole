@@ -1,15 +1,18 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using SKonsole.Skills;
-using SKonsole.Utils;
+
+Console.OutputEncoding = Encoding.Unicode;
 
 var loggerFactory = LoggerFactory.Create(builder =>
 {
@@ -29,7 +32,7 @@ var _kernel = Kernel.Builder.WithLogger(logger).Build();
 // _kernel.Config.AddOpenAICompletionBackend("text-davinci-003", "text-davinci-003", EnvVar("OPENAI_API_KEY"));
 
 _kernel.Log.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
-_kernel.Config.AddAzureOpenAICompletionBackend(EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"), EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"), EnvVar("AZURE_OPENAI_API_ENDPOINT"), EnvVar("AZURE_OPENAI_API_KEY"));
+_kernel.Config.AddAzureTextCompletionService(EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"), EnvVar("AZURE_OPENAI_API_ENDPOINT"), EnvVar("AZURE_OPENAI_API_KEY"), EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"));
 
 _kernel.Config.SetDefaultHttpRetryConfig(new HttpRetryConfig
 {
@@ -50,8 +53,13 @@ var messageArgument = new Argument<string>
 
 plannerCommand.Add(messageArgument);
 
-rootCommand.SetHandler(async () => await RunCommitMessage(_kernel));
-commitCommand.SetHandler(async () => await RunCommitMessage(_kernel));
+var commitArgument = new Argument<string>
+    ("commitHash", () => { return string.Empty; }, "An argument that is parsed as a string.");
+rootCommand.Add(commitArgument);
+commitCommand.Add(commitArgument);
+
+rootCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, commitArgumentValue), commitArgument);
+commitCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, commitArgumentValue), commitArgument);
 prCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
 prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel));
 prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
@@ -68,23 +76,64 @@ rootCommand.Add(promptChatCommand);
 
 return await rootCommand.InvokeAsync(args);
 
-static async Task RunCommitMessage(IKernel kernel)
+static async Task RunCommitMessage(IKernel kernel, string commitHash = "")
 {
-    var process = new Process
+    string output = string.Empty;
+    if (!string.IsNullOrEmpty(commitHash))
     {
-        StartInfo = new ProcessStartInfo
+        var process = new Process
         {
-            FileName = "git",
-            Arguments = "diff --staged",
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            StandardOutputEncoding = System.Text.Encoding.UTF8
-        }
-    };
-    process.Start();
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = $"show {commitHash}",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8
+            }
+        };
+        process.Start();
 
-    string output = process.StandardOutput.ReadToEnd();
+        output = process.StandardOutput.ReadToEnd();
+    }
+    else
+    {
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = "diff --staged",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8
+            }
+        };
+        process.Start();
+
+        output = process.StandardOutput.ReadToEnd();
+
+        if (string.IsNullOrEmpty(output))
+        {
+            process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "git",
+                    Arguments = "diff HEAD~1",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = System.Text.Encoding.UTF8
+                }
+            };
+            process.Start();
+
+            output = process.StandardOutput.ReadToEnd();
+        }
+    }
 
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
@@ -143,8 +192,6 @@ static async Task RunPullRequestFeedback(IKernel kernel)
 
 static async Task RunCreatePlan(IKernel kernel, string message)
 {
-    var plannerSkill = kernel.ImportSkill(new PlannerSkill(kernel));
-
     // Eventually, Kernel will be smarter about what skills it uses for an ask.
     // kernel.ImportSkill(new EmailSkill(), "email");
     // kernel.ImportSkill(new GitSkill(), "git");
@@ -158,9 +205,36 @@ static async Task RunCreatePlan(IKernel kernel, string message)
     var bing = new WebSearchEngineSkill(bingConnector);
     var search = kernel.ImportSkill(bing, "bing");
 
-    var kernelResponse = await kernel.RunAsync(message, plannerSkill["CreatePlan"]);
+    // var planner = new ActionPlanner();
+    var planner = new SequentialPlanner(kernel);
+    var plan = await planner.CreatePlanAsync(message);
 
-    _ = await PlanUtils.ExecutePlanAsync(kernel, plannerSkill, kernelResponse);
+    await plan.InvokeAsync();
+}
+
+static async Task RunGeneralChat(IKernel kernel)
+{
+    const string skPrompt =
+        @"You are a GPT model that can chat with users on various topics that interest them. You need to engage the user in a friendly and informative conversation. The prompt should include a greeting, a brief introduction of your capabilities, and a request for the user to choose a topic. You should also acknowledge your limitations and invite feedback from the user. You are able to produce code and advise solutions for software design. Prefix messages with 'AI: '.
+
+{{$history}}
+AI:";
+
+    var promptConfig = new PromptTemplateConfig
+    {
+        Completion =
+        {
+            MaxTokens = 2000,
+            Temperature = 0.7,
+            TopP = 0.5,
+            StopSequences = new List<string> { "Human:", "AI:" },
+        }
+    };
+    var promptTemplate = new PromptTemplate(skPrompt, promptConfig, kernel);
+    var functionConfig = new SemanticFunctionConfig(promptConfig, promptTemplate);
+    var function = kernel.RegisterSemanticFunction("ChatBot", "chat", functionConfig);
+
+    await RunChat(kernel, function);
 }
 
 static async Task RunPromptChat(IKernel kernel)
@@ -185,7 +259,18 @@ AI:
     var promptTemplate = new PromptTemplate(skPrompt, promptConfig, kernel);
     var functionConfig = new SemanticFunctionConfig(promptConfig, promptTemplate);
     var chatFunction = kernel.RegisterSemanticFunction("PromptBot", "Chat", functionConfig);
+    await RunChat(kernel, chatFunction);
+}
 
+static string EnvVar(string name)
+{
+    var value = Environment.GetEnvironmentVariable(name);
+    if (string.IsNullOrEmpty(value)) throw new Exception($"Env var not set: {name}");
+    return value;
+}
+
+static async Task RunChat(IKernel kernel, ISKFunction chatFunction)
+{
     var contextVariables = new ContextVariables();
 
     var history = "";
@@ -200,7 +285,7 @@ AI:
         kernel.Log.LogInformation("{botMessage}", botMessageFormatted);
         kernel.Log.LogInformation(">>>");
 
-        userMessage = Console.ReadLine();
+        userMessage = Console.ReadLine(); // TODO -- How to support multi-line input?
         if (userMessage == "exit") break;
 
         history += $"{botMessageFormatted}Human: {userMessage}\nAI:";
@@ -208,11 +293,4 @@ AI:
 
         botMessage = await kernel.RunAsync(contextVariables, chatFunction);
     }
-}
-
-static string EnvVar(string name)
-{
-    var value = Environment.GetEnvironmentVariable(name);
-    if (string.IsNullOrEmpty(value)) throw new Exception($"Env var not set: {name}");
-    return value;
 }

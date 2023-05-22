@@ -2,12 +2,12 @@
 
 using System.Reflection;
 using Microsoft.Extensions.Logging;
-using CondenseSkillLib;
 using PRSkill.Utils;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.SkillDefinition;
+using CondenseSkillLib;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace PRSkill;
 
@@ -21,13 +21,13 @@ public static class FunctionEx
             context.Variables.Update(chunk);
             context = await func.InvokeAsync(context);
 
-            context.Variables.Set("previousresults", context.Variables.ToString());
+            context.Variables.Set("previousresults", context.Result);
         }
 
         return context;
     }
 
-    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondenseSkill condenseSkill, List<string> chunkedInput, SKContext context)
+    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondenseSkill condenseSkill, List<string> chunkedInput, string prompt, SKContext context)
     {
         var results = new List<string>();
         foreach (var chunk in chunkedInput)
@@ -35,17 +35,18 @@ public static class FunctionEx
             context.Variables.Update(chunk);
             context = await func.InvokeAsync(context);
 
-            results.Add(context.Variables.ToString());
+            results.Add(context.Result);
         }
 
         if (chunkedInput.Count <= 1)
         {
-            context.Variables.Update(context.Variables.ToString());
+            context.Variables.Update(context.Result);
             return context;
         }
 
         // update memory with serialized list of results
         context.Variables.Update(string.Join(CondenseSkill.RESULTS_SEPARATOR, results));
+        context.Variables.Set("prompt", prompt);
         return await condenseSkill.Condense(context);
     }
 
@@ -57,7 +58,7 @@ public static class FunctionEx
             context.Variables.Update(chunk);
             context = await func.InvokeAsync(context);
 
-            results.Add(context.Variables.ToString());
+            results.Add(context.Result);
         }
 
         context.Variables.Update(string.Join("\n", results));
@@ -72,6 +73,8 @@ public class PullRequestSkill
 
     private readonly CondenseSkill condenseSkill;
 
+    private readonly IKernel _kernel;
+
     public PullRequestSkill(IKernel kernel)
     {
         try
@@ -80,6 +83,10 @@ public class PullRequestSkill
             var folder = PRSkillsPath();
             var PRSkill = kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
             this.condenseSkill = new CondenseSkill(kernel);
+
+            this._kernel = Kernel.Builder.Build();
+            this._kernel.Config.AddTextCompletionService((kernel) => new RedirectTextCompletion());
+            this._kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
         }
         catch (Exception e)
         {
@@ -114,8 +121,12 @@ public class PullRequestSkill
             context.Log.LogTrace("GenerateCommitMessage called");
 
             var commitGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
+
+            var commitGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
+            var prompt = (await commitGeneratorCapture.InvokeAsync()).Result;
+
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
-            return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
+            return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context);
         }
         catch (Exception e)
         {
@@ -146,8 +157,13 @@ public class PullRequestSkill
         try
         {
             var prGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
+
+            var prGeneratorCapture = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
+            prGeneratorCapture.SetAIService(() => new RedirectTextCompletion());
+            var prompt = (await prGeneratorCapture.InvokeAsync()).Result;
+
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
-            return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, context);
+            return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context);
         }
         catch (Exception e)
         {
@@ -181,4 +197,17 @@ public class PullRequestSkill
         return path;
     }
     #endregion MISC
+}
+
+public class RedirectTextCompletion : ITextCompletion
+{
+    public Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(text);
+    }
+
+    public IAsyncEnumerable<string> CompleteStreamAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    {
+        return AsyncEnumerable.Empty<string>(); // TODO
+    }
 }
