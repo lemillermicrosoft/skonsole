@@ -35,6 +35,7 @@ public class CondenseSkill
         try
         {
             var condenser = context.Func(SEMANTIC_FUNCTION_PATH, "Condenser");
+            context.Variables.Get("separator", out var separator);
 
             var input = context.Variables.Input;
 
@@ -44,7 +45,7 @@ public class CondenseSkill
             var condenseResult = new List<string>();
             foreach (var paragraph in paragraphs)
             {
-                context.Variables.Update(paragraph + RESULTS_SEPARATOR);
+                context.Variables.Update(paragraph + separator);
                 context = await condenser.InvokeAsync(context);
                 condenseResult.Add(context.Result);
             }
@@ -57,6 +58,7 @@ public class CondenseSkill
             // update memory with serialized list of results and call condense again
             context.Variables.Update(string.Join("\n", condenseResult));
             context.Log.LogWarning($"Condensing {paragraphs.Count} paragraphs");
+            context.Variables.Set("separator", RESULTS_SEPARATOR);
             return await Condense(context);
         }
         catch (Exception e)

@@ -27,7 +27,7 @@ public static class FunctionEx
         return context;
     }
 
-    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondenseSkill condenseSkill, List<string> chunkedInput, string prompt, SKContext context)
+    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondenseSkill condenseSkill, List<string> chunkedInput, string prompt, SKContext context, string resultTag)
     {
         var results = new List<string>();
         foreach (var chunk in chunkedInput)
@@ -45,7 +45,7 @@ public static class FunctionEx
         }
 
         // update memory with serialized list of results
-        context.Variables.Update(string.Join(CondenseSkill.RESULTS_SEPARATOR, results));
+        context.Variables.Update(string.Join($"\n ====={resultTag}=====\n", results) + $"\n ====={resultTag}=====\n");
         context.Variables.Set("prompt", prompt);
         return await condenseSkill.Condense(context);
     }
@@ -126,7 +126,7 @@ public class PullRequestSkill
             var prompt = (await commitGeneratorCapture.InvokeAsync()).Result;
 
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
-            return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context);
+            return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
         }
         catch (Exception e)
         {
@@ -162,7 +162,7 @@ public class PullRequestSkill
             var prompt = (await prGeneratorCapture.InvokeAsync()).Result;
 
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
-            return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context);
+            return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult");
         }
         catch (Exception e)
         {
