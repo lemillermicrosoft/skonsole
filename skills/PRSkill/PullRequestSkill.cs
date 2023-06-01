@@ -158,8 +158,7 @@ public class PullRequestSkill
         {
             var prGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
 
-            var prGeneratorCapture = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
-            prGeneratorCapture.SetAIService(() => new RedirectTextCompletion());
+            var prGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
             var prompt = (await prGeneratorCapture.InvokeAsync()).Result;
 
             var chunkedInput = CommitChunker.ChunkCommitInfo(context.Variables.Input, CHUNK_SIZE);
