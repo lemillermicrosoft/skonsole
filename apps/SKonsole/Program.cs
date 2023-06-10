@@ -26,20 +26,25 @@ var loggerFactory = LoggerFactory.Create(builder =>
 // Get an instance of ILogger
 var logger = loggerFactory.CreateLogger<Program>();
 
-var _kernel = Kernel.Builder.WithLogger(logger).Build();
-
-// _kernel.Log.LogTrace("KernelSingleton.Instance: adding OpenAI backends");
-// _kernel.Config.AddOpenAICompletionBackend("text-davinci-003", "text-davinci-003", EnvVar("OPENAI_API_KEY"));
+var _kernel = Kernel.Builder
+.Configure((config) =>
+{
+    config.SetDefaultHttpRetryConfig(new HttpRetryConfig
+    {
+        MaxRetryCount = 3,
+        MinRetryDelay = TimeSpan.FromSeconds(8),
+        UseExponentialBackoff = true,
+    });
+})
+.WithAzureTextCompletionService(
+    EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"),
+    EnvVar("AZURE_OPENAI_API_ENDPOINT"),
+    EnvVar("AZURE_OPENAI_API_KEY"),
+    EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"))
+.WithLogger(logger)
+.Build();
 
 _kernel.Log.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
-_kernel.Config.AddAzureTextCompletionService(EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"), EnvVar("AZURE_OPENAI_API_ENDPOINT"), EnvVar("AZURE_OPENAI_API_KEY"), EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"));
-
-_kernel.Config.SetDefaultHttpRetryConfig(new HttpRetryConfig
-{
-    MaxRetryCount = 3,
-    MinRetryDelay = TimeSpan.FromSeconds(8),
-    UseExponentialBackoff = true,
-});
 
 var rootCommand = new RootCommand();
 var commitCommand = new Command("commit", "Commit subcommand");

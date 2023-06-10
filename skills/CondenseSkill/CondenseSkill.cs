@@ -35,7 +35,7 @@ public class CondenseSkill
         try
         {
             var condenser = context.Func(SEMANTIC_FUNCTION_PATH, "Condenser");
-            context.Variables.Get("separator", out var separator);
+            context.Variables.TryGetValue("separator", out string separator);
 
             var input = context.Variables.Input;
 

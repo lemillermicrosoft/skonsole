@@ -84,8 +84,9 @@ public class PullRequestSkill
             var PRSkill = kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
             this.condenseSkill = new CondenseSkill(kernel);
 
-            this._kernel = Kernel.Builder.Build();
-            this._kernel.Config.AddTextCompletionService((kernel) => new RedirectTextCompletion());
+            this._kernel = Kernel.Builder
+                .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
+                .Build();
             this._kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
         }
         catch (Exception e)
@@ -200,13 +201,28 @@ public class PullRequestSkill
 
 public class RedirectTextCompletion : ITextCompletion
 {
-    public Task<string> CompleteAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(text);
+        return Task.FromResult<IReadOnlyList<ITextCompletionResult>>(new List<ITextCompletionResult> { new RedirectTextCompletionResult(text) });
     }
 
-    public IAsyncEnumerable<string> CompleteStreamAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        return AsyncEnumerable.Empty<string>(); // TODO
+        throw new NotImplementedException(); // TODO
+    }
+}
+
+internal sealed class RedirectTextCompletionResult : ITextCompletionResult
+{
+    private readonly string _completion;
+
+    public RedirectTextCompletionResult(string completion)
+    {
+        this._completion = completion;
+    }
+
+    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(this._completion);
     }
 }
