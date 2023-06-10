@@ -221,6 +221,8 @@ internal sealed class RedirectTextCompletionResult : ITextCompletionResult
         this._completion = completion;
     }
 
+    public ModelResult ModelResult => throw new NotImplementedException();
+
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(this._completion);
