@@ -201,18 +201,18 @@ public class PullRequestSkill
 
 public class RedirectTextCompletion : ITextCompletion
 {
-    public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
     {
-        return Task.FromResult<IReadOnlyList<ITextCompletionResult>>(new List<ITextCompletionResult> { new RedirectTextCompletionResult(text) });
+        return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
     }
 
-    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
     {
         throw new NotImplementedException(); // TODO
     }
 }
 
-internal sealed class RedirectTextCompletionResult : ITextCompletionResult
+internal sealed class RedirectTextCompletionResult : ITextResult
 {
     private readonly string _completion;
 
