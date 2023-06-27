@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -6,8 +7,8 @@ namespace SKonsole.Skills;
 
 internal class GitSkill
 {
-    [SKFunction(description: "Run 'git diff --staged' and return it's output.")]
-    public Task<SKContext> GitDiffStaged(SKContext context)
+    [SKFunction, Description("Run 'git diff --staged' and return it's output.")]
+    public static Task<SKContext> GitDiffStaged(SKContext context)
     {
         var process = new Process
         {

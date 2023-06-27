@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -28,16 +29,17 @@ public class CondenseSkill
         }
     }
 
-    [SKFunction(description: "Condense multiple chunks of text into a single chunk.")]
-    [SKFunctionContextParameter(Name = "Input", Description = "String of text that contains multiple chunks of similar formatting, style, and tone.")]
-    public async Task<SKContext> Condense(SKContext context)
+    [SKFunction, Description("Condense multiple chunks of text into a single chunk.")]
+    public async Task<SKContext> Condense(
+        SKContext context,
+        [Description("String of text that contains multiple chunks of similar formatting, style, and tone.")]
+        string input,
+        [Description("Separator to use between chunks.")]
+        string separator = "")
     {
         try
         {
             var condenser = context.Func(SEMANTIC_FUNCTION_PATH, "Condenser");
-            context.Variables.TryGetValue("separator", out string separator);
-
-            var input = context.Variables.Input;
 
             List<string> lines = TextChunker.SplitPlainTextLines(input, CHUNK_SIZE / 8);
             List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, CHUNK_SIZE);
@@ -56,10 +58,8 @@ public class CondenseSkill
             }
 
             // update memory with serialized list of results and call condense again
-            context.Variables.Update(string.Join("\n", condenseResult));
             context.Log.LogWarning($"Condensing {paragraphs.Count} paragraphs");
-            context.Variables.Set("separator", RESULTS_SEPARATOR);
-            return await Condense(context);
+            return await Condense(context, string.Join("\n", condenseResult), RESULTS_SEPARATOR);
         }
         catch (Exception e)
         {

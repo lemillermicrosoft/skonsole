@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -6,20 +7,22 @@ namespace SKonsole.Skills;
 
 internal class EmailSkill
 {
-    [SKFunction(description: "Given an e-mail and message body, send an email")]
-    [SKFunctionInput(Description = "The body of the email message to send.")]
-    [SKFunctionContextParameter(Name = "email_address", Description = "The email address to send email to.")]
-    public Task<SKContext> SendEmail(string input, SKContext context)
+    [SKFunction, Description("Given an e-mail and message body, send an email")]
+    public static Task<SKContext> SendEmail(
+        [Description("The body of the email message to send.")]
+        string input,
+        [Description("The email address to send email to.")]
+        string email_address,
+        SKContext context)
     {
-        context.Variables.Update($"Sent email to: {context.Variables["email_address"]}.\n\n{input}");
+        context.Variables.Update($"Sent email to: {email_address}.\n\n{input}");
         return Task.FromResult(context);
     }
 
-    [SKFunction(description: "Given a name, find email address")]
-    [SKFunctionInput(Description = "The name of the person to email.")]
-    public Task<SKContext> GetEmailAddress(string input, SKContext context)
+    [SKFunction, Description("Given a name, find email address")]
+    public static Task<SKContext> GetEmailAddress([Description("The name of the person to email.")] string input, SKContext context)
     {
-        context.Log.LogDebug("Returning hard coded email for {0}", input);
+        context.Log.LogDebug("Returning hard coded email for {input}", input);
         context.Variables.Update("johndoe1234@example.com");
         return Task.FromResult(context);
     }
