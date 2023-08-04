@@ -24,7 +24,8 @@ var loggerFactory = LoggerFactory.Create(builder =>
 });
 
 // Get an instance of ILogger
-var logger = loggerFactory.CreateLogger<Program>();
+var _logger = loggerFactory.CreateLogger<Program>();
+var kernelLogger = loggerFactory.CreateLogger<Kernel>();
 
 var _kernel = Kernel.Builder
 .Configure((config) =>
@@ -45,7 +46,7 @@ var _kernel = Kernel.Builder
     EnvVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
     EnvVar("AZURE_OPENAI_API_ENDPOINT"),
     EnvVar("AZURE_OPENAI_API_KEY"))
-.WithLogger(logger)
+.WithLogger(kernelLogger)
 .Build();
 
 _kernel.Log.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
@@ -67,13 +68,13 @@ var commitArgument = new Argument<string>
 rootCommand.Add(commitArgument);
 commitCommand.Add(commitArgument);
 
-rootCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, commitArgumentValue), commitArgument);
-commitCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, commitArgumentValue), commitArgument);
-prCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
-prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel));
-prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel));
-plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, messageArgumentValue), messageArgument);
-promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel));
+rootCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, _logger, commitArgumentValue), commitArgument);
+commitCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, _logger, commitArgumentValue), commitArgument);
+prCommand.SetHandler(async () => await RunPullRequestDescription(_kernel, _logger));
+prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel, _logger));
+prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel, _logger));
+plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, _logger, messageArgumentValue), messageArgument);
+promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel, _logger));
 
 prCommand.Add(prFeedbackCommand);
 prCommand.Add(prDescriptionCommand);
@@ -85,7 +86,7 @@ rootCommand.Add(promptChatCommand);
 
 return await rootCommand.InvokeAsync(args);
 
-static async Task RunCommitMessage(IKernel kernel, string commitHash = "")
+static async Task RunCommitMessage(IKernel kernel, ILogger? logger, string commitHash = "")
 {
     string output = string.Empty;
     if (!string.IsNullOrEmpty(commitHash))
@@ -148,10 +149,10 @@ static async Task RunCommitMessage(IKernel kernel, string commitHash = "")
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateCommitMessage"]);
 
-    kernel.Log.LogInformation("Commit Message:\n{result}", kernelResponse.Result);
+    (logger ?? kernel.Log).LogInformation("Commit Message:\n{result}", kernelResponse.Result);
 }
 
-static async Task RunPullRequestDescription(IKernel kernel)
+static async Task RunPullRequestDescription(IKernel kernel, ILogger? logger)
 {
     var process = new Process
     {
@@ -171,10 +172,10 @@ static async Task RunPullRequestDescription(IKernel kernel)
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePR"]);
-    kernel.Log.LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);
+    (logger ?? kernel.Log).LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);
 }
 
-static async Task RunPullRequestFeedback(IKernel kernel)
+static async Task RunPullRequestFeedback(IKernel kernel, ILogger? logger)
 {
     var process = new Process
     {
@@ -196,10 +197,10 @@ static async Task RunPullRequestFeedback(IKernel kernel)
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePullRequestFeedback"]);
 
-    kernel.Log.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
+    (logger ?? kernel.Log).LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
 }
 
-static async Task RunCreatePlan(IKernel kernel, string message)
+static async Task RunCreatePlan(IKernel kernel, ILogger? logger, string message)
 {
     // Eventually, Kernel will be smarter about what skills it uses for an ask.
     // kernel.ImportSkill(new EmailSkill(), "email");
@@ -221,7 +222,7 @@ static async Task RunCreatePlan(IKernel kernel, string message)
     await plan.InvokeAsync();
 }
 
-static async Task RunPromptChat(IKernel kernel)
+static async Task RunPromptChat(IKernel kernel, ILogger? logger)
 {
     const string skPrompt = @"
 You are a prompt generation robot. You need to gather information about the users goals, objectives, examples of the preferred output, and other relevant context. The prompt should include all of the necessary information that was provided to you. Ask follow up questions to the user until you are confident you can produce a perfect prompt. Your return should be formatted clearly and optimized for GPT models. Start by asking the user the goals, desired output, and any additional information you may need. Prefix messages with 'AI: '.
@@ -243,7 +244,7 @@ AI:
     var promptTemplate = new PromptTemplate(skPrompt, promptConfig, kernel);
     var functionConfig = new SemanticFunctionConfig(promptConfig, promptTemplate);
     var chatFunction = kernel.RegisterSemanticFunction("PromptBot", "Chat", functionConfig);
-    await RunChat(kernel, chatFunction);
+    await RunChat(kernel, logger, chatFunction);
 }
 
 static string EnvVar(string name)
@@ -253,7 +254,7 @@ static string EnvVar(string name)
     return value;
 }
 
-static async Task RunChat(IKernel kernel, ISKFunction chatFunction)
+static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunction)
 {
     var contextVariables = new ContextVariables();
 
@@ -266,8 +267,8 @@ static async Task RunChat(IKernel kernel, ISKFunction chatFunction)
     while (userMessage != "exit")
     {
         var botMessageFormatted = "\nAI: " + botMessage.ToString() + "\n";
-        kernel.Log.LogInformation("{botMessage}", botMessageFormatted);
-        kernel.Log.LogInformation(">>>");
+        (logger ?? kernel.Log).LogInformation("{botMessage}", botMessageFormatted);
+        (logger ?? kernel.Log).LogInformation(">>>");
 
         userMessage = Console.ReadLine(); // TODO -- How to support multi-line input?
         if (userMessage == "exit") break;
