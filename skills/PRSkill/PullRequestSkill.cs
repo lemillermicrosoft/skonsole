@@ -229,7 +229,7 @@ internal sealed class RedirectTextCompletionResult : ITextResult
         this._completion = completion;
     }
 
-    public ModelResult ModelResult => throw new NotImplementedException();
+    public ModelResult ModelResult => new ModelResult(this._completion);
 
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
