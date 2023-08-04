@@ -210,7 +210,7 @@ static async Task RunCreatePlan(IKernel kernel, string message)
 
     kernel.ImportSkill(new WriterSkill(kernel), "writer");
 
-    using var bingConnector = new BingConnector(EnvVar("BING_API_KEY"));
+    var bingConnector = new BingConnector(EnvVar("BING_API_KEY"));
     var bing = new WebSearchEngineSkill(bingConnector);
     var search = kernel.ImportSkill(bing, "bing");
 
