@@ -101,18 +101,11 @@ public class PullRequestSkill
         string input,
         SKContext context)
     {
-        try
-        {
-            context.Log.LogTrace("GeneratePullRequestFeedback called");
+        context.Logger.LogTrace("GeneratePullRequestFeedback called");
 
-            var prFeedbackGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestFeedbackGenerator");
-            var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-            return await prFeedbackGenerator.AggregateChunkProcess(chunkedInput, context);
-        }
-        catch (Exception e)
-        {
-            return context.Fail(e.Message, e);
-        }
+        var prFeedbackGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestFeedbackGenerator");
+        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
+        return await prFeedbackGenerator.AggregateChunkProcess(chunkedInput, context);
     }
 
     [SKFunction, Description("Generate a commit message based on a git diff file output.")]
@@ -121,22 +114,15 @@ public class PullRequestSkill
         string input,
         SKContext context)
     {
-        try
-        {
-            context.Log.LogTrace("GenerateCommitMessage called");
+        context.Logger.LogTrace("GenerateCommitMessage called");
 
-            var commitGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
+        var commitGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
 
-            var commitGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
-            var prompt = (await commitGeneratorCapture.InvokeAsync()).Result;
+        var commitGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
+        var prompt = (await commitGeneratorCapture.InvokeAsync()).Result;
 
-            var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-            return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
-        }
-        catch (Exception e)
-        {
-            return context.Fail(e.Message, e);
-        }
+        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
+        return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
     }
 
     [SKFunction, Description("Generate a pull request description based on a git diff or git show file output using a rolling query mechanism.")]
@@ -145,16 +131,9 @@ public class PullRequestSkill
         string input,
         SKContext context)
     {
-        try
-        {
-            var prGenerator_Rolling = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator_Rolling");
-            var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-            return await prGenerator_Rolling.RollingChunkProcess(chunkedInput, context);
-        }
-        catch (Exception e)
-        {
-            return context.Fail(e.Message, e);
-        }
+        var prGenerator_Rolling = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator_Rolling");
+        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
+        return await prGenerator_Rolling.RollingChunkProcess(chunkedInput, context);
     }
 
     [SKFunction, Description("Generate a pull request description based on a git diff or git show file output using a reduce mechanism.")]
@@ -163,20 +142,14 @@ public class PullRequestSkill
         string input,
         SKContext context)
     {
-        try
-        {
-            var prGenerator = context.Func(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
+        var prGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
 
-            var prGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
-            var prompt = (await prGeneratorCapture.InvokeAsync()).Result;
 
-            var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-            return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult");
-        }
-        catch (Exception e)
-        {
-            return context.Fail(e.Message, e);
-        }
+        var prGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
+        var prompt = (await prGeneratorCapture.InvokeAsync()).Result;
+
+        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
+        return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult");
     }
 
     #region MISC

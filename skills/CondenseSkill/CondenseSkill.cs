@@ -37,34 +37,27 @@ public class CondenseSkill
         [Description("Separator to use between chunks.")]
         string separator = "")
     {
-        try
+        var condenser = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "Condenser");
+
+        List<string> lines = TextChunker.SplitPlainTextLines(input, CHUNK_SIZE / 8);
+        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, CHUNK_SIZE);
+
+        var condenseResult = new List<string>();
+        foreach (var paragraph in paragraphs)
         {
-            var condenser = context.Func(SEMANTIC_FUNCTION_PATH, "Condenser");
-
-            List<string> lines = TextChunker.SplitPlainTextLines(input, CHUNK_SIZE / 8);
-            List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, CHUNK_SIZE);
-
-            var condenseResult = new List<string>();
-            foreach (var paragraph in paragraphs)
-            {
-                context.Variables.Update(paragraph + separator);
-                context = await condenser.InvokeAsync(context);
-                condenseResult.Add(context.Result);
-            }
-
-            if (paragraphs.Count <= 1)
-            {
-                return context;
-            }
-
-            // update memory with serialized list of results and call condense again
-            context.Log.LogWarning($"Condensing {paragraphs.Count} paragraphs");
-            return await Condense(context, string.Join("\n", condenseResult), RESULTS_SEPARATOR);
+            context.Variables.Update(paragraph + separator);
+            context = await condenser.InvokeAsync(context);
+            condenseResult.Add(context.Result);
         }
-        catch (Exception e)
+
+        if (paragraphs.Count <= 1)
         {
-            return context.Fail(e.Message, e);
+            return context;
         }
+
+        // update memory with serialized list of results and call condense again
+        context.Logger.LogWarning($"Condensing {paragraphs.Count} paragraphs");
+        return await Condense(context, string.Join("\n", condenseResult), RESULTS_SEPARATOR);
     }
 
     private static string CondenseSkillPath()

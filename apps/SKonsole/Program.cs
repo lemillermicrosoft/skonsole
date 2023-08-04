@@ -49,7 +49,7 @@ var _kernel = Kernel.Builder
 .WithLogger(kernelLogger)
 .Build();
 
-_kernel.Log.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
+_kernel.Logger.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
 
 var rootCommand = new RootCommand();
 var commitCommand = new Command("commit", "Commit subcommand");
@@ -149,7 +149,7 @@ static async Task RunCommitMessage(IKernel kernel, ILogger? logger, string commi
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateCommitMessage"]);
 
-    (logger ?? kernel.Log).LogInformation("Commit Message:\n{result}", kernelResponse.Result);
+    (logger ?? kernel.Logger).LogInformation("Commit Message:\n{result}", kernelResponse.Result);
 }
 
 static async Task RunPullRequestDescription(IKernel kernel, ILogger? logger)
@@ -172,7 +172,7 @@ static async Task RunPullRequestDescription(IKernel kernel, ILogger? logger)
     var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePR"]);
-    (logger ?? kernel.Log).LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);
+    (logger ?? kernel.Logger).LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);
 }
 
 static async Task RunPullRequestFeedback(IKernel kernel, ILogger? logger)
@@ -197,7 +197,7 @@ static async Task RunPullRequestFeedback(IKernel kernel, ILogger? logger)
 
     var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePullRequestFeedback"]);
 
-    (logger ?? kernel.Log).LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
+    (logger ?? kernel.Logger).LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
 }
 
 static async Task RunCreatePlan(IKernel kernel, ILogger? logger, string message)
@@ -267,8 +267,8 @@ static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunct
     while (userMessage != "exit")
     {
         var botMessageFormatted = "\nAI: " + botMessage.ToString() + "\n";
-        (logger ?? kernel.Log).LogInformation("{botMessage}", botMessageFormatted);
-        (logger ?? kernel.Log).LogInformation(">>>");
+        (logger ?? kernel.Logger).LogInformation("{botMessage}", botMessageFormatted);
+        (logger ?? kernel.Logger).LogInformation(">>>");
 
         userMessage = Console.ReadLine(); // TODO -- How to support multi-line input?
         if (userMessage == "exit") break;
