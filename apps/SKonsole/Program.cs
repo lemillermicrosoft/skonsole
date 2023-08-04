@@ -36,11 +36,15 @@ var _kernel = Kernel.Builder
         UseExponentialBackoff = true,
     });
 })
-.WithAzureTextCompletionService(
-    EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"),
+// .WithAzureTextCompletionService(
+//     EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"),
+//     EnvVar("AZURE_OPENAI_API_ENDPOINT"),
+//     EnvVar("AZURE_OPENAI_API_KEY"),
+//     EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"))
+.WithAzureChatCompletionService(
+    EnvVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
     EnvVar("AZURE_OPENAI_API_ENDPOINT"),
-    EnvVar("AZURE_OPENAI_API_KEY"),
-    EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"))
+    EnvVar("AZURE_OPENAI_API_KEY"))
 .WithLogger(logger)
 .Build();
 
