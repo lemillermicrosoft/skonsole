@@ -20,6 +20,18 @@ This repository contains several projects and classes, including:
 
 - CommitParser and CommitChunker: Two utility classes that split and parse the input based on commit and file information. These classes are useful for generating pull request descriptions and feedback based on the git diff output.
 
+## Available Commands
+
+- `skonsole commit <commitHash>`: Generate commit messages based on the provided commit hash.
+
+- `skonsole pr feedback`: Generate valuable feedback for pull requests using git diff or git show output.
+
+- `skonsole pr description`: Generate detailed descriptions for pull requests using git diff or git show output.
+
+- `skonsole createPlan <message>`: Create plans using the Planner subcommand by providing a message.
+
+- `skonsole promptChat`: Engage in interactive prompt chat sessions.
+
 ## Dependencies
 This project requires the following dependencies:
 
