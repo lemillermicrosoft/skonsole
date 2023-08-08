@@ -27,29 +27,28 @@ var loggerFactory = LoggerFactory.Create(builder =>
 var _logger = loggerFactory.CreateLogger<Program>();
 var kernelLogger = loggerFactory.CreateLogger<Kernel>();
 
-var _kernel = Kernel.Builder
-.Configure((config) =>
+static IKernel CreateKernel(ILogger kernelLogger)
 {
-    config.SetDefaultHttpRetryConfig(new HttpRetryConfig
-    {
-        MaxRetryCount = 3,
-        MinRetryDelay = TimeSpan.FromSeconds(8),
-        UseExponentialBackoff = true,
-    });
-})
-// .WithAzureTextCompletionService(
-//     EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"),
-//     EnvVar("AZURE_OPENAI_API_ENDPOINT"),
-//     EnvVar("AZURE_OPENAI_API_KEY"),
-//     EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"))
-.WithAzureChatCompletionService(
-    EnvVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-    EnvVar("AZURE_OPENAI_API_ENDPOINT"),
-    EnvVar("AZURE_OPENAI_API_KEY"))
-.WithLogger(kernelLogger)
-.Build();
+    var _kernel = Kernel.Builder
+  .Configure((config) =>
+  {
+      config.SetDefaultHttpRetryConfig(new HttpRetryConfig
+      {
+          MaxRetryCount = 3,
+          MinRetryDelay = TimeSpan.FromSeconds(8),
+          UseExponentialBackoff = true,
+      });
+  })
+  .WithAzureChatCompletionService(
+      ConfigVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+      ConfigVar("AZURE_OPENAI_API_ENDPOINT"),
+      ConfigVar("AZURE_OPENAI_API_KEY"))
+  .WithLogger(kernelLogger)
+  .Build();
+    _kernel.Logger.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
 
-_kernel.Logger.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
+    return _kernel;
+}
 
 var rootCommand = new RootCommand();
 var commitCommand = new Command("commit", "Commit subcommand");
@@ -58,6 +57,38 @@ var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcomman
 var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
 var plannerCommand = new Command("createPlan", "Planner subcommand");
 var promptChatCommand = new Command("promptChat", "Prompt chat subcommand");
+
+var configCommand = new Command("config", "skonsole configuration");
+var configSetCommand = new Command("set", "Set configuration");
+var configGetCommand = new Command("get", "Get configuration");
+
+configCommand.AddCommand(configSetCommand);
+configCommand.AddCommand(configGetCommand);
+
+var keyArgument = new Argument<string>("key", "The key to get or set ");
+var valueArgument = new Argument<string>("value", "The value to set");
+
+configSetCommand.Add(keyArgument);
+configSetCommand.Add(valueArgument);
+
+configGetCommand.Add(keyArgument);
+
+configCommand.SetHandler(async () => await RunConfig(_logger));
+
+configSetCommand.SetHandler(async (key, value) =>
+{
+    var config = new ConfigurationProvider();
+    await config.SaveConfig(key, value);
+}, keyArgument, valueArgument);
+
+configGetCommand.SetHandler((key) =>
+{
+    var config = new ConfigurationProvider();
+    var value = config.Get(key);
+    Console.WriteLine(value);
+}, keyArgument);
+
+
 var messageArgument = new Argument<string>
     ("message", "An argument that is parsed as a string.");
 
@@ -68,17 +99,18 @@ var commitArgument = new Argument<string>
 rootCommand.Add(commitArgument);
 commitCommand.Add(commitArgument);
 
-rootCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, _logger, commitArgumentValue), commitArgument);
-commitCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, _logger, commitArgumentValue), commitArgument);
-prCommand.SetHandler(async () => await RunPullRequestDescription(_kernel, _logger));
-prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel, _logger));
-prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel, _logger));
-plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, _logger, messageArgumentValue), messageArgument);
-promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel, _logger));
+rootCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(CreateKernel(kernelLogger), _logger, commitArgumentValue), commitArgument);
+commitCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(CreateKernel(kernelLogger), _logger, commitArgumentValue), commitArgument);
+prCommand.SetHandler(async () => await RunPullRequestDescription(CreateKernel(kernelLogger), _logger));
+prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(CreateKernel(kernelLogger), _logger));
+prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(CreateKernel(kernelLogger), _logger));
+plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(CreateKernel(kernelLogger), _logger, messageArgumentValue), messageArgument);
+promptChatCommand.SetHandler(async () => await RunPromptChat(CreateKernel(kernelLogger), _logger));
 
 prCommand.Add(prFeedbackCommand);
 prCommand.Add(prDescriptionCommand);
 
+rootCommand.Add(configCommand);
 rootCommand.Add(commitCommand);
 rootCommand.Add(prCommand);
 rootCommand.Add(plannerCommand);
@@ -211,7 +243,7 @@ static async Task RunCreatePlan(IKernel kernel, ILogger? logger, string message)
 
     kernel.ImportSkill(new WriterSkill(kernel), "writer");
 
-    var bingConnector = new BingConnector(EnvVar("BING_API_KEY"));
+    var bingConnector = new BingConnector(ConfigVar("BING_API_KEY"));
     var bing = new WebSearchEngineSkill(bingConnector);
     var search = kernel.ImportSkill(bing, "bing");
 
@@ -247,10 +279,44 @@ AI:
     await RunChat(kernel, logger, chatFunction);
 }
 
-static string EnvVar(string name)
+static async Task RunConfig(ILogger logger)
 {
-    var value = Environment.GetEnvironmentVariable(name);
-    if (string.IsNullOrEmpty(value)) throw new Exception($"Env var not set: {name}");
+    var config = new ConfigurationProvider();
+
+    var keys = new[]
+    {
+        "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME",
+        "AZURE_OPENAI_API_ENDPOINT",
+        "AZURE_OPENAI_API_KEY"
+    };
+
+    foreach (var key in keys)
+    {
+        if (string.IsNullOrEmpty(config.Get(key)))
+        {
+            var value = string.Empty;
+            while (string.IsNullOrEmpty(value))
+            {
+                logger.LogInformation($"Please set {key}:");
+                value = Console.ReadLine();
+            }
+
+            await config.SaveConfig(key, value);
+        }
+        else
+        {
+            logger.LogInformation($"{key} is already set.");
+        }
+    }
+
+    logger.LogInformation("Config complete.");
+}
+
+static string ConfigVar(string name)
+{
+    var provider = new ConfigurationProvider();
+    var value = provider.Get(name);
+    if (string.IsNullOrEmpty(value)) throw new Exception($"Configuration var not set: {name}.Please run `skonsole config` to set it.");
     return value;
 }
 
@@ -270,7 +336,8 @@ static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunct
         (logger ?? kernel.Logger).LogInformation("{botMessage}", botMessageFormatted);
         (logger ?? kernel.Logger).LogInformation(">>>");
 
-        userMessage = Console.ReadLine(); // TODO -- How to support multi-line input?
+
+        userMessage = ReadMutiLineInput();
         if (userMessage == "exit") break;
 
         history += $"{botMessageFormatted}Human: {userMessage}\nAI:";
@@ -278,4 +345,17 @@ static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunct
 
         botMessage = await kernel.RunAsync(contextVariables, chatFunction);
     }
+}
+
+static string ReadMutiLineInput()
+{
+    var input = string.Empty;
+    var line = string.Empty;
+
+    while ((line = Console.ReadLine()) != string.Empty)
+    {
+        input += line + "\n";
+    }
+
+    return input;
 }
