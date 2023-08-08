@@ -349,13 +349,13 @@ static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunct
 
 static string ReadMutiLineInput()
 {
-    var input = string.Empty;
+    var input = new StringBuilder();
     var line = string.Empty;
 
     while ((line = Console.ReadLine()) != string.Empty)
     {
-        input += line + "\n";
+        input.AppendLine(line);
     }
 
-    return input;
+    return input.ToString().Trim();
 }
