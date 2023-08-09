@@ -93,7 +93,7 @@ namespace SKonsole.Commands
                     .ShowAsync(AnsiConsole.Console, token);
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    await config.SaveConfig(configKey, value);
+                    await config.SaveConfig(configKey, value.Trim());
                 }
             }
         }
