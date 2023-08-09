@@ -3,6 +3,8 @@ using System.Text.Json;
 
 public class ConfigurationProvider
 {
+    public static ConfigurationProvider Instance = new();
+
     const string _file = ".skonsole";
 
     private readonly string _path;

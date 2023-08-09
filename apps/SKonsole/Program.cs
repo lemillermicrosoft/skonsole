@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Builder;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
+using SKonsole.Commands;
 using SKonsole.Skills;
 
 Console.OutputEncoding = Encoding.Unicode;
@@ -58,36 +60,6 @@ var prDescriptionCommand = new Command("description", "Pull Request description 
 var plannerCommand = new Command("createPlan", "Planner subcommand");
 var promptChatCommand = new Command("promptChat", "Prompt chat subcommand");
 
-var configCommand = new Command("config", "skonsole configuration");
-var configSetCommand = new Command("set", "Set configuration");
-var configGetCommand = new Command("get", "Get configuration");
-
-configCommand.AddCommand(configSetCommand);
-configCommand.AddCommand(configGetCommand);
-
-var keyArgument = new Argument<string>("key", "The key to get or set ");
-var valueArgument = new Argument<string>("value", "The value to set");
-
-configSetCommand.Add(keyArgument);
-configSetCommand.Add(valueArgument);
-
-configGetCommand.Add(keyArgument);
-
-configCommand.SetHandler(async () => await RunConfig(_logger));
-
-configSetCommand.SetHandler(async (key, value) =>
-{
-    var config = new ConfigurationProvider();
-    await config.SaveConfig(key, value);
-}, keyArgument, valueArgument);
-
-configGetCommand.SetHandler((key) =>
-{
-    var config = new ConfigurationProvider();
-    var value = config.Get(key);
-    Console.WriteLine(value);
-}, keyArgument);
-
 
 var messageArgument = new Argument<string>
     ("message", "An argument that is parsed as a string.");
@@ -110,7 +82,7 @@ promptChatCommand.SetHandler(async () => await RunPromptChat(CreateKernel(kernel
 prCommand.Add(prFeedbackCommand);
 prCommand.Add(prDescriptionCommand);
 
-rootCommand.Add(configCommand);
+rootCommand.Add(new ConfigCommand(ConfigurationProvider.Instance));
 rootCommand.Add(commitCommand);
 rootCommand.Add(prCommand);
 rootCommand.Add(plannerCommand);
@@ -279,42 +251,9 @@ AI:
     await RunChat(kernel, logger, chatFunction);
 }
 
-static async Task RunConfig(ILogger logger)
-{
-    var config = new ConfigurationProvider();
-
-    var keys = new[]
-    {
-        "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME",
-        "AZURE_OPENAI_API_ENDPOINT",
-        "AZURE_OPENAI_API_KEY"
-    };
-
-    foreach (var key in keys)
-    {
-        if (string.IsNullOrEmpty(config.Get(key)))
-        {
-            var value = string.Empty;
-            while (string.IsNullOrEmpty(value))
-            {
-                logger.LogInformation($"Please set {key}:");
-                value = Console.ReadLine();
-            }
-
-            await config.SaveConfig(key, value);
-        }
-        else
-        {
-            logger.LogInformation($"{key} is already set.");
-        }
-    }
-
-    logger.LogInformation("Config complete.");
-}
-
 static string ConfigVar(string name)
 {
-    var provider = new ConfigurationProvider();
+    var provider = ConfigurationProvider.Instance;
     var value = provider.Get(name);
     if (string.IsNullOrEmpty(value)) throw new Exception($"Configuration var not set: {name}.Please run `skonsole config` to set it.");
     return value;
