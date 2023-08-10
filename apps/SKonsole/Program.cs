@@ -29,28 +29,25 @@ var loggerFactory = LoggerFactory.Create(builder =>
 var _logger = loggerFactory.CreateLogger<Program>();
 var kernelLogger = loggerFactory.CreateLogger<Kernel>();
 
-static IKernel CreateKernel(ILogger kernelLogger)
+var _kernel = Kernel.Builder
+.Configure((config) =>
 {
-    var _kernel = Kernel.Builder
-  .Configure((config) =>
-  {
-      config.SetDefaultHttpRetryConfig(new HttpRetryConfig
-      {
-          MaxRetryCount = 3,
-          MinRetryDelay = TimeSpan.FromSeconds(8),
-          UseExponentialBackoff = true,
-      });
-  })
-  .WithAzureChatCompletionService(
-      ConfigVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-      ConfigVar("AZURE_OPENAI_API_ENDPOINT"),
-      ConfigVar("AZURE_OPENAI_API_KEY"))
-  .WithLogger(kernelLogger)
-  .Build();
-    _kernel.Logger.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
+    config.SetDefaultHttpRetryConfig(new HttpRetryConfig
+    {
+        MaxRetryCount = 3,
+        MinRetryDelay = TimeSpan.FromSeconds(8),
+        UseExponentialBackoff = true,
+    });
+})
+.WithAzureChatCompletionService(
+    ConfigVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+    ConfigVar("AZURE_OPENAI_API_ENDPOINT"),
+    ConfigVar("AZURE_OPENAI_API_KEY"))
+.WithLogger(kernelLogger)
+.Build();
 
-    return _kernel;
-}
+_kernel.Logger.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
+
 
 var rootCommand = new RootCommand();
 var commitCommand = new Command("commit", "Commit subcommand");
@@ -71,13 +68,13 @@ var commitArgument = new Argument<string>
 rootCommand.Add(commitArgument);
 commitCommand.Add(commitArgument);
 
-rootCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(CreateKernel(kernelLogger), _logger, commitArgumentValue), commitArgument);
-commitCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(CreateKernel(kernelLogger), _logger, commitArgumentValue), commitArgument);
-prCommand.SetHandler(async () => await RunPullRequestDescription(CreateKernel(kernelLogger), _logger));
-prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(CreateKernel(kernelLogger), _logger));
-prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(CreateKernel(kernelLogger), _logger));
-plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(CreateKernel(kernelLogger), _logger, messageArgumentValue), messageArgument);
-promptChatCommand.SetHandler(async () => await RunPromptChat(CreateKernel(kernelLogger), _logger));
+rootCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, _logger, commitArgumentValue), commitArgument);
+commitCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, _logger, commitArgumentValue), commitArgument);
+prCommand.SetHandler(async () => await RunPullRequestDescription(_kernel, _logger));
+prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel, _logger));
+prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel, _logger));
+plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, _logger, messageArgumentValue), messageArgument);
+promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel, _logger));
 
 prCommand.Add(prFeedbackCommand);
 prCommand.Add(prDescriptionCommand);
