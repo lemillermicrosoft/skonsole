@@ -68,11 +68,19 @@ var commitArgument = new Argument<string>
 rootCommand.Add(commitArgument);
 commitCommand.Add(commitArgument);
 
+var targetBranchOption = new Option<string>(
+       new string[] { "--targetBranch", "-t" },
+          () => { return "origin/main"; },
+             "The target branch for the pull request.");
+prCommand.AddOption(targetBranchOption);
+prDescriptionCommand.AddOption(targetBranchOption);
+prFeedbackCommand.AddOption(targetBranchOption);
+
 rootCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, _logger, commitArgumentValue), commitArgument);
 commitCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, _logger, commitArgumentValue), commitArgument);
-prCommand.SetHandler(async () => await RunPullRequestDescription(_kernel, _logger));
-prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(_kernel, _logger));
-prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(_kernel, _logger));
+prCommand.SetHandler(async (targetBranch) => await RunPullRequestDescription(_kernel, _logger, targetBranch), targetBranchOption);
+prFeedbackCommand.SetHandler(async (targetBranch) => await RunPullRequestFeedback(_kernel, _logger, targetBranch), targetBranchOption);
+prDescriptionCommand.SetHandler(async (targetBranch) => await RunPullRequestDescription(_kernel, _logger, targetBranch), targetBranchOption);
 plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, _logger, messageArgumentValue), messageArgument);
 promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel, _logger));
 
@@ -152,14 +160,14 @@ static async Task RunCommitMessage(IKernel kernel, ILogger? logger, string commi
     (logger ?? kernel.Logger).LogInformation("Commit Message:\n{result}", kernelResponse.Result);
 }
 
-static async Task RunPullRequestDescription(IKernel kernel, ILogger? logger)
+static async Task RunPullRequestDescription(IKernel kernel, ILogger? logger, string targetBranch = "origin/main")
 {
     var process = new Process
     {
         StartInfo = new ProcessStartInfo
         {
             FileName = "git",
-            Arguments = "show --ignore-space-change origin/main..HEAD",
+            Arguments = $"show --ignore-space-change {targetBranch}..HEAD",
             RedirectStandardOutput = true,
             UseShellExecute = false,
             CreateNoWindow = true,
@@ -175,14 +183,14 @@ static async Task RunPullRequestDescription(IKernel kernel, ILogger? logger)
     (logger ?? kernel.Logger).LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);
 }
 
-static async Task RunPullRequestFeedback(IKernel kernel, ILogger? logger)
+static async Task RunPullRequestFeedback(IKernel kernel, ILogger? logger, string targetBranch = "origin/main")
 {
     var process = new Process
     {
         StartInfo = new ProcessStartInfo
         {
             FileName = "git",
-            Arguments = "show --ignore-space-change origin/main..HEAD",
+            Arguments = $"show --ignore-space-change {targetBranch}..HEAD",
             RedirectStandardOutput = true,
             UseShellExecute = false,
             CreateNoWindow = true,
