@@ -1,11 +1,12 @@
+﻿using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using System.Text.Json;
+
+namespace SKonsole;
 
 public class ConfigurationProvider
 {
     public static ConfigurationProvider Instance = new();
-
-    const string _file = ".skonsole";
+    private const string _file = ".skonsole";
 
     private readonly string _path;
     private readonly IConfiguration _configuration;
@@ -14,29 +15,29 @@ public class ConfigurationProvider
     public ConfigurationProvider()
     {
         var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        _path = Path.Combine(userProfile, _file);
+        this._path = Path.Combine(userProfile, _file);
 
-        if (File.Exists(_path))
+        if (File.Exists(this._path))
         {
-            _config = FromJson<Dictionary<string, string?>>(File.ReadAllText(_path)) ?? new();
+            this._config = FromJson<Dictionary<string, string?>>(File.ReadAllText(this._path)) ?? new();
         }
 
-        _configuration = new ConfigurationBuilder()
+        this._configuration = new ConfigurationBuilder()
             .AddEnvironmentVariables()
-            .AddInMemoryCollection(_config)
+            .AddInMemoryCollection(this._config)
             .Build();
     }
 
     public async Task SaveConfig(string key, string value)
     {
-        _config[key] = value;
+        this._config[key] = value;
 
-        await File.WriteAllTextAsync(_path, ToJson(_config));
+        await File.WriteAllTextAsync(this._path, ToJson(this._config));
     }
 
     public string? Get(string key)
     {
-        return _configuration[key];
+        return this._configuration[key];
     }
 
     private static string ToJson<T>(T obj)
@@ -47,12 +48,15 @@ public class ConfigurationProvider
     private static T? FromJson<T>(string json)
     {
         if (json == null)
+        {
             return default;
+        }
+
         try
         {
             return JsonSerializer.Deserialize<T>(json);
         }
-        catch
+        catch (Exception e) when (e is JsonException or NotSupportedException or ArgumentNullException)
         {
             return default;
         }

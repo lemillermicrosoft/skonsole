@@ -1,11 +1,11 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SKonsole.Skills;
 
-internal class EmailSkill
+internal sealed class EmailSkill
 {
     [SKFunction, Description("Given an e-mail and message body, send an email")]
     public static Task<SKContext> SendEmail(
