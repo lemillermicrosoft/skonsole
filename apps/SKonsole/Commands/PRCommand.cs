@@ -60,7 +60,7 @@ public class PRCommand : Command
 
         var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
-        var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePullRequestFeedback"]);
+        var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GeneratePullRequestFeedback"]);
 
         logger.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
     }
@@ -86,7 +86,7 @@ public class PRCommand : Command
         string output = process.StandardOutput.ReadToEnd();
         var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
-        var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePR"]);
+        var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GeneratePR"]);
         logger.LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);
     }
 

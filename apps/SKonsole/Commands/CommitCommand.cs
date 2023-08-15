@@ -55,7 +55,7 @@ public class CommitCommand : Command
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
+                    StandardOutputEncoding = System.Text.Encoding.UTF8,
                 }
             };
             process.Start();
@@ -97,7 +97,8 @@ public class CommitCommand : Command
         }
 
         var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
-        var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateCommitMessage"]);
+
+        var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GenerateCommitMessage"]);
 
         logger.LogInformation("Commit Message:\n{result}", kernelResponse.Result);
     }
