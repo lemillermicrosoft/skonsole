@@ -77,7 +77,7 @@ public class PromptChatCommand : Command
             (logger ?? kernel.Logger).LogInformation("{botMessage}", botMessageFormatted);
             (logger ?? kernel.Logger).LogInformation(">>>");
 
-            userMessage = ReadMutiLineInput();
+            userMessage = ReadMultiLineInput();
             if (userMessage == "exit")
             {
                 break;
@@ -90,7 +90,7 @@ public class PromptChatCommand : Command
         }
     }
 
-    private static string ReadMutiLineInput()
+    private static string ReadMultiLineInput()
     {
         var input = new StringBuilder();
         var line = string.Empty;
