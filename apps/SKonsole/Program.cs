@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Builder;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -11,12 +10,13 @@ using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
+using SKonsole;
 using SKonsole.Commands;
 using SKonsole.Skills;
 
 Console.OutputEncoding = Encoding.Unicode;
 
-var loggerFactory = LoggerFactory.Create(builder =>
+using var loggerFactory = LoggerFactory.Create(builder =>
 {
     builder
         .AddFilter("Microsoft", LogLevel.Error)
@@ -260,7 +260,11 @@ static string ConfigVar(string name)
 {
     var provider = ConfigurationProvider.Instance;
     var value = provider.Get(name);
-    if (string.IsNullOrEmpty(value)) throw new Exception($"Configuration var not set: {name}.Please run `skonsole config` to set it.");
+    if (string.IsNullOrEmpty(value))
+    {
+        throw new ArgumentNullException($"Configuration var not set: {name}.Please run `skonsole config` to set it.");
+    }
+
     return value;
 }
 
@@ -282,7 +286,10 @@ static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunct
 
 
         userMessage = ReadMutiLineInput();
-        if (userMessage == "exit") break;
+        if (userMessage == "exit")
+        {
+            break;
+        }
 
         history += $"{botMessageFormatted}Human: {userMessage}\nAI:";
         contextVariables.Set("history", history);

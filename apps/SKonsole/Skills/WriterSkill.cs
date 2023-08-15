@@ -1,9 +1,9 @@
-using Microsoft.SemanticKernel;
+﻿using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SKonsole.Skills;
 
-internal class WriterSkill
+internal sealed class WriterSkill
 {
     private const int MaxTokens = 1024;
 
