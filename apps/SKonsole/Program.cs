@@ -3,14 +3,10 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
 using SKonsole;
 using SKonsole.Commands;
-using SKonsole.Skills;
 using SKonsole.Utils;
 
 Console.OutputEncoding = Encoding.Unicode;
@@ -22,46 +18,17 @@ _logger.LogDebug("Starting SKonsole");
 var _kernel = KernelProvider.Instance.Get();
 
 var rootCommand = new RootCommand();
-var plannerCommand = new Command("createPlan", "Planner subcommand");
 var promptChatCommand = new Command("promptChat", "Prompt chat subcommand");
-
-var messageArgument = new Argument<string>
-    ("message", "An argument that is parsed as a string.");
-
-plannerCommand.Add(messageArgument);
-
-plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, _logger, messageArgumentValue), messageArgument);
 promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel, _logger));
 
 
 rootCommand.Add(new ConfigCommand(ConfigurationProvider.Instance));
 rootCommand.Add(new CommitCommand(ConfigurationProvider.Instance));
 rootCommand.Add(new PRCommand(ConfigurationProvider.Instance));
-rootCommand.Add(plannerCommand);
+rootCommand.Add(new PlannerCommand(ConfigurationProvider.Instance));
 rootCommand.Add(promptChatCommand);
 
 return await rootCommand.InvokeAsync(args);
-
-static async Task RunCreatePlan(IKernel kernel, ILogger? logger, string message)
-{
-    // Eventually, Kernel will be smarter about what skills it uses for an ask.
-    // kernel.ImportSkill(new EmailSkill(), "email");
-    // kernel.ImportSkill(new GitSkill(), "git");
-    // kernel.ImportSkill(new SearchUrlSkill(), "url");
-    // kernel.ImportSkill(new HttpSkill(), "http");
-    // kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel), "PullRequest");
-
-    kernel.ImportSkill(new WriterSkill(kernel), "writer");
-    var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
-    var bing = new WebSearchEngineSkill(bingConnector);
-    var search = kernel.ImportSkill(bing, "bing");
-
-    // var planner = new ActionPlanner();
-    var planner = new SequentialPlanner(kernel);
-    var plan = await planner.CreatePlanAsync(message);
-
-    await plan.InvokeAsync();
-}
 
 static async Task RunPromptChat(IKernel kernel, ILogger? logger)
 {
