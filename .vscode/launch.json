@@ -10,7 +10,9 @@
       "request": "launch",
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/apps/SKonsole/bin/Debug/net7.0/SKonsole.dll",
-      "args": [],
+      "args": [
+        /*"commit"*/
+      ],
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",
       "stopAtEntry": false
