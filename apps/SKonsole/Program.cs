@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Builder;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
+using SKonsole.Commands;
 using SKonsole.Skills;
 
 Console.OutputEncoding = Encoding.Unicode;
@@ -37,19 +39,15 @@ var _kernel = Kernel.Builder
         UseExponentialBackoff = true,
     });
 })
-// .WithAzureTextCompletionService(
-//     EnvVar("AZURE_OPENAI_DEPLOYMENT_NAME"),
-//     EnvVar("AZURE_OPENAI_API_ENDPOINT"),
-//     EnvVar("AZURE_OPENAI_API_KEY"),
-//     EnvVar("AZURE_OPENAI_DEPLOYMENT_LABEL"))
 .WithAzureChatCompletionService(
-    EnvVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-    EnvVar("AZURE_OPENAI_API_ENDPOINT"),
-    EnvVar("AZURE_OPENAI_API_KEY"))
+    ConfigVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+    ConfigVar("AZURE_OPENAI_API_ENDPOINT"),
+    ConfigVar("AZURE_OPENAI_API_KEY"))
 .WithLogger(kernelLogger)
 .Build();
 
 _kernel.Logger.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
+
 
 var rootCommand = new RootCommand();
 var commitCommand = new Command("commit", "Commit subcommand");
@@ -58,6 +56,8 @@ var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcomman
 var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
 var plannerCommand = new Command("createPlan", "Planner subcommand");
 var promptChatCommand = new Command("promptChat", "Prompt chat subcommand");
+
+
 var messageArgument = new Argument<string>
     ("message", "An argument that is parsed as a string.");
 
@@ -79,6 +79,7 @@ promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel, _logger));
 prCommand.Add(prFeedbackCommand);
 prCommand.Add(prDescriptionCommand);
 
+rootCommand.Add(new ConfigCommand(ConfigurationProvider.Instance));
 rootCommand.Add(commitCommand);
 rootCommand.Add(prCommand);
 rootCommand.Add(plannerCommand);
@@ -211,7 +212,7 @@ static async Task RunCreatePlan(IKernel kernel, ILogger? logger, string message)
 
     kernel.ImportSkill(new WriterSkill(kernel), "writer");
 
-    var bingConnector = new BingConnector(EnvVar("BING_API_KEY"));
+    var bingConnector = new BingConnector(ConfigVar("BING_API_KEY"));
     var bing = new WebSearchEngineSkill(bingConnector);
     var search = kernel.ImportSkill(bing, "bing");
 
@@ -247,10 +248,11 @@ AI:
     await RunChat(kernel, logger, chatFunction);
 }
 
-static string EnvVar(string name)
+static string ConfigVar(string name)
 {
-    var value = Environment.GetEnvironmentVariable(name);
-    if (string.IsNullOrEmpty(value)) throw new Exception($"Env var not set: {name}");
+    var provider = ConfigurationProvider.Instance;
+    var value = provider.Get(name);
+    if (string.IsNullOrEmpty(value)) throw new Exception($"Configuration var not set: {name}.Please run `skonsole config` to set it.");
     return value;
 }
 
@@ -270,7 +272,8 @@ static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunct
         (logger ?? kernel.Logger).LogInformation("{botMessage}", botMessageFormatted);
         (logger ?? kernel.Logger).LogInformation(">>>");
 
-        userMessage = Console.ReadLine(); // TODO -- How to support multi-line input?
+
+        userMessage = ReadMutiLineInput();
         if (userMessage == "exit") break;
 
         history += $"{botMessageFormatted}Human: {userMessage}\nAI:";
@@ -278,4 +281,17 @@ static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunct
 
         botMessage = await kernel.RunAsync(contextVariables, chatFunction);
     }
+}
+
+static string ReadMutiLineInput()
+{
+    var input = new StringBuilder();
+    var line = string.Empty;
+
+    while ((line = Console.ReadLine()) != string.Empty)
+    {
+        input.AppendLine(line);
+    }
+
+    return input.ToString().Trim();
 }
