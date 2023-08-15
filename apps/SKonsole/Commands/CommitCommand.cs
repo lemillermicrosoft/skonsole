@@ -1,15 +1,26 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using SKonsole.Utils;
 
 namespace SKonsole.Commands;
 
 public class CommitCommand : Command
 {
-    public CommitCommand(ConfigurationProvider config) : base("commit", "skonsole commit message command")
+    public CommitCommand(ConfigurationProvider config, ILogger? logger = null) : base("commit", "skonsole commit message command")
     {
+        if (logger is null)
+        {
+            using var loggerFactory = Logging.GetFactory();
+            this._logger = loggerFactory.CreateLogger<CommitCommand>();
+        }
+        else
+        {
+            this._logger = logger;
+        }
+
         this.Add(this.GenerateCommitMessageCommand());
-        this.SetHandler(async context => await RunCommitMessage(context.GetCancellationToken()));
+        this.SetHandler(async context => await RunCommitMessage(context.GetCancellationToken(), this._logger));
     }
 
     private Command GenerateCommitMessageCommand()
@@ -23,14 +34,15 @@ public class CommitCommand : Command
         createCommand.AddArgument(commitArgument);
         createCommand.SetHandler(async (commitArgumentValue) =>
                 {
-                    await RunCommitMessage(CancellationToken.None, commitArgumentValue);
+                    await RunCommitMessage(CancellationToken.None, this._logger, commitArgumentValue);
                 }, commitArgument);
         return createCommand;
     }
 
-    private static async Task RunCommitMessage(CancellationToken token, string commitHash = "")
+    private static async Task RunCommitMessage(CancellationToken token, ILogger logger, string commitHash = "")
     {
         var kernel = KernelProvider.Instance.Get();
+
         string output = string.Empty;
         if (!string.IsNullOrEmpty(commitHash))
         {
@@ -87,6 +99,8 @@ public class CommitCommand : Command
         var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
         var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateCommitMessage"]);
 
-        kernel.Logger.LogInformation("Commit Message:\n{result}", kernelResponse.Result);
+        logger.LogInformation("Commit Message:\n{result}", kernelResponse.Result);
     }
+
+    private readonly ILogger _logger;
 }

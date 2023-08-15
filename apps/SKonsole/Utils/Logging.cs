@@ -9,9 +9,9 @@ internal static class Logging
         return LoggerFactory.Create(builder =>
             {
                 builder
+                    .SetMinimumLevel(LogLevel.Information)
                     .AddFilter("Microsoft", LogLevel.Error)
                     .AddFilter("System", LogLevel.Error)
-                    .AddFilter("Program", LogLevel.Information)
                     .AddConsole();
             });
     }

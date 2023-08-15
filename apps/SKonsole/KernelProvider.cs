@@ -34,6 +34,9 @@ public class KernelProvider
                 Configuration.ConfigVar("AZURE_OPENAI_API_KEY"))
             .WithLogger(this._logger)
             .Build();
+
+        _kernel.Logger.LogTrace("KernelProvider.Instance: Added Azure OpenAI backends");
+
         return _kernel;
     }
 }

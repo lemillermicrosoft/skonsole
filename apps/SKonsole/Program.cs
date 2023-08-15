@@ -15,11 +15,12 @@ using SKonsole.Skills;
 using SKonsole.Utils;
 
 Console.OutputEncoding = Encoding.Unicode;
-using var loggerFactory = Logging.GetFactory();// Get an instance of ILogger
-var _logger = loggerFactory.CreateLogger<Program>();
-var _kernel = KernelProvider.Instance.Get();
-_kernel.Logger.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
 
+using var loggerFactory = Logging.GetFactory();
+
+var _logger = loggerFactory.CreateLogger<Program>();
+_logger.LogDebug("Starting SKonsole");
+var _kernel = KernelProvider.Instance.Get();
 
 var rootCommand = new RootCommand();
 var prCommand = new Command("pr", "Pull Request feedback subcommand");
@@ -27,7 +28,6 @@ var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcomman
 var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
 var plannerCommand = new Command("createPlan", "Planner subcommand");
 var promptChatCommand = new Command("promptChat", "Prompt chat subcommand");
-
 
 var messageArgument = new Argument<string>
     ("message", "An argument that is parsed as a string.");
