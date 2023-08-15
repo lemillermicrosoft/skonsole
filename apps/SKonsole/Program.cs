@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -13,44 +12,16 @@ using Microsoft.SemanticKernel.Skills.Web.Bing;
 using SKonsole;
 using SKonsole.Commands;
 using SKonsole.Skills;
+using SKonsole.Utils;
 
 Console.OutputEncoding = Encoding.Unicode;
-
-using var loggerFactory = LoggerFactory.Create(builder =>
-{
-    builder
-        .AddFilter("Microsoft", LogLevel.Error)
-        .AddFilter("System", LogLevel.Error)
-        .AddFilter("Program", LogLevel.Information)
-        .AddConsole();
-});
-
-// Get an instance of ILogger
+using var loggerFactory = Logging.GetFactory();// Get an instance of ILogger
 var _logger = loggerFactory.CreateLogger<Program>();
-var kernelLogger = loggerFactory.CreateLogger<Kernel>();
-
-var _kernel = Kernel.Builder
-.Configure((config) =>
-{
-    config.SetDefaultHttpRetryConfig(new HttpRetryConfig
-    {
-        MaxRetryCount = 3,
-        MinRetryDelay = TimeSpan.FromSeconds(8),
-        UseExponentialBackoff = true,
-    });
-})
-.WithAzureChatCompletionService(
-    ConfigVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-    ConfigVar("AZURE_OPENAI_API_ENDPOINT"),
-    ConfigVar("AZURE_OPENAI_API_KEY"))
-.WithLogger(kernelLogger)
-.Build();
-
+var _kernel = KernelProvider.Instance.Get();
 _kernel.Logger.LogTrace("KernelSingleton.Instance: adding Azure OpenAI backends");
 
 
 var rootCommand = new RootCommand();
-var commitCommand = new Command("commit", "Commit subcommand");
 var prCommand = new Command("pr", "Pull Request feedback subcommand");
 var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
 var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
@@ -63,11 +34,6 @@ var messageArgument = new Argument<string>
 
 plannerCommand.Add(messageArgument);
 
-var commitArgument = new Argument<string>
-    ("commitHash", () => { return string.Empty; }, "An argument that is parsed as a string.");
-rootCommand.Add(commitArgument);
-commitCommand.Add(commitArgument);
-
 var targetBranchOption = new Option<string>(
        new string[] { "--targetBranch", "-t" },
           () => { return "origin/main"; },
@@ -76,8 +42,6 @@ prCommand.AddOption(targetBranchOption);
 prDescriptionCommand.AddOption(targetBranchOption);
 prFeedbackCommand.AddOption(targetBranchOption);
 
-rootCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, _logger, commitArgumentValue), commitArgument);
-commitCommand.SetHandler(async (commitArgumentValue) => await RunCommitMessage(_kernel, _logger, commitArgumentValue), commitArgument);
 prCommand.SetHandler(async (targetBranch) => await RunPullRequestDescription(_kernel, _logger, targetBranch), targetBranchOption);
 prFeedbackCommand.SetHandler(async (targetBranch) => await RunPullRequestFeedback(_kernel, _logger, targetBranch), targetBranchOption);
 prDescriptionCommand.SetHandler(async (targetBranch) => await RunPullRequestDescription(_kernel, _logger, targetBranch), targetBranchOption);
@@ -88,78 +52,12 @@ prCommand.Add(prFeedbackCommand);
 prCommand.Add(prDescriptionCommand);
 
 rootCommand.Add(new ConfigCommand(ConfigurationProvider.Instance));
-rootCommand.Add(commitCommand);
+rootCommand.Add(new CommitCommand(ConfigurationProvider.Instance));
 rootCommand.Add(prCommand);
 rootCommand.Add(plannerCommand);
 rootCommand.Add(promptChatCommand);
 
 return await rootCommand.InvokeAsync(args);
-
-static async Task RunCommitMessage(IKernel kernel, ILogger? logger, string commitHash = "")
-{
-    string output = string.Empty;
-    if (!string.IsNullOrEmpty(commitHash))
-    {
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "git",
-                Arguments = $"show {commitHash}",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                StandardOutputEncoding = System.Text.Encoding.UTF8
-            }
-        };
-        process.Start();
-
-        output = process.StandardOutput.ReadToEnd();
-    }
-    else
-    {
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "git",
-                Arguments = "diff --staged",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                StandardOutputEncoding = System.Text.Encoding.UTF8
-            }
-        };
-        process.Start();
-
-        output = process.StandardOutput.ReadToEnd();
-
-        if (string.IsNullOrEmpty(output))
-        {
-            process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "git",
-                    Arguments = "diff HEAD~1",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
-                }
-            };
-            process.Start();
-
-            output = process.StandardOutput.ReadToEnd();
-        }
-    }
-
-    var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
-
-    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GenerateCommitMessage"]);
-
-    (logger ?? kernel.Logger).LogInformation("Commit Message:\n{result}", kernelResponse.Result);
-}
 
 static async Task RunPullRequestDescription(IKernel kernel, ILogger? logger, string targetBranch = "origin/main")
 {
@@ -219,8 +117,7 @@ static async Task RunCreatePlan(IKernel kernel, ILogger? logger, string message)
     // kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel), "PullRequest");
 
     kernel.ImportSkill(new WriterSkill(kernel), "writer");
-
-    var bingConnector = new BingConnector(ConfigVar("BING_API_KEY"));
+    var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
     var bing = new WebSearchEngineSkill(bingConnector);
     var search = kernel.ImportSkill(bing, "bing");
 
@@ -256,18 +153,6 @@ AI:
     await RunChat(kernel, logger, chatFunction);
 }
 
-static string ConfigVar(string name)
-{
-    var provider = ConfigurationProvider.Instance;
-    var value = provider.Get(name);
-    if (string.IsNullOrEmpty(value))
-    {
-        throw new ArgumentNullException($"Configuration var not set: {name}.Please run `skonsole config` to set it.");
-    }
-
-    return value;
-}
-
 static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunction)
 {
     var contextVariables = new ContextVariables();
@@ -283,7 +168,6 @@ static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunct
         var botMessageFormatted = "\nAI: " + botMessage.ToString() + "\n";
         (logger ?? kernel.Logger).LogInformation("{botMessage}", botMessageFormatted);
         (logger ?? kernel.Logger).LogInformation(">>>");
-
 
         userMessage = ReadMutiLineInput();
         if (userMessage == "exit")
