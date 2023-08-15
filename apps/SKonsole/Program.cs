@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -23,9 +22,6 @@ _logger.LogDebug("Starting SKonsole");
 var _kernel = KernelProvider.Instance.Get();
 
 var rootCommand = new RootCommand();
-var prCommand = new Command("pr", "Pull Request feedback subcommand");
-var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
-var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
 var plannerCommand = new Command("createPlan", "Planner subcommand");
 var promptChatCommand = new Command("promptChat", "Prompt chat subcommand");
 
@@ -34,78 +30,17 @@ var messageArgument = new Argument<string>
 
 plannerCommand.Add(messageArgument);
 
-var targetBranchOption = new Option<string>(
-       new string[] { "--targetBranch", "-t" },
-          () => { return "origin/main"; },
-             "The target branch for the pull request.");
-prCommand.AddOption(targetBranchOption);
-prDescriptionCommand.AddOption(targetBranchOption);
-prFeedbackCommand.AddOption(targetBranchOption);
-
-prCommand.SetHandler(async (targetBranch) => await RunPullRequestDescription(_kernel, _logger, targetBranch), targetBranchOption);
-prFeedbackCommand.SetHandler(async (targetBranch) => await RunPullRequestFeedback(_kernel, _logger, targetBranch), targetBranchOption);
-prDescriptionCommand.SetHandler(async (targetBranch) => await RunPullRequestDescription(_kernel, _logger, targetBranch), targetBranchOption);
 plannerCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(_kernel, _logger, messageArgumentValue), messageArgument);
 promptChatCommand.SetHandler(async () => await RunPromptChat(_kernel, _logger));
 
-prCommand.Add(prFeedbackCommand);
-prCommand.Add(prDescriptionCommand);
 
 rootCommand.Add(new ConfigCommand(ConfigurationProvider.Instance));
 rootCommand.Add(new CommitCommand(ConfigurationProvider.Instance));
-rootCommand.Add(prCommand);
+rootCommand.Add(new PRCommand(ConfigurationProvider.Instance));
 rootCommand.Add(plannerCommand);
 rootCommand.Add(promptChatCommand);
 
 return await rootCommand.InvokeAsync(args);
-
-static async Task RunPullRequestDescription(IKernel kernel, ILogger? logger, string targetBranch = "origin/main")
-{
-    var process = new Process
-    {
-        StartInfo = new ProcessStartInfo
-        {
-            FileName = "git",
-            Arguments = $"show --ignore-space-change {targetBranch}..HEAD",
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            StandardOutputEncoding = System.Text.Encoding.UTF8
-        }
-    };
-    process.Start();
-
-    string output = process.StandardOutput.ReadToEnd();
-    var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
-
-    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePR"]);
-    (logger ?? kernel.Logger).LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);
-}
-
-static async Task RunPullRequestFeedback(IKernel kernel, ILogger? logger, string targetBranch = "origin/main")
-{
-    var process = new Process
-    {
-        StartInfo = new ProcessStartInfo
-        {
-            FileName = "git",
-            Arguments = $"show --ignore-space-change {targetBranch}..HEAD",
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            StandardOutputEncoding = System.Text.Encoding.UTF8
-        }
-    };
-    process.Start();
-
-    string output = process.StandardOutput.ReadToEnd();
-
-    var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
-
-    var kernelResponse = await kernel.RunAsync(output, pullRequestSkill["GeneratePullRequestFeedback"]);
-
-    (logger ?? kernel.Logger).LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
-}
 
 static async Task RunCreatePlan(IKernel kernel, ILogger? logger, string message)
 {
