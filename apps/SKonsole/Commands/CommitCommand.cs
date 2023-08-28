@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using SKonsole.Utils;
+using Spectre.Console;
+using TextCopy;
 
 namespace SKonsole.Commands;
 
@@ -98,9 +100,34 @@ public class CommitCommand : Command
 
         var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
-        var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GenerateCommitMessage"]);
+        void HorizontalRule(string title, string style = "white bold")
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.Write(new Rule($"[{style}]{title}[/]").RuleStyle("grey").LeftJustified());
+            AnsiConsole.WriteLine();
+        }
 
-        logger.LogInformation("Commit Message:\n{result}", kernelResponse.Result);
+        HorizontalRule("Commit Message");
+        var botMessage = await AnsiConsole.Progress()
+            .AutoClear(true)
+            .Columns(new ProgressColumn[]
+            {
+                            new TaskDescriptionColumn(),
+                            new SpinnerColumn(),
+            })
+            .StartAsync(async ctx =>
+            {
+                var task = ctx.AddTask("[green]Thinking...[/]", autoStart: true).IsIndeterminate();
+                var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GenerateCommitMessage"]);
+                task.StopTask();
+
+                var result = kernelResponse.Result;
+                await ClipboardService.SetTextAsync(result);
+                return result;
+            });
+
+        AnsiConsole.WriteLine(botMessage.ToString());
+        HorizontalRule(string.Empty);
     }
 
     private readonly ILogger _logger;

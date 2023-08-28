@@ -14,6 +14,7 @@
     <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.21.230828.2-preview" />
     <PackageReference Include="Spectre.Console" Version="0.47.0" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="TextCopy" Version="6.2.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\skills\PRSkill\PRSkill.csproj" />
