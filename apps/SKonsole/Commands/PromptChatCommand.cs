@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SKonsole.Utils;
+using Spectre.Console;
 
 namespace SKonsole.Commands;
 
@@ -39,7 +40,7 @@ public class PromptChatCommand : Command
         var kernel = KernelProvider.Instance.Get();
 
         const string skPrompt = @"
-    You are a prompt generation robot. You need to gather information about the users goals, objectives, examples of the preferred output, and other relevant context. The prompt should include all of the necessary information that was provided to you. Ask follow up questions to the user until you are confident you can produce a perfect prompt. Your return should be formatted clearly and optimized for GPT models. Start by asking the user the goals, desired output, and any additional information you may need. Prefix messages with 'AI: '.
+    You are a prompt generation robot. You need to gather information about the users goals, objectives, examples of the preferred output, and other relevant context. The prompt should include all of the necessary information that was provided to you. Ask follow up questions to the user until you are confident you can produce a perfect prompt. Your return should be formatted clearly and optimized for GPT models. Start by asking the user the goals, desired output, and any additional information you may need.
 
     {{$history}}
     AI:
@@ -63,32 +64,57 @@ public class PromptChatCommand : Command
 
     private static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunction)
     {
+        AnsiConsole.MarkupLine("[grey]Press Enter twice to send a message.[/]");
+        AnsiConsole.MarkupLine("[grey]Enter 'exit' to exit.[/]");
         var contextVariables = new ContextVariables();
 
-        var history = "";
+        var history = string.Empty;
         contextVariables.Set("history", history);
 
         var botMessage = await kernel.RunAsync(contextVariables, chatFunction);
         var userMessage = string.Empty;
 
-        var log = logger ?? kernel.LoggerFactory.CreateLogger<PromptChatCommand>();
+        void HorizontalRule(string title, string style = "white bold")
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.Write(new Rule($"[{style}]{title}[/]").RuleStyle("grey").LeftJustified());
+            AnsiConsole.WriteLine();
+        }
 
         while (userMessage != "exit")
         {
-            var botMessageFormatted = "\nAI: " + botMessage.ToString() + "\n";
-            log.LogInformation("{botMessage}", botMessageFormatted);
-            log.LogInformation(">>>");
+            HorizontalRule("AI", "green bold");
+            AnsiConsole.Foreground = ConsoleColor.Green;
+            AnsiConsole.WriteLine(botMessage.ToString());
+            AnsiConsole.ResetColors();
 
+            HorizontalRule("User");
             userMessage = ReadMultiLineInput();
+
             if (userMessage == "exit")
             {
                 break;
             }
 
-            history += $"{botMessageFormatted}Human: {userMessage}\nAI:";
+            history += $"AI: {botMessage}\nHuman: {userMessage} \n";
             contextVariables.Set("history", history);
 
-            botMessage = await kernel.RunAsync(contextVariables, chatFunction);
+            botMessage = await AnsiConsole.Progress()
+                .AutoClear(true)
+                .Columns(new ProgressColumn[]
+                {
+                    new TaskDescriptionColumn(),
+                    new SpinnerColumn(),
+                })
+                .StartAsync(async ctx =>
+                {
+                    var task = ctx.AddTask("[green]Thinking...[/]", autoStart: true).IsIndeterminate();
+
+                    var result = await kernel.RunAsync(contextVariables, chatFunction);
+
+                    task.StopTask();
+                    return result;
+                });
         }
     }
 
