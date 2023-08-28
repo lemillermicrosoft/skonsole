@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Text;
@@ -41,8 +42,8 @@ public class CondenseSkill
     {
         var condenser = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "Condenser");
 
-        List<string> lines = TextChunker.SplitPlainTextLines(input, CHUNK_SIZE / 8);
-        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, CHUNK_SIZE);
+        List<string> lines = TextChunker.SplitPlainTextLines(input, CHUNK_SIZE / 8, TokenCounter);
+        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, CHUNK_SIZE, 100, TokenCounter);
 
         var condenseResult = new List<string>();
         foreach (var paragraph in paragraphs)
@@ -60,6 +61,13 @@ public class CondenseSkill
         // update memory with serialized list of results and call condense again
         this._logger.LogWarning($"Condensing {paragraphs.Count} paragraphs");
         return await Condense(context, string.Join("\n", condenseResult), RESULTS_SEPARATOR);
+    }
+
+    private static int TokenCounter(string input)
+    {
+        var tokens = GPT3Tokenizer.Encode(input);
+
+        return tokens.Count;
     }
 
     private static string CondenseSkillPath()
