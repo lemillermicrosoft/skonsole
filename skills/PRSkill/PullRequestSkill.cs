@@ -74,6 +74,7 @@ public class PullRequestSkill
     private readonly CondenseSkill condenseSkill;
 
     private readonly IKernel _kernel;
+    private readonly ILogger _logger;
 
     public PullRequestSkill(IKernel kernel)
     {
@@ -88,6 +89,8 @@ public class PullRequestSkill
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .Build();
             this._kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+
+            this._logger = this._kernel.LoggerFactory.CreateLogger<PullRequestSkill>();
         }
         catch (Exception e)
         {
@@ -101,7 +104,7 @@ public class PullRequestSkill
         string input,
         SKContext context)
     {
-        context.Logger.LogTrace("GeneratePullRequestFeedback called");
+        this._logger.LogTrace("GeneratePullRequestFeedback called");
 
         var prFeedbackGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestFeedbackGenerator");
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
@@ -114,7 +117,7 @@ public class PullRequestSkill
         string input,
         SKContext context)
     {
-        context.Logger.LogTrace("GenerateCommitMessage called");
+        this._logger.LogTrace("GenerateCommitMessage called");
 
         var commitGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
 

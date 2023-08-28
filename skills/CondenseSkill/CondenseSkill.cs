@@ -15,6 +15,7 @@ public class CondenseSkill
     public static readonly string RESULTS_SEPARATOR = string.Format("\n====={0}=====\n", "EndResult");
     public const string SEMANTIC_FUNCTION_PATH = "CondenseSkill";
     private const int CHUNK_SIZE = 8000; // Eventually this should come from the kernel
+    private readonly ILogger _logger;
     public CondenseSkill(IKernel kernel)
     {
         try
@@ -22,6 +23,7 @@ public class CondenseSkill
             // Load semantic skill defined with prompt templates
             var folder = CondenseSkillPath();
             var condenseSkill = kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+            this._logger = kernel.LoggerFactory.CreateLogger<CondenseSkill>();
         }
         catch (Exception e)
         {
@@ -56,7 +58,7 @@ public class CondenseSkill
         }
 
         // update memory with serialized list of results and call condense again
-        context.Logger.LogWarning($"Condensing {paragraphs.Count} paragraphs");
+        this._logger.LogWarning($"Condensing {paragraphs.Count} paragraphs");
         return await Condense(context, string.Join("\n", condenseResult), RESULTS_SEPARATOR);
     }
 

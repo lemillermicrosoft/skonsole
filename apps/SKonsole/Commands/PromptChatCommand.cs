@@ -71,11 +71,13 @@ public class PromptChatCommand : Command
         var botMessage = await kernel.RunAsync(contextVariables, chatFunction);
         var userMessage = string.Empty;
 
+        var log = logger ?? kernel.LoggerFactory.CreateLogger<PromptChatCommand>();
+
         while (userMessage != "exit")
         {
             var botMessageFormatted = "\nAI: " + botMessage.ToString() + "\n";
-            (logger ?? kernel.Logger).LogInformation("{botMessage}", botMessageFormatted);
-            (logger ?? kernel.Logger).LogInformation(">>>");
+            log.LogInformation("{botMessage}", botMessageFormatted);
+            log.LogInformation(">>>");
 
             userMessage = ReadMultiLineInput();
             if (userMessage == "exit")

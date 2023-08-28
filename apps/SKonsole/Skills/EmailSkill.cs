@@ -22,7 +22,7 @@ internal sealed class EmailSkill
     [SKFunction, Description("Given a name, find email address")]
     public static Task<SKContext> GetEmailAddress([Description("The name of the person to email.")] string input, SKContext context)
     {
-        context.Logger.LogDebug("Returning hard coded email for {input}", input);
+        context.Logger().LogDebug("Returning hard coded email for {input}", input);
         context.Variables.Update("johndoe1234@example.com");
         return Task.FromResult(context);
     }
