@@ -13,7 +13,25 @@ public class KernelProvider
 
     public IKernel Get()
     {
-        var _kernel = Kernel.Builder
+        var kernelBuilder = Kernel.Builder;
+
+        switch (Configuration.ConfigOption(ConfigConstants.LLM_PROVIDER))
+        {
+            case ConfigConstants.OpenAI:
+                kernelBuilder = kernelBuilder.WithOpenAIChatCompletionService(
+                                       Configuration.ConfigVar(ConfigConstants.OPENAI_CHAT_MODEL_ID),
+                                       Configuration.ConfigVar(ConfigConstants.OPENAI_API_KEY));
+                break;
+            case ConfigConstants.AzureOpenAI:
+            default:
+                kernelBuilder = kernelBuilder.WithAzureChatCompletionService(
+                                       Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME),
+                                       Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_API_ENDPOINT),
+                                       Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_API_KEY));
+                break;
+        }
+
+        var _kernel = kernelBuilder
             .Configure((config) =>
             {
                 config.SetDefaultHttpRetryConfig(new HttpRetryConfig
@@ -23,10 +41,6 @@ public class KernelProvider
                     UseExponentialBackoff = true,
                 });
             })
-            .WithAzureChatCompletionService(
-                Configuration.ConfigVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-                Configuration.ConfigVar("AZURE_OPENAI_API_ENDPOINT"),
-                Configuration.ConfigVar("AZURE_OPENAI_API_KEY"))
             .WithLoggerFactory(s_loggerFactory)
             .Build();
 
