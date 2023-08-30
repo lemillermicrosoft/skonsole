@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using SKonsole.Utils;
@@ -19,22 +20,35 @@ public class PRCommand : Command
             this._logger = logger;
         }
 
-        this.Add(this.GeneratePRFeedbackCommand());
-        this.Add(this.GeneratePRDescriptionCommand());
-        this.SetHandler(async context => await RunPullRequestDescription(context.GetCancellationToken(), this._logger));
+        var targetBranchOption = new Option<string>(
+                            new string[] { "--targetBranch", "-t" },
+                            () => { return "origin/main"; },
+                            "The target branch for the pull request.");
+
+        this.AddOption(targetBranchOption);
+
+        this.Add(this.GeneratePRFeedbackCommand(targetBranchOption));
+        this.Add(this.GeneratePRDescriptionCommand(targetBranchOption));
+        this.SetHandler(async context => await RunPullRequestDescription(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main"));
     }
 
-    private Command GeneratePRFeedbackCommand()
+    private T? TryGetValueFromOption<T>(InvocationContext context, Option<T> option)
+    {
+        return context.ParseResult.GetValueForOption(option);
+    }
+    private Command GeneratePRFeedbackCommand(Option<string> targetBranchOption)
     {
         var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
-        prFeedbackCommand.SetHandler(async () => await RunPullRequestFeedback(CancellationToken.None, this._logger));
+        prFeedbackCommand.AddOption(targetBranchOption);
+        prFeedbackCommand.SetHandler(async context => await RunPullRequestFeedback(CancellationToken.None, this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main"));
         return prFeedbackCommand;
     }
 
-    private Command GeneratePRDescriptionCommand()
+    private Command GeneratePRDescriptionCommand(Option<string> targetBranchOption)
     {
         var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
-        prDescriptionCommand.SetHandler(async () => await RunPullRequestDescription(CancellationToken.None, this._logger));
+        prDescriptionCommand.AddOption(targetBranchOption);
+        prDescriptionCommand.SetHandler(async context => await RunPullRequestDescription(CancellationToken.None, this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main"));
         return prDescriptionCommand;
     }
 
