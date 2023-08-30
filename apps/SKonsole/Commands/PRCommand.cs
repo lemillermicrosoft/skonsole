@@ -40,7 +40,7 @@ public class PRCommand : Command
     {
         var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
         prFeedbackCommand.AddOption(targetBranchOption);
-        prFeedbackCommand.SetHandler(async context => await RunPullRequestFeedback(CancellationToken.None, this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main"));
+        prFeedbackCommand.SetHandler(async context => await RunPullRequestFeedback(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main"));
         return prFeedbackCommand;
     }
 
@@ -48,7 +48,7 @@ public class PRCommand : Command
     {
         var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
         prDescriptionCommand.AddOption(targetBranchOption);
-        prDescriptionCommand.SetHandler(async context => await RunPullRequestDescription(CancellationToken.None, this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main"));
+        prDescriptionCommand.SetHandler(async context => await RunPullRequestDescription(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main"));
         return prDescriptionCommand;
     }
 
