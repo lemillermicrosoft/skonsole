@@ -1,6 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <PackageId>SKonsole</PackageId>
+    <Version>1.0.1</Version>
+    <Authors>Lee Miller</Authors>
+    <Company>Microsoft</Company>
+    <PackageDescription>A console app built on Semantic Skills</PackageDescription>
+    <RepositoryUrl>https://github.com/lemillermicrosoft/skonsole</RepositoryUrl>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
