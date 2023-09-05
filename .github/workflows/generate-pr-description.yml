@@ -1,0 +1,39 @@
+name: Generate PR Description
+
+on:
+  pull_request
+
+permissions:
+  pull-requests: read, write
+
+jobs:
+  message:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Repo
+        uses: actions/checkout@v3.5.2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Setup .NET CLI
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 8.0
+
+      - name: Install SKonsole
+        run: dotnet tool install --global SKonsole
+
+      - name: Generate PR description  
+        run: |  
+          echo "::set-output name=pr_description::$(skonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }})"  
+        env: # Set Azure credentials secret as an input
+          AZURE_OPENAI_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_ENDPOINT: ${{ vars.AZURE_OPENAI_API_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          AZURE_OPENAI_DEPLOYMENT_LABEL: ${{ vars.AZURE_OPENAI_DEPLOYMENT_LABEL }}
+
+      - name: Generate PR description
+        run: |  
+          echo "::set-output name=pr_description::$(skonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }})"  
