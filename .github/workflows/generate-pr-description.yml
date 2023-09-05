@@ -20,7 +20,7 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Install SKonsole
-        run: dotnet tool install --global SKonsole
+        run: dotnet tool install --global SKonsole --version 1.0.1
 
       - name: Generate PR description  
         run: |  
