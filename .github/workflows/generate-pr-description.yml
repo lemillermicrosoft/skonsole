@@ -3,11 +3,8 @@ name: Generate PR Description
 on:
   pull_request
 
-permissions:
-  pull-requests: read, write
-
 jobs:
-  message:
+  generate-pr-description:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,7 +17,7 @@ jobs:
       - name: Setup .NET CLI
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: 8.0
+          dotnet-version: 8.0.x
 
       - name: Install SKonsole
         run: dotnet tool install --global SKonsole
