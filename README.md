@@ -1,17 +1,21 @@
 
 # SKonsole - A Console App built on Semantic Skills
+
 This repository contains a demo of a console application called SKonsole, which uses the Semantic Kernel to run various skills. The app currently supports two skills: generating commit messages and generating pull request feedback. The app uses environment variables to configure the Azure OpenAI backend.
 
 ## Getting Started
+
 To get started, simply run the following commands in the terminal:
 
 ```Copy code
 apps\SKonsole> dotnet build
 apps\SKonsole> dotnet run
 ```
+
 This should build and run the SKonsole app. Note that you may need to configure your environment variables with your Azure OpenAI credentials before running the app.
 
 ## Projects and Classes
+
 This repository contains several projects and classes, including:
 
 - PRSkill: A skill that can generate feedback, commit messages, and pull request descriptions based on git diff or git show output. The PRSkill uses the CondenseSkill as a dependency and implements chunking and aggregation mechanisms to handle large inputs.
@@ -23,6 +27,7 @@ This repository contains several projects and classes, including:
 ## Installing SKonsole Tool
 
 Install the SKonsole Tool globally with a few quick steps:
+
 ### Installation
 
 1. Open your terminal or command prompt.
@@ -31,7 +36,9 @@ Install the SKonsole Tool globally with a few quick steps:
    ```shell
    dotnet tool install --global SKonsole
    ```
+
 3. To confirm the installation was successful, run:
+
    ```shell
    skonsole --version
    ```
@@ -49,14 +56,19 @@ Install the SKonsole Tool globally with a few quick steps:
 - `skonsole promptChat`: Engage in interactive prompt chat sessions.
 
 ## Dependencies
+
 This project requires the following dependencies:
 
 - [Semantic Kernel](https://github.com/microsoft/semantic-kernel)
 
+## Github Action
+
+Use this as a github action too.
+
 ## Future Work
+
 In the future, the SKonsole app could be expanded to support more skills and to parse arguments on launch. Additionally, the repository could include instructions for setting up NuGet credentials and using a GitHub Package source.
 
 I hope this README is helpful for you and others who may use your repository in the future. Let me know if there's anything else I can do to help!
 
-
-####_This README was generated using Semantic Kernel_
+#### _This README was generated using Semantic Kernel_
