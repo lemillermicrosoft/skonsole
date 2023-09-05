@@ -14,14 +14,11 @@ public class KernelProvider
     public IKernel Get()
     {
         var _kernel = Kernel.Builder
-            .Configure((config) =>
+            .WithRetryBasic(new()
             {
-                config.SetDefaultHttpRetryConfig(new HttpRetryConfig
-                {
-                    MaxRetryCount = 3,
-                    MinRetryDelay = TimeSpan.FromSeconds(8),
-                    UseExponentialBackoff = true,
-                });
+                MaxRetryCount = 3,
+                MinRetryDelay = TimeSpan.FromSeconds(8),
+                UseExponentialBackoff = true,
             })
             .WithAzureChatCompletionService(
                 Configuration.ConfigVar("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
