@@ -4,7 +4,7 @@ on:
   pull_request
 
 jobs:
-  message:
+  generate-pr-description:
     runs-on: ubuntu-latest
 
     steps:
