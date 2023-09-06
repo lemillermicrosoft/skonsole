@@ -13,7 +13,6 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-
       - name: Setup .NET CLI
         uses: actions/setup-dotnet@v2
         with:
@@ -24,12 +23,15 @@ jobs:
 
       - name: Generate PR description  
         run: |  
-          echo "::set-output name=pr_description::$(skonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }})"  
+          echo "::set-output name=pr_description::$(skonsole pr description --targetBranch ${{ github.head_ref }})"  
         env: # Set Azure credentials secret as an input
           AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_API_ENDPOINT: ${{ secrets.AZURE_OPENAI_API_ENDPOINT }}
           AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-
-      - name: Generate PR description
-        run: |  
-          echo "::set-output name=pr_description::$(skonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }})"  
+      - name: Update PR Description  
+        uses: peter-evans/create-or-update-comment@v1  
+        with:  
+          token: ${{ secrets.GITHUB_TOKEN }}  
+          issue-number: ${{ github.event.pull_request.number }}  
+          body: |  
+            ${{ steps.generate_description.outputs.pr_description }}  
