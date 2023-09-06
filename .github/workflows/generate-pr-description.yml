@@ -22,6 +22,7 @@ jobs:
         run: dotnet tool install --global SKonsole --version 1.0.1
 
       - name: Generate PR description  
+        id: generate_description
         run: |  
           echo "::set-output name=pr_description::$(skonsole pr description --targetBranch ${{ github.head_ref }})"  
         env: # Set Azure credentials secret as an input
@@ -29,9 +30,8 @@ jobs:
           AZURE_OPENAI_API_ENDPOINT: ${{ secrets.AZURE_OPENAI_API_ENDPOINT }}
           AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
       - name: Update PR Description  
-        uses: peter-evans/create-or-update-comment@v1  
+        uses: nefrob/pr-description@v1.1.0  
         with:  
-          token: ${{ secrets.GITHUB_TOKEN }}  
-          issue-number: ${{ github.event.pull_request.number }}  
-          body: |  
+          token: ${{ secrets.GITHUB_TOKEN }}
+          content: |  
             ${{ steps.generate_description.outputs.pr_description }}  
