@@ -17,7 +17,7 @@ jobs:
       - name: Setup .NET CLI
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 7.0.x
 
       - name: Install SKonsole
         run: dotnet tool install --global SKonsole --version 1.0.1
