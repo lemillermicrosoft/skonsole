@@ -26,10 +26,9 @@ jobs:
         run: |  
           echo "::set-output name=pr_description::$(skonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }})"  
         env: # Set Azure credentials secret as an input
-          AZURE_OPENAI_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_DEPLOYMENT_NAME }}
-          AZURE_OPENAI_API_ENDPOINT: ${{ vars.AZURE_OPENAI_API_ENDPOINT }}
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_ENDPOINT: ${{ secrets.AZURE_OPENAI_API_ENDPOINT }}
           AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-          AZURE_OPENAI_DEPLOYMENT_LABEL: ${{ vars.AZURE_OPENAI_DEPLOYMENT_LABEL }}
 
       - name: Generate PR description
         run: |  
