@@ -41,10 +41,8 @@ jobs:
           AZURE_OPENAI_API_ENDPOINT: ${{ secrets.AZURE_OPENAI_API_ENDPOINT }}
           AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
       - name: Update PR Description  
-        uses: nefrob/pr-description@v1.1.0  
-        env:
-          pr_description: ${{ steps.generate_description.outputs.pr_description }}
+        uses: nefrob/pr-description@v1.1.0
         with:  
           token: ${{ secrets.GITHUB_TOKEN }}
           content: |  
-            $${{ steps.generate_description.outputs.pr_description }}
+            ${{ steps.generate_description.outputs.pr_description }}
