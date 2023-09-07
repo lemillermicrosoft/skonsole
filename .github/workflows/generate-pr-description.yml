@@ -20,10 +20,10 @@ jobs:
           git show HEAD 
       - name: Verify repo
         run: |
-          git show actiontest 
+          git show ${{ github.event.pull_request.head.ref }} 
       - name: Verify repo
         run: |
-          git rev-parse main 
+          git show ${{ github.event.pull_request.base.ref }} 
 
       - name: Verify repo
         run: |
