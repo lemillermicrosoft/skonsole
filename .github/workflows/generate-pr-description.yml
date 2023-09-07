@@ -32,7 +32,7 @@ jobs:
         id: generate_description
         run: |  
           {
-            echo "pr_description<<EOF"
+            echo 'pr_description<<EOF'
             skonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }}
             echo EOF
           } >> "$GITHUB_OUTPUT" 
