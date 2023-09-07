@@ -18,7 +18,7 @@ jobs:
       - name: Verify repo
         run: |
           git show HEAD 
-        - name: Verify repo
+      - name: Verify repo
         run: |
           git show actiontest 
       - name: Verify repo
