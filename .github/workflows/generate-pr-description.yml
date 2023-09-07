@@ -5,7 +5,7 @@ on:
 
 jobs:
   generate-pr-description:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check out Repo
@@ -24,7 +24,7 @@ jobs:
       - name: Generate PR description  
         id: generate_description
         run: |  
-          echo "pr_description=$(skonsole pr description --targetBranch ${{ github.head_ref }})" >> $GITHUB_OUTPUT 
+          echo "pr_description=$(skonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }})" >> $GITHUB_OUTPUT 
         env: # Set Azure credentials secret as an input
           AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_API_ENDPOINT: ${{ secrets.AZURE_OPENAI_API_ENDPOINT }}
