@@ -20,6 +20,9 @@ jobs:
           git rev-parse HEAD 
       - name: Verify repo
         run: |
+          git branch -a
+      - name: Verify repo
+        run: |
           git rev-parse main 
 
       - name: Verify repo
