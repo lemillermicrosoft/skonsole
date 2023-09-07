@@ -47,4 +47,4 @@ jobs:
         with:  
           token: ${{ secrets.GITHUB_TOKEN }}
           content: |  
-            ${{pr_description}}
+            $${{ steps.generate_description.outputs.pr_description }}
