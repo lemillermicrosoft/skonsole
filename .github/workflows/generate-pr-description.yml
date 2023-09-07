@@ -15,6 +15,17 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Verify repo
+        run: |
+          git rev-parse HEAD 
+      - name: Verify repo
+        run: |
+          git rev-parse main 
+
+      -name: Verify repo
+        run: |
+          git show --ignore-space-change main..HEAD
+
       - name: Setup .NET CLI
         uses: actions/setup-dotnet@v2
         with:
