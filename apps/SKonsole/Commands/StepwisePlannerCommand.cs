@@ -9,8 +9,10 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using SKonsole.Utils;
 using Spectre.Console;
+using System.Reflection;
 
 namespace SKonsole.Commands;
 
@@ -33,6 +35,31 @@ public class StepwisePlannerCommand : Command
         this.SetHandler(async (optionSetValue) => await RunCreatePlan(CancellationToken.None, this._logger, "", optionSetValue ?? string.Empty), optionSet);
     }
 
+    private static string AIPluginsSkillsPath()
+    {
+        const string PARENT = "AIPlugins";
+        static bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
+        {
+            var currDir = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
+            bool found;
+            do
+            {
+                result = Path.Join(currDir, pathToFind);
+                found = Directory.Exists(result);
+                currDir = Path.GetFullPath(Path.Combine(currDir, ".."));
+            } while (maxAttempts-- > 0 && !found);
+
+            return found;
+        }
+
+        if (!SearchPath(PARENT, out string path))
+        {
+            throw new InvalidOperationException("AIPlugins directory not found. The app needs the skills from the library to work.");
+        }
+
+        return path;
+    }
+
     private static async Task RunCreatePlan(CancellationToken token, ILogger logger, string message = "", string optionSet = "")
     {
         IKernel kernel = LoadOptionSet(optionSet);
@@ -47,6 +74,51 @@ public class StepwisePlannerCommand : Command
     {
         var kernel = KernelProvider.Instance.Get();
 
+        var LoadWellKnown = () =>
+        {
+            // get https://www.wellknown.ai/api/plugins which is {"plugins": [{ai-plugin.json}, ...]}
+            // foreach plugin in plugins
+            //   get plugin.ai-plugin.json
+            //   import plugin.ai-plugin.json
+
+            /// Do the thinking thing but loading
+            ///
+            AnsiConsole.Progress()
+                .AutoClear(true)
+                .Columns(new ProgressColumn[]
+                {
+                    new TaskDescriptionColumn(),
+                    new SpinnerColumn(),
+                })
+                .StartAsync(async ctx =>
+                {
+                    var task = ctx.AddTask("[green]Loading Well Known plugins...[/]", autoStart: true).IsIndeterminate();
+
+                    // var result = await kernel.RunAsync(contextVariables, chatFunction);
+                    _ = await kernel.ImportAIPluginsAsync(new Uri("https://www.wellknown.ai/api/plugins"), new OpenApiSkillExecutionParameters(enableDynamicOperationPayload: true)).ConfigureAwait(false);
+
+                    task.StopTask();
+                }).ConfigureAwait(false).GetAwaiter().GetResult();
+
+        };
+
+        var LoadKayak = () =>
+        {
+            // TODO -- This needs AUTH
+            var path = AIPluginsSkillsPath();
+            _ = kernel
+                .ImportAIPluginAsync("kayak", Path.Combine(path, "Kayak", "ai-plugin.json"), new OpenApiSkillExecutionParameters(enableDynamicOperationPayload: false))
+                .ConfigureAwait(false).GetAwaiter().GetResult();
+        };
+
+        var LoadZillow = () =>
+        {
+            var path = AIPluginsSkillsPath();
+            _ = kernel
+                .ImportAIPluginAsync("zillow", Path.Combine(path, "Zillow", "ai-plugin.json"), new OpenApiSkillExecutionParameters(enableDynamicOperationPayload: false))
+                .ConfigureAwait(false).GetAwaiter().GetResult();
+        };
+
         if (optionSet.Contains("bing"))
         {
             var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
@@ -59,9 +131,38 @@ public class StepwisePlannerCommand : Command
             kernel.ImportSkill(new TimeSkill(), "time");
             kernel.ImportSkill(new ConversationSummarySkill(kernel), "summary");
             kernel.ImportSkill(new FileIOSkill(), "file");
+
+            // https://turingbotdev.blob.core.windows.net/chatgpt-plugins/kayak/api.yaml
+
+
+
+            _ = kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiSkillExecutionParameters(enableDynamicOperationPayload: true)).ConfigureAwait(false).GetAwaiter().GetResult();
+            // LoadKayak();
+            // LoadZillow();
+            // LoadWellKnown();
         }
         else
         {
+            if (optionSet.Contains("wellknown"))
+            {
+                LoadWellKnown();
+            }
+
+            if (optionSet.Contains("klarna"))
+            {
+                _ = kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiSkillExecutionParameters(enableDynamicOperationPayload: true)).ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+
+            if (optionSet.Contains("zillow"))
+            {
+                LoadZillow();
+            }
+
+            if (optionSet.Contains("kayak"))
+            {
+                LoadKayak();
+            }
+
             if (optionSet.Contains("time"))
             {
                 kernel.ImportSkill(new TimeSkill(), "time");
@@ -87,6 +188,18 @@ public class StepwisePlannerCommand : Command
         public StepwiseSkill(IKernel kernel)
         {
             this._kernel = kernel;
+
+            // this._kernel.RegisterCustomFunction(SKFunction.FromNativeFunction((string questionForUser) =>
+            // {
+            //     // Ask the user a question
+            //     // Console.WriteLine(questionForUser);
+
+            //     // Read the response
+            //     // var response = Console.ReadLine();
+
+            //     // Return the response
+            //     return "42";
+            // }, "UserInput", "GetAnswerForQuestion", "Gets the answer for a question from the user directly."));
         }
 
         [SKFunction, Description("Respond to a message.")]

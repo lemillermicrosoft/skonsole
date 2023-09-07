@@ -1,0 +1,398 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "KAYAK - Flights, Hotels, Cars",
+    "description": "A plugin that allows users to search for the best deals on flights, hotels, and cars",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://www.kayak.com"
+    }
+  ],
+  "paths": {
+    "/sherlock/openai/search/flights": {
+      "post": {
+        "operationId": "searchFlights",
+        "summary": "Search flights on a flight route for certain dates",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/searchFlightsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        }
+      }
+    },
+    "/sherlock/openai/search/stays": {
+      "post": {
+        "operationId": "searchStays",
+        "summary": "Search stays for certain dates",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/searchStaysRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        }
+      }
+    },
+    "/sherlock/openai/search/cars": {
+      "post": {
+        "operationId": "searchCars",
+        "summary": "Search rental cars for certain dates",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/searchCarsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        }
+      }
+    },
+    "/sherlock/openai/explore": {
+      "post": {
+        "operationId": "explore",
+        "summary": "Find places to go on a budget. This endpoint will return destinations that can be reached by plane within the given budget.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/exploreRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        }
+      }
+    },
+    "/sherlock/openai/insights/flights": {
+      "post": {
+        "operationId": "flightInsights",
+        "summary": "This endpoint can be used when the flight route is known yet the travel dates are flexible. For example, a user may say they want to travel for 2 weeks whenever airfares are the lowest.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/flightInsightsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "searchFlightsRequest": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "The origin from which the flight starts. Will be approximated if not specified."
+          },
+          "destination": {
+            "type": "string",
+            "description": "The destination to which the flight goes"
+          },
+          "departDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date of the flight at the origin"
+          },
+          "departHourRange": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Range of hours in between which the outgoing flight should depart. Hours between 0 and 23, ranges such as [12,14]. Only needed when a specific flight departure time is requested."
+          },
+          "returnDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Return date of the flight. Only required for round trip flights"
+          },
+          "returnHourRange": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Range of hours in between which the return flight should depart. Hours between 0 and 23, ranges such as [12,14]. Only needed when a specific return flight departure time is requested."
+          },
+          "cabinClass": {
+            "type": "string",
+            "description": "Flight cabin class. Defaults to Economy class if not specified.",
+            "enum": ["economy", "premium_economy", "business", "first"]
+          },
+          "numAdults": {
+            "type": "integer",
+            "description": "Number of adults that are flying"
+          },
+          "numChildren": {
+            "type": "integer",
+            "description": "Number of children that are flying"
+          },
+          "nonStopOnly": {
+            "type": "boolean",
+            "description": "Only show non-stop flights"
+          },
+          "preferredCarriers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional list of airlines that are preferred."
+          },
+          "excludeCarriers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional list of airlines that should be avoided."
+          }
+        }
+      },
+      "searchStaysRequest": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "The city where you need a stay"
+          },
+          "hotelName": {
+            "type": "string",
+            "description": "Name of the specific hotel for which the user wants to search. Optional only required when a specific hotel is requested."
+          },
+          "landmark": {
+            "type": "string",
+            "description": "Optional landmark to refine the location"
+          },
+          "address": {
+            "type": "string",
+            "description": "Optional address to refine the location"
+          },
+          "checkinDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Check-in date"
+          },
+          "checkoutDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Check out date"
+          },
+          "numAdults": {
+            "type": "integer",
+            "description": "Number of adults that are staying."
+          },
+          "numChildren": {
+            "type": "integer",
+            "description": "Number of children that are staying"
+          },
+          "numRooms": {
+            "type": "integer",
+            "description": "Number of rooms needed"
+          },
+          "minNumStars": {
+            "type": "integer",
+            "description": "Minimum number of stars the accommodation should have"
+          },
+          "preferredAmenities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/hotelAmenity"
+            },
+            "description": "Specify one or many amenities that the accommodation should offer"
+          },
+          "preferredFreebies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/hotelFreebie"
+            },
+            "description": "Specify one or many freebies that should be included in the room rate"
+          }
+        }
+      },
+      "searchCarsRequest": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "The location where you want to pick your rental car"
+          },
+          "destination": {
+            "type": "string",
+            "description": "The location where you want to drop off your rental car. Will take the origin if no other location is given."
+          },
+          "pickupDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The date when you want to pick up your rental car"
+          },
+          "pickupHour": {
+            "type": "integer",
+            "description": "Rental car pick up hour in 24-hour format. Optional parameter that defaults to noon."
+          },
+          "dropoffDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The date when you want to drop off your rental car"
+          },
+          "dropoffHour": {
+            "type": "integer",
+            "description": "Rental car drop off hour in 24-hour format. Optional parameter that defaults to noon."
+          }
+        }
+      },
+      "exploreRequest": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "The origin from which the flight starts. Will be approximated if not specified."
+          },
+          "destinationHints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional list of cities that are requested to be included in the results, if prices are available."
+          },
+          "departDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date of the flight at the origin"
+          },
+          "returnDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Return date of the flight. Must be specified when a departure date is given."
+          },
+          "budgetUsd": {
+            "type": "integer",
+            "description": "Expected cost of round trip flight ticket for one person"
+          },
+          "nonStopOnly": {
+            "type": "boolean",
+            "description": "Only show non-stop flights"
+          },
+          "useExactDates": {
+            "type": "boolean",
+            "description": "Set to true if travel on specific dates is requested. The default is flexible travel within a time period."
+          },
+          "minDays": {
+            "type": "integer",
+            "description": "Minimum duration that the suggested trips should have. Expressed in the number of days"
+          },
+          "maxDays": {
+            "type": "integer",
+            "description": "Maximum duration that the suggested trips should have. Expressed in the number of days"
+          }
+        }
+      },
+      "flightInsightsRequest": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "The origin from which the flight starts. Will be approximated if not specified."
+          },
+          "destination": {
+            "type": "string",
+            "description": "The destination to which the flight goes"
+          },
+          "departDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date of the flight at the origin"
+          },
+          "returnDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Return date of the flight. Only required for round trip flights"
+          },
+          "nonStopOnly": {
+            "type": "boolean",
+            "description": "Only show non-stop pricing if non-stop flights are available on the requested route"
+          }
+        }
+      },
+      "hotelAmenity": {
+        "type": "string",
+        "enum": [
+          "spa",
+          "pool",
+          "pet_friendly",
+          "beach_front",
+          "fitness_center",
+          "kitchen",
+          "parking",
+          "adult_only",
+          "wifi",
+          "ev_charger",
+          "facilities_disabled_guests",
+          "elevator"
+        ]
+      },
+      "hotelFreebie": {
+        "type": "string",
+        "enum": [
+          "free_cancellation",
+          "free_breakfast",
+          "free_internet",
+          "all_inclusive"
+        ]
+      }
+    }
+  }
+}

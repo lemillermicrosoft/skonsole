@@ -12,6 +12,9 @@
       "program": "${workspaceFolder}/apps/SKonsole/bin/Debug/net7.0/SKonsole.dll",
       "args": [
         /*"commit"*/
+        "stepwise",
+        "optionset",
+        "wellknown++"
       ],
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",

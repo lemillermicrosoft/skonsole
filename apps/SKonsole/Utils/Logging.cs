@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace SKonsole.Utils;
 
@@ -14,7 +16,8 @@ internal static class Logging
                     .AddFilter("AzureChatCompletion", LogLevel.Error)
                     .AddFilter("System", LogLevel.Error)
                     .AddFilter("SKonsole", LogLevel.Information)
-                    .AddConsole();
+                    // .AddFilter("Microsoft.SemanticKernel.Planning.StepwisePlanner", LogLevel.Information)
+                    .AddConsole();// todo instead of Console use Spectre.Console | AnsiConsole
             });
     }
 }

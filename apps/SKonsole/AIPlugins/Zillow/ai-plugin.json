@@ -1,0 +1,378 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Zillow ChatGPT Plugin Service",
+    "description": "A service that enables users to find homes for sale or rent using the Zillow ChatGPT Plugin.",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "https://plugins.zillow.com"
+    }
+  ],
+  "paths": {
+    "/api/v2/property/search": {
+      "get": {
+        "operationId": "propertiesSearch",
+        "summary": "Find a list of current homes for sale or for rent based on search criteria. Will return property and listing information for each home in the results.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "neighborhood",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Neighborhood that homes returned in results will be located in"
+          },
+          {
+            "in": "query",
+            "name": "zipCode",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Zip code or postal code that homes returned in results will be located in"
+          },
+          {
+            "in": "query",
+            "name": "city",
+            "schema": {
+              "type": "string"
+            },
+            "description": "City that homes returned in results will be located in"
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "type": "string"
+            },
+            "description": "State that homes returned in results will be located in"
+          },
+          {
+            "in": "query",
+            "name": "minPrice",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Minimum for sale price for the for sale listings returned or the minimum monthly rental price for the for rent listings returned"
+          },
+          {
+            "in": "query",
+            "name": "maxPrice",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum for sale price for the for sale listings returned or the maximum monthly rental price for the for rent listings returned"
+          },
+          {
+            "in": "query",
+            "name": "minBedrooms",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Minimum number of bedrooms in the homes that will be returned"
+          },
+          {
+            "in": "query",
+            "name": "maxBedrooms",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Maximum number of bedrooms in the homes that will be returned"
+          },
+          {
+            "in": "query",
+            "name": "minBathrooms",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Minimum number of bathrooms in the homes that will be returned"
+          },
+          {
+            "in": "query",
+            "name": "maxBathrooms",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Maximum number of bathrooms in the homes that will be returned"
+          },
+          {
+            "in": "query",
+            "name": "listingType",
+            "schema": {
+              "type": "string",
+              "enum": ["sale", "rent", "sold"],
+              "default": "sale"
+            },
+            "description": "Use 'sale' to return homes that are currently available to purchase. Use 'rent' to return homes that are currently available to rent. Use 'sold' to return homes that have recently sold."
+          },
+          {
+            "in": "query",
+            "name": "homeType",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "townhome",
+                "land",
+                "manufactured",
+                "multiFamily",
+                "apartment",
+                "condo",
+                "singleFamily"
+              ],
+              "default": "all"
+            },
+            "description": "Type of homes that will be returned"
+          },
+          {
+            "in": "query",
+            "name": "hasOpenHouse",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filter results to only include homes that have an open house"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "daysOn",
+                "yearBuilt",
+                "price",
+                "lotArea",
+                "livingArea",
+                "beds",
+                "baths"
+              ],
+              "default": "daysOn"
+            },
+            "description": "Sort results based on an attribute about the home. 'DaysOn' means how many days the home has been available for sale or for rent."
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            },
+            "description": "Use 'asc' to sort the results from smallest to largest based on sortBy. Use 'desc' to sort the results from largest to smallest based on sortBy."
+          },
+          {
+            "in": "query",
+            "name": "userQuestion",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The question the user is asking in the prompt"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/property/details": {
+      "get": {
+        "operationId": "propertyDetails",
+        "summary": "Find information about a specific home. Will return property and listing information for the home.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "address",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Address of the property to lookup"
+          },
+          {
+            "in": "query",
+            "name": "zpid",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Identifier for the home that was returned in this plugin's Search API"
+          },
+          {
+            "in": "query",
+            "name": "userQuestion",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The question the user is asking in the prompt"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Property"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "searchLink": {
+            "type": "string",
+            "description": "Link to this home search on Zillow. User can see more results or do additional filtering."
+          },
+          "searchResults": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Property"
+            }
+          }
+        }
+      },
+      "Property": {
+        "type": "object",
+        "properties": {
+          "zpid": {
+            "type": "integer",
+            "description": "Identifier for the home that can be used as an input to this plugin's property details API"
+          },
+          "link": {
+            "type": "string",
+            "description": "Link to more information about this home on Zillow"
+          },
+          "address": {
+            "type": "object",
+            "description": "Address of the home",
+            "properties": {
+              "line1": {
+                "type": "string",
+                "description": "Address part of the home that includes data like house number, street name, and unit number if applicable. May be split between line1 and line2."
+              },
+              "line2": {
+                "type": "string",
+                "description": "Address part of the home that includes data like house number, street name, and unit number if applicable. May be split between line1 and line2."
+              },
+              "city": {
+                "type": "string",
+                "description": "City the home is located in"
+              },
+              "stateOrProvince": {
+                "type": "string",
+                "description": "US state or Canadian province the home is located in"
+              },
+              "postalCode": {
+                "type": "string",
+                "description": "Zip code or postal code the home is located in"
+              }
+            }
+          },
+          "geoLocation": {
+            "type": "object",
+            "description": "Latitude and longitude where the home is located",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "description": "Latitude where the home is located"
+              },
+              "longitude": {
+                "type": "number",
+                "description": "Longitude where the home is located"
+              }
+            }
+          },
+          "price": {
+            "type": "number",
+            "description": "If the home is for sale, price the home can be purchased for. If the home is for rent, the monthly rental price of the home."
+          },
+          "zestimate": {
+            "type": "number",
+            "description": "Zestimate of the home. This is Zillow's estimation of how much the home would sell for."
+          },
+          "rentZestimate": {
+            "type": "number",
+            "description": "Rent Zestimate of the home. This is Zillow's estimation of how much the home would rent for."
+          },
+          "bedrooms": {
+            "type": "number",
+            "description": "Number of bedrooms in the home"
+          },
+          "bathrooms": {
+            "type": "number",
+            "description": "Number of bathrooms in the home"
+          },
+          "livingArea": {
+            "type": "number",
+            "description": "Size of the home in the units provided in livingAreaUnits"
+          },
+          "livingAreaUnits": {
+            "type": "string",
+            "description": "Units (ex. square feet, square meters) of the size of the home provided in livingArea"
+          },
+          "lotArea": {
+            "type": "number",
+            "description": "Size of the lot of land the home is built on provided in lotAreaUnits"
+          },
+          "lotAreaUnits": {
+            "type": "string",
+            "description": "Units (ex. square feet, square meters, acres) of the size of the lot provided in lotArea"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the home's listing (ex. for rent or for sale)"
+          },
+          "homeType": {
+            "type": "string",
+            "description": "Home type (ex. single family, condo, apartment, duplex, lot/land, mobile, manufactured)"
+          },
+          "yearBuilt": {
+            "type": "number",
+            "description": "Year the home was built"
+          },
+          "description": {
+            "type": "string",
+            "description": "Written description of the home typically written by a real estate agent or landlord. Typically contains information about the key features of the home and its location."
+          },
+          "hasOpenHouse": {
+            "type": "boolean",
+            "description": "Whether or not the home has an open house available to visit"
+          },
+          "openHouses": {
+            "type": "object",
+            "description": "Times when this home listed for sale can be visited by anyone who is interested. Open houses are a low commitment way to shop for a home in person.",
+            "properties": {
+              "startTime": {
+                "type": "string",
+                "description": "Start time of the open house in the home's local time zone"
+              },
+              "endTime": {
+                "type": "string",
+                "description": "End time of the open house in the home's local time zone"
+              },
+              "openHouseMethod": {
+                "type": "string",
+                "description": "Method available to tour the open house"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
