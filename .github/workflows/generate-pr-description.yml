@@ -17,15 +17,15 @@ jobs:
 
       - name: Verify repo
         run: |
-          git rev-parse HEAD 
-      - name: Verify repo
+          git show HEAD 
+        - name: Verify repo
         run: |
-          git branch -a
+          git show actiontest 
       - name: Verify repo
         run: |
           git rev-parse main 
 
-      - name: Verify repo
+      -name: Verify repo
         run: |
           git show --ignore-space-change main..HEAD
 
