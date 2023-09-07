@@ -8,18 +8,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out Repo
+      - name: Check out repo
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-      - name: Verify repo
+      - name: Checkout branches
         run: |
           git checkout ${{ github.event.pull_request.base.ref }} ; git checkout ${{ github.event.pull_request.head.ref }} 
-
-      - name: Verify repo
-        run: |
-          git show --ignore-space-change main..HEAD
 
       - name: Setup .NET CLI
         uses: actions/setup-dotnet@v2
@@ -32,7 +28,7 @@ jobs:
       - name: Generate PR description  
         id: generate_description
         run: |  
-          echo "pr_description=$(skonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }})" >> $GITHUB_OUTPUT 
+          echo "pr_description='$(skonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }})'" >> $GITHUB_OUTPUT 
         env: # Set Azure credentials secret as an input
           AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_API_ENDPOINT: ${{ secrets.AZURE_OPENAI_API_ENDPOINT }}
