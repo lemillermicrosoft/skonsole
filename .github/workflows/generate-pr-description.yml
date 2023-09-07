@@ -20,7 +20,7 @@ jobs:
           git branch -a
       - name: Verify repo
         run: |
-          git show HEAD 
+          git checkout main
       - name: Verify repo
         run: |
           git show ${{ github.event.pull_request.head.ref }} 
