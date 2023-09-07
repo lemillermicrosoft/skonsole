@@ -17,6 +17,9 @@ jobs:
 
       - name: Verify repo
         run: |
+          git branch -a
+      - name: Verify repo
+        run: |
           git show HEAD 
       - name: Verify repo
         run: |
