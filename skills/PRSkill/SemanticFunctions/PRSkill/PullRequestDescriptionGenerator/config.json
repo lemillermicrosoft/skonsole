@@ -15,6 +15,11 @@
         "name": "input",
         "default": "",
         "description": "Part or all of a git diff or git show file output."
+      },
+      {
+        "name": "outputJson",
+        "default": "false",
+        "description": "Output the result as JSON."
       }
     ]
   }
