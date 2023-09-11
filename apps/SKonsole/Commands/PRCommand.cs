@@ -3,7 +3,6 @@ using System.CommandLine.Invocation;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using SKonsole.Utils;
 
 namespace SKonsole.Commands;
