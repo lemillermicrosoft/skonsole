@@ -31,18 +31,40 @@ jobs:
       - name: Generate PR description  
         id: generate_description
         run: |  
-          {
-            echo 'pr_description<<EOF'
-            echo "$(skonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }})"
-            echo EOF
-          } >> "$GITHUB_OUTPUT" 
+            dotnet run pr description --targetBranch ${{ github.event.pull_request.base.ref }}) --outputJson --outputFile out.txt
         env: # Set Azure credentials secret as an input
           AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_API_ENDPOINT: ${{ secrets.AZURE_OPENAI_API_ENDPOINT }}
           AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-      - name: Update PR Description  
-        uses: nefrob/pr-description@v1.1.0
-        with:  
-          token: ${{ secrets.GITHUB_TOKEN }}
-          content: |  
-            ${{ steps.generate_description.outputs.pr_description }}
+
+      - name: Parse PR title
+        id: parse_title
+        run: echo "pr_title=$(jq -r '.Title' out.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Parse PR changes
+        id: parse_changes
+        run: |
+          {
+            echo 'pr_changes<<EOF'
+            echo "$(jq -r '.Changes[]' out.txt | while read line; do echo "- $line"; done)"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create PR description
+        id: create_description
+        run: |
+          {
+            echo 'pr_description<<EOF'
+            echo "$(jq -r '.Summary' out.txt)"
+            echo ""
+            echo "${{ steps.parse_changes.outputs.pr_changes }}"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: update-pull-request
+        uses: kt3k/update-pr-description@v2
+        with:
+          pr_body: ${{ steps.create_description.outputs.pr_description }}
+          pr_title: ${{ steps.parse_title.outputs.pr_title}}
+          destination_branch: ${{ github.event.pull_request.base.ref }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
