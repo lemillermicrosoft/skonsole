@@ -42,6 +42,10 @@ jobs:
         id: parse_title
         run: echo "pr_title=$(jq -r '.Title' out.txt)" >> "$GITHUB_OUTPUT"
 
+      - name: Parse PR summary
+        id: parse_summary
+        run: echo "pr_summary=$(jq -r '.Summary' out.txt)" >> "$GITHUB_OUTPUT"
+
       - name: Parse PR changes
         id: parse_changes
         run: |
@@ -66,10 +70,17 @@ jobs:
           {
             git checkout ${{ github.event.pull_request.head.ref }} 
           }
-      - name: update-pull-request
-        uses: kt3k/update-pr-description@v2
+      - name: Create-Update PR
+        uses: k3rnels-actions/pr-update@v1
+        id: pr_update
         with:
-          pr_body: ${{ steps.create_description.outputs.pr_description }}
-          pr_title: ${{ steps.parse_title.outputs.pr_title}}
-          destination_branch: ${{ github.event.pull_request.base.ref }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title:  ${{ steps.parse_title.outputs.pr_title}}
+          pr_source: ${{ github.event.pull_request.base.ref }}
+          pr_target: ${{ github.event.pull_request.base.ref }}
+          pr_body: |
+            ### Summary
+            ${{ steps.parse_summary.outputs.pr_summary }}
+
+            ### Changes
+            ${{ steps.parse_changes.outputs.pr_changes }}
