@@ -3,6 +3,7 @@ using System.CommandLine.Invocation;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using SKonsole.Utils;
 
 namespace SKonsole.Commands;
@@ -31,13 +32,25 @@ public class PRCommand : Command
         var outputJsonOption = new Option<bool>(
                             new string[] { "--outputJson", "-j" },
                             () => { return false; },
-                            "Output the result as json. Suppresses logging.");
+                            "Output the result as json.");
 
         this.AddOption(outputJsonOption);
 
+        var outputFileOption = new Option<string>(
+                            new string[] { "--outputFile", "-f" },
+                            () => { return ""; },
+                            "Output the result to the specified file.");
+
+        this.AddOption(outputFileOption);
+
         this.Add(this.GeneratePRFeedbackCommand(targetBranchOption));
-        this.Add(this.GeneratePRDescriptionCommand(targetBranchOption, outputJsonOption));
-        this.SetHandler(async context => await RunPullRequestDescription(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main"));
+        this.Add(this.GeneratePRDescriptionCommand(targetBranchOption, outputJsonOption, outputFileOption));
+        this.SetHandler(async context => await RunPullRequestDescription(
+            context.GetCancellationToken(),
+            this._logger,
+            this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main",
+            this.TryGetValueFromOption(context, outputJsonOption),
+            this.TryGetValueFromOption(context, outputFileOption) ?? ""));
     }
 
     private T? TryGetValueFromOption<T>(InvocationContext context, Option<T> option)
@@ -52,12 +65,13 @@ public class PRCommand : Command
         return prFeedbackCommand;
     }
 
-    private Command GeneratePRDescriptionCommand(Option<string> targetBranchOption, Option<bool> outputJsonOption)
+    private Command GeneratePRDescriptionCommand(Option<string> targetBranchOption, Option<bool> outputJsonOption, Option<string> outputFileOption)
     {
         var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
         prDescriptionCommand.AddOption(targetBranchOption);
         prDescriptionCommand.AddOption(outputJsonOption);
-        prDescriptionCommand.SetHandler(async context => await RunPullRequestDescription(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main", this.TryGetValueFromOption(context, outputJsonOption)));
+        prDescriptionCommand.AddOption(outputFileOption);
+        prDescriptionCommand.SetHandler(async context => await RunPullRequestDescription(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main", this.TryGetValueFromOption(context, outputJsonOption), this.TryGetValueFromOption(context, outputFileOption) ?? ""));
         return prDescriptionCommand;
     }
 
@@ -88,7 +102,7 @@ public class PRCommand : Command
         logger.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
     }
 
-    private static async Task RunPullRequestDescription(CancellationToken token, ILogger logger, string targetBranch = "origin/main", bool outputJson = false)
+    private static async Task RunPullRequestDescription(CancellationToken token, ILogger logger, string targetBranch = "origin/main", bool outputJson = false, string outputFile = "")
     {
         var kernel = KernelProvider.Instance.Get();
 
@@ -111,8 +125,19 @@ public class PRCommand : Command
 
         var contextVariables = new ContextVariables(output);
         contextVariables.Set("outputJson", outputJson.ToString().ToLowerInvariant());
-        var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GeneratePR"]);
-        logger.LogInformation("{result}", kernelResponse.Result);
+
+        var kernelResponse = await kernel.RunAsync(contextVariables, token, pullRequestSkill["GeneratePR"]);
+        logger.LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);
+
+        if (!string.IsNullOrEmpty(outputFile))
+        {
+            var directory = Path.GetDirectoryName(outputFile);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            System.IO.File.WriteAllText(outputFile, kernelResponse.Result);
+        }
     }
 
     private readonly ILogger _logger;
