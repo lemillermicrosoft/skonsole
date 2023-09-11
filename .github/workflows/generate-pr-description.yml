@@ -31,7 +31,7 @@ jobs:
       - name: Generate PR description  
         id: generate_description
         run: |  
-            dotnet run pr description --targetBranch ${{ github.event.pull_request.base.ref }}) --outputJson --outputFile out.txt
+            dotnet run pr description --targetBranch ${{ github.event.pull_request.base.ref }} --outputJson --outputFile out.txt
         env: # Set Azure credentials secret as an input
           AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_API_ENDPOINT: ${{ secrets.AZURE_OPENAI_API_ENDPOINT }}
