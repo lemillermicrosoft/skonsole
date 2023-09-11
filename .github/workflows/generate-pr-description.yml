@@ -18,6 +18,7 @@ jobs:
           {
             git checkout ${{ github.event.pull_request.base.ref }}
             git checkout ${{ github.event.pull_request.head.ref }} 
+            git checkout outputjson
           }
 
       - name: Setup .NET CLI
