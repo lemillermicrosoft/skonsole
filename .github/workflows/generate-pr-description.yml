@@ -55,16 +55,6 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
-      - name: Create PR description
-        id: create_description
-        run: |
-          {
-            echo 'pr_description<<EOF'
-            echo "$(jq -r '.Summary' out.txt)"
-            echo ""
-            echo "${{ steps.parse_changes.outputs.pr_changes }}"
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
       - name: Checkout branches
         run: |
           {
