@@ -19,6 +19,8 @@ jobs:
             git checkout ${{ github.event.pull_request.base.ref }}
             git checkout ${{ github.event.pull_request.head.ref }} 
           }
+      - name: ls
+        run: ls
 
       - name: Setup .NET CLI
         uses: actions/setup-dotnet@v2
