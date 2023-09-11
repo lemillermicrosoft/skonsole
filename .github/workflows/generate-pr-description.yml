@@ -76,7 +76,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           pr_title:  ${{ steps.parse_title.outputs.pr_title}}
-          pr_source: ${{ github.event.pull_request.base.ref }}
+          pr_source: ${{ github.event.pull_request.head.ref }}
           pr_target: ${{ github.event.pull_request.base.ref }}
           pr_body: |
             ### Summary
