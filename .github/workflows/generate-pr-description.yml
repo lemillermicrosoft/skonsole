@@ -1,23 +1,29 @@
 name: Generate PR Description
 
 on:
-  pull_request
+  issue_comment:
+    types: [created]
 
 jobs:
   generate-pr-description:
     runs-on: ubuntu-latest
-
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '/deploy')
     steps:
+      - name: Get PR branch
+        uses: xt0rted/pull-request-comment-branch@v1
+        id: comment-branch
       - name: Check out repo
         uses: actions/checkout@v4
+        if: success()
         with:
+          ref: ${{ steps.comment-branch.outputs.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
       - name: Checkout branches
         run: |
           {
-            git checkout ${{ github.event.pull_request.base.ref }}
-            git checkout ${{ github.event.pull_request.head.ref }} 
+            git checkout ${{ steps.comment-branch.outputs.head_ref }}
+            git checkout ${{ steps.comment-branch.outputs.head_ref }}
             git checkout outputjson
           }
 
