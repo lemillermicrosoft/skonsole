@@ -61,7 +61,11 @@ jobs:
             echo "${{ steps.parse_changes.outputs.pr_changes }}"
             echo EOF
           } >> "$GITHUB_OUTPUT"
-
+      - name: Checkout branches
+        run: |
+          {
+            git checkout ${{ github.event.pull_request.head.ref }} 
+          }
       - name: update-pull-request
         uses: kt3k/update-pr-description@v2
         with:
