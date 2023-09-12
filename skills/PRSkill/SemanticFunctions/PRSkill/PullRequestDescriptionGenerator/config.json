@@ -15,6 +15,11 @@
         "name": "input",
         "default": "",
         "description": "Part or all of a git diff or git show file output."
+      },
+      {
+        "name": "outputFormatInstructions",
+        "default": "",
+        "description": "Instructions for formatting output if different from plain text."
       }
     ]
   }

@@ -1,6 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <PackageId>SKonsole</PackageId>
+    <Version>1.0.2</Version>
+    <Authors>Lee Miller</Authors>
+    <Company>Microsoft</Company>
+    <PackageDescription>A console app built on Semantic Skills</PackageDescription>
+    <RepositoryUrl>https://github.com/lemillermicrosoft/skonsole</RepositoryUrl>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -10,8 +16,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="0.21.230828.2-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.21.230828.2-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="0.22.230905.3-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.22.230905.3-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Planning.StepwisePlanner" Version="0.22.230905.3-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Reliability.Basic" Version="0.22.230905.3-preview" />
     <PackageReference Include="Spectre.Console" Version="0.47.0" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageReference Include="TextCopy" Version="6.2.1" />

@@ -32,14 +32,11 @@ public class KernelProvider
         }
 
         var _kernel = kernelBuilder
-            .Configure((config) =>
+            .WithRetryBasic(new()
             {
-                config.SetDefaultHttpRetryConfig(new HttpRetryConfig
-                {
-                    MaxRetryCount = 3,
-                    MinRetryDelay = TimeSpan.FromSeconds(8),
-                    UseExponentialBackoff = true,
-                });
+                MaxRetryCount = 3,
+                MinRetryDelay = TimeSpan.FromSeconds(8),
+                UseExponentialBackoff = true,
             })
             .WithLoggerFactory(s_loggerFactory)
             .Build();

@@ -9,6 +9,8 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using CondenseSkillLib;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using System.ComponentModel;
+using System.Net.WebSockets;
+using System.Text.Json.Nodes;
 
 namespace PRSkill;
 
@@ -147,9 +149,10 @@ public class PullRequestSkill
     {
         var prGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
 
-
         var prGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
-        var prompt = (await prGeneratorCapture.InvokeAsync()).Result;
+        var contextVariablesWithoutInput = context.Variables.Clone();
+        contextVariablesWithoutInput.Set("input", "");
+        var prompt = (await prGeneratorCapture.InvokeAsync(contextVariablesWithoutInput)).Result;
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
         return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult");
