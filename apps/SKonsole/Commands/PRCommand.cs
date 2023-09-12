@@ -28,12 +28,12 @@ public class PRCommand : Command
 
         this.AddOption(targetBranchOption);
 
-        var outputJsonOption = new Option<bool>(
-                            new string[] { "--outputJson", "-j" },
-                            () => { return false; },
-                            "Output the result as json.");
+        var outputFormatOption = new Option<string>(
+                            new string[] { "--outputFormat", "-o" },
+                            () => { return ""; },
+                            "Output the result in a specified format. Supported formats are json, markdown, and text. Omit to output in plain text.");
 
-        this.AddOption(outputJsonOption);
+        this.AddOption(outputFormatOption);
 
         var outputFileOption = new Option<string>(
                             new string[] { "--outputFile", "-f" },
@@ -43,12 +43,12 @@ public class PRCommand : Command
         this.AddOption(outputFileOption);
 
         this.Add(this.GeneratePRFeedbackCommand(targetBranchOption));
-        this.Add(this.GeneratePRDescriptionCommand(targetBranchOption, outputJsonOption, outputFileOption));
+        this.Add(this.GeneratePRDescriptionCommand(targetBranchOption, outputFormatOption, outputFileOption));
         this.SetHandler(async context => await RunPullRequestDescription(
             context.GetCancellationToken(),
             this._logger,
             this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main",
-            this.TryGetValueFromOption(context, outputJsonOption),
+            this.TryGetValueFromOption(context, outputFormatOption) ?? "",
             this.TryGetValueFromOption(context, outputFileOption) ?? ""));
     }
 
@@ -64,13 +64,13 @@ public class PRCommand : Command
         return prFeedbackCommand;
     }
 
-    private Command GeneratePRDescriptionCommand(Option<string> targetBranchOption, Option<bool> outputJsonOption, Option<string> outputFileOption)
+    private Command GeneratePRDescriptionCommand(Option<string> targetBranchOption, Option<string> outputFormatOption, Option<string> outputFileOption)
     {
         var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
         prDescriptionCommand.AddOption(targetBranchOption);
-        prDescriptionCommand.AddOption(outputJsonOption);
+        prDescriptionCommand.AddOption(outputFormatOption);
         prDescriptionCommand.AddOption(outputFileOption);
-        prDescriptionCommand.SetHandler(async context => await RunPullRequestDescription(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main", this.TryGetValueFromOption(context, outputJsonOption), this.TryGetValueFromOption(context, outputFileOption) ?? ""));
+        prDescriptionCommand.SetHandler(async context => await RunPullRequestDescription(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main", this.TryGetValueFromOption(context, outputFormatOption) ?? "", this.TryGetValueFromOption(context, outputFileOption) ?? ""));
         return prDescriptionCommand;
     }
 
@@ -101,7 +101,7 @@ public class PRCommand : Command
         logger.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
     }
 
-    private static async Task RunPullRequestDescription(CancellationToken token, ILogger logger, string targetBranch = "origin/main", bool outputJson = false, string outputFile = "")
+    private static async Task RunPullRequestDescription(CancellationToken token, ILogger logger, string targetBranch = "origin/main", string outputFormat = "", string outputFile = "")
     {
         var kernel = KernelProvider.Instance.Get();
 
@@ -123,7 +123,7 @@ public class PRCommand : Command
         var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
         var contextVariables = new ContextVariables(output);
-        contextVariables.Set("outputJson", outputJson.ToString().ToLowerInvariant());
+        contextVariables.Set("outputFormatInstructions", PRSkill.Utils.FormatInstructionsProvider.GetOutputFormatInstructions(outputFormat));
 
         var kernelResponse = await kernel.RunAsync(contextVariables, token, pullRequestSkill["GeneratePR"]);
         logger.LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);

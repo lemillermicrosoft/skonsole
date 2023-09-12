@@ -17,9 +17,9 @@
         "description": "Part or all of a git diff or git show file output."
       },
       {
-        "name": "outputJson",
-        "default": "false",
-        "description": "Output the result as JSON."
+        "name": "outputFormatInstructions",
+        "default": "",
+        "description": "Instructions for formatting output if different from plain text."
       }
     ]
   }

@@ -16,11 +16,6 @@ To complete this task, review the changes made in [GITDIFFCONTENT] and use this 
 Then, write a summary of the changes made, highlighting the key points and the most important changes.
 Finally, create a detailed list of specific changes, including any relevant details or context, and be sure to focus on the most important and relevant changes while avoiding unnecessary or redundant information.
 
-Output the result as json with fields for Title, Summary, and a list of Changes. 
-For example, result:
-{"Title": "My Title", "Summary": "My Summary", "Changes": ["Change 1", "Change 2"]}
-Otherwise return the result as a string WITHOUT formatting it in JSON.
-
-OUTPUT_JSON: {{$outputJson}}
+{{$outputFormatInstructions}}
 
 Result:
