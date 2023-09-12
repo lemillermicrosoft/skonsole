@@ -13,4 +13,10 @@ internal static class Configuration
 
         return value;
     }
+
+    internal static string? ConfigOption(string name)
+    {
+        var provider = ConfigurationProvider.Instance;
+        return provider.Get(name);
+    }
 }

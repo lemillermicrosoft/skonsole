@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using Spectre.Console;
+using SKonsole.Utils;
 
 namespace SKonsole.Commands;
 
@@ -54,40 +55,109 @@ public class ConfigCommand : Command
 
     private static async Task RunConfigAsync(CancellationToken token)
     {
+        var mainMenuKeys = new[] { "LLM" };
+        await ConfigOrExitAsync(mainMenuKeys,
+        "Select config:",
+        async (configKey) =>
+        {
+            if (configKey == "LLM")
+            {
+                await LLMConfigAsync(token);
+            }
+        }, token);
+    }
+
+    private static async Task ConfigOrExitAsync(string[] menuKeys, string title, Func<string, Task> ConfigTask, CancellationToken token)
+    {
+        const string Exit = nameof(Exit);
+
+        var keysWithExit = menuKeys.Append(Exit).ToArray();
         while (!token.IsCancellationRequested)
         {
-            var keys = new[]
-            {
-                "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME",
-                "AZURE_OPENAI_API_ENDPOINT",
-                "AZURE_OPENAI_API_KEY"
-            };
-
-            var config = new ConfigurationProvider();
-            var configKey = await new SelectionPrompt<string>()
-                    .Title("Select key to config:")
-                    .AddChoices(keys)
+            var selectItem = await new SelectionPrompt<string>()
+                    .Title(title)
+                    .AddChoices(keysWithExit)
                     .ShowAsync(AnsiConsole.Console, token);
 
-            var currentValue = config.Get(configKey);
+            if (selectItem == Exit)
+            {
+                return;
+            }
 
+            await ConfigTask(selectItem);
+        }
+    }
+
+    private static async Task RunKeyValueConfigAsync(string[] keys, CancellationToken cancellationToken)
+    {
+        var config = ConfigurationProvider.Instance;
+        await ConfigOrExitAsync(keys,
+        "Select config:",
+        async (configKey) =>
+        {
+            var hasSecret = configKey.Contains("KEY", StringComparison.OrdinalIgnoreCase);
+            var currentValue = config.Get(configKey);
             var value = await new TextPrompt<string>($"Set value for [green]{configKey}[/]")
-                .DefaultValue(currentValue ?? string.Empty)
-                .HideDefaultValue()
-                .Validate((value) =>
-                {
-                    if (string.IsNullOrWhiteSpace(value))
-                    {
-                        return ValidationResult.Error("[red]Value cannot be empty[/]");
-                    }
-                    return ValidationResult.Success();
-                })
-                .AllowEmpty()
-                .ShowAsync(AnsiConsole.Console, token);
+                                .DefaultValue(currentValue ?? string.Empty)
+                                .IsSecret(hasSecret)
+                                .Validate((value) =>
+                                {
+                                    if (string.IsNullOrWhiteSpace(value))
+                                    {
+                                        return ValidationResult.Error("[red]Value cannot be empty[/]");
+                                    }
+                                    return ValidationResult.Success();
+                                })
+                                .AllowEmpty()
+                                .ShowAsync(AnsiConsole.Console, cancellationToken);
+
             if (!string.IsNullOrWhiteSpace(value))
             {
                 await config.SaveConfig(configKey, value.Trim());
             }
-        }
+
+        }, cancellationToken);
+    }
+
+    private static async Task LLMConfigAsync(CancellationToken cancellationToken)
+    {
+
+        await ConfigOrExitAsync(new[]
+            {
+                ConfigConstants.AzureOpenAI,
+                ConfigConstants.OpenAI
+            },
+        "Select LLM:",
+        async (LLM) =>
+        {
+            var config = ConfigurationProvider.Instance;
+
+            switch (LLM)
+            {
+                case ConfigConstants.AzureOpenAI:
+                {
+                    var keys = new[]
+                    {
+                    ConfigConstants.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME,
+                    ConfigConstants.AZURE_OPENAI_API_ENDPOINT,
+                    ConfigConstants.AZURE_OPENAI_API_KEY
+                    };
+                    await RunKeyValueConfigAsync(keys, cancellationToken);
+                    await config.SaveConfig(ConfigConstants.LLM_PROVIDER, ConfigConstants.AzureOpenAI);
+                    break;
+                }
+                case ConfigConstants.OpenAI:
+                {
+                    var keys = new[]
+                    {
+                    ConfigConstants.OPENAI_CHAT_MODEL_ID,
+                    ConfigConstants.OPENAI_API_KEY
+                    };
+                    await RunKeyValueConfigAsync(keys, cancellationToken);
+                    await config.SaveConfig(ConfigConstants.LLM_PROVIDER, ConfigConstants.OpenAI);
+                    break;
+                }
+            }
+        }, cancellationToken);
     }
 }
