@@ -38,7 +38,7 @@ jobs:
       - name: Generate PR description  
         id: generate_description
         run: |  
-            dotnet run --project apps/SKonsole pr description --targetBranch ${{ github.event.pull_request.base.ref }} --outputJson --outputFile out.txt
+            dotnet run --project apps/SKonsole pr description --targetBranch ${{ steps.comment-branch.outputs.base_ref }} --outputFormat json --outputFile out.txt
         env: # Set Azure credentials secret as an input
           AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_API_ENDPOINT: ${{ secrets.AZURE_OPENAI_API_ENDPOINT }}
@@ -64,7 +64,7 @@ jobs:
       - name: Checkout branches
         run: |
           {
-            git checkout ${{ github.event.pull_request.head.ref }} 
+            git checkout ${{ steps.comment-branch.outputs.head_ref }}
           }
       - name: Create-Update PR
         uses: k3rnels-actions/pr-update@v1
@@ -72,11 +72,11 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           pr_title:  ${{ steps.parse_title.outputs.pr_title}}
-          pr_source: ${{ github.event.pull_request.head.ref }}
-          pr_target: ${{ github.event.pull_request.base.ref }}
+          pr_source: ${{ steps.comment-branch.outputs.head_ref }}
+          pr_target: ${{ steps.comment-branch.outputs.base_ref }}
           pr_body: |
-            ### Summary
+            ## Summary
             ${{ steps.parse_summary.outputs.pr_summary }}
 
-            ### Changes
+            ## Changes
             ${{ steps.parse_changes.outputs.pr_changes }}
