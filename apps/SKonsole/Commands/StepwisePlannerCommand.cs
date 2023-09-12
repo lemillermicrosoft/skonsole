@@ -13,6 +13,8 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using SKonsole.Utils;
 using Spectre.Console;
 using System.Reflection;
+using SKonsole.Skills;
+using System.Text.Json;
 
 namespace SKonsole.Commands;
 
@@ -74,6 +76,50 @@ public class StepwisePlannerCommand : Command
     {
         var kernel = KernelProvider.Instance.Get();
 
+        var LoadSequentialPlanner = () =>
+        {
+            var planner = new SequentialPlanner(kernel);
+
+            kernel.RegisterCustomFunction(SKFunction.FromNativeFunction((string goal) =>
+            {
+                var plan = planner.CreatePlanAsync(goal).ConfigureAwait(false).GetAwaiter().GetResult();
+                return plan.InvokeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            }, "PlanAndExecute", "Run", "Creates a multi-step plan and executes it using all available functions. The plan is created from the goal which should contain relevant parameters."));
+        };
+        var planJson = "";
+        var LoadMeetingSummary = () =>
+        {
+            var summary = kernel.ImportSkill(new CustomConversationSummarySkill(kernel, 4000), "summary");
+            var file = kernel.ImportSkill(new FileIOSkill(), "file");
+
+            // Generate a summary of the meeting transcript 'C:\Users\lemiller\Downloads\SK Product Review_2023-09-07.vtt'
+            var plan = new Plan("Meeting Summary - Generate a complete meeting summary for a given transcript file.");
+
+            var fileStep = new Plan(file["Read"]);
+            fileStep.Parameters["path"] = "$INPUT";
+            fileStep.Outputs.Add("FILE_CONTENTS");
+
+            var summarizeStep = new Plan(summary["SummarizeConversation"]);
+            summarizeStep.Parameters["input"] = "$FILE_CONTENTS";
+            summarizeStep.Outputs.Add("SUMMARY");
+
+            var actionItemStep = new Plan(summary["GetConversationActionItems"]);
+            actionItemStep.Parameters["input"] = "$FILE_CONTENTS";
+            actionItemStep.Outputs.Add("ACTION_ITEMS");
+
+            plan.AddSteps(fileStep, summarizeStep, actionItemStep);
+            plan.Outputs.Add("SUMMARY");
+            plan.Outputs.Add("ACTION_ITEMS");
+
+            plan.Name = "GenerateMeetingSummary";
+
+            kernel.ImportPlan(plan);
+            planJson = plan.ToJson();
+            Console.WriteLine(plan.ToJson(true));
+            Console.WriteLine("::");
+            Console.WriteLine(JsonSerializer.Serialize(plan.Describe()));
+        };
+
         var LoadWellKnown = () =>
         {
             // get https://www.wellknown.ai/api/plugins which is {"plugins": [{ai-plugin.json}, ...]}
@@ -126,11 +172,18 @@ public class StepwisePlannerCommand : Command
             var search = kernel.ImportSkill(bing, "bing");
         }
 
+        if (optionSet.Contains("plan"))
+        {
+            // LoadSequentialPlanner();
+            LoadMeetingSummary();
+        }
+
         if (optionSet.Contains("++"))
         {
             kernel.ImportSkill(new TimeSkill(), "time");
             kernel.ImportSkill(new ConversationSummarySkill(kernel), "summary");
             kernel.ImportSkill(new FileIOSkill(), "file");
+            kernel.ImportSkill(new TextSkill(), "text");
 
             // https://turingbotdev.blob.core.windows.net/chatgpt-plugins/kayak/api.yaml
 
@@ -216,10 +269,16 @@ public class StepwisePlannerCommand : Command
             // var result = await plan.InvokeAsync();
 
             // Option 3 - Respond to the history with prompt
-            var plan2 = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message.");
-            var result = await plan2.InvokeAsync();
+            // var plan2 = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message.");// When taking steps involving reading files or long string content, call 'PlanAndExecute.Run' instead of the function directly.");
+            // var result = await plan2.InvokeAsync();
 
-            return result;
+            if (this._kernel.Skills.TryGetFunction("Plan", "GenerateMeetingSummary", out var plan))
+            {
+                return await plan.InvokeAsync(@"C:\Users\lemiller\Downloads\SK Product Review_2023-09-07.vtt");
+            }
+
+
+            return this._kernel.CreateNewContext();
         }
     }
 

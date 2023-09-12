@@ -12,6 +12,8 @@ internal static class Logging
             {
                 builder
                     .SetMinimumLevel(LogLevel.Information)
+                    // .AddFilter("Microsoft.SemanticKernel.Planning", LogLevel.Information)
+                    // .AddFilter("Microsoft.SemanticKernel.TemplateEngine.Prompt", LogLevel.Trace)
                     .AddFilter("Microsoft", LogLevel.Error)
                     .AddFilter("AzureChatCompletion", LogLevel.Error)
                     .AddFilter("System", LogLevel.Error)
