@@ -20,69 +20,15 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           status: pending
 
-      - name: Check out repo
-        uses: actions/checkout@v4
-        if: success()
+      - name: Generate PR description
+        uses: mkarle/skonsole-generate-pr-description@v1
         with:
-          ref: ${{ steps.comment-branch.outputs.head_ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-
-      - name: Checkout branches
-        run: |
-          {
-            git checkout ${{ steps.comment-branch.outputs.base_ref }}
-            git checkout ${{ steps.comment-branch.outputs.head_ref }}
-          }
-
-      - name: Setup .NET CLI
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: 7.0.x
-
-      - name: Install SKonsole
-        run: dotnet tool install --global SKonsole --version 1.0.2
-
-      - name: Generate PR description  
-        id: generate_description
-        run: |  
-            skonsole pr description --targetBranch ${{ steps.comment-branch.outputs.base_ref }} --outputFormat json --outputFile out.txt
+          target-branch: ${{ steps.comment-branch.outputs.base_ref }}
+          source-branch: ${{ steps.comment-branch.outputs.head_ref }}
         env: # Set Azure credentials secret as an input
           AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_API_ENDPOINT: ${{ secrets.AZURE_OPENAI_API_ENDPOINT }}
           AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-
-      - name: Parse PR title
-        id: parse_title
-        run: echo "pr_title=$(jq -r '.Title' out.txt)" >> "$GITHUB_OUTPUT"
-
-      - name: Parse PR summary
-        id: parse_summary
-        run: echo "pr_summary=$(jq -r '.Summary' out.txt)" >> "$GITHUB_OUTPUT"
-
-      - name: Parse PR changes
-        id: parse_changes
-        run: |
-          {
-            echo 'pr_changes<<EOF'
-            echo "$(jq -r '.Changes[]' out.txt | while read line; do echo "- $line"; done)"
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Create-Update PR
-        uses: k3rnels-actions/pr-update@v1
-        id: pr_update
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          pr_title:  ${{ steps.parse_title.outputs.pr_title}}
-          pr_source: ${{ steps.comment-branch.outputs.head_ref }}
-          pr_target: ${{ steps.comment-branch.outputs.base_ref }}
-          pr_body: |
-            ## Summary
-            ${{ steps.parse_summary.outputs.pr_summary }}
-
-            ## Changes
-            ${{ steps.parse_changes.outputs.pr_changes }}
       
       - name: Set latest commit status as ${{ job.status }}
         uses: myrotvorets/set-commit-status-action@master
