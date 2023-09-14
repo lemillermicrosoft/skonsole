@@ -1,8 +1,6 @@
 name: Generate PR Description
 
-on:
-  issue_comment:
-    types: [created]
+on: pull_request
 
 jobs:
   generate-pr-description:
