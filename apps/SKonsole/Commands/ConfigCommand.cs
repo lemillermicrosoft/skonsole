@@ -1,6 +1,6 @@
 ﻿using System.CommandLine;
-using Spectre.Console;
 using SKonsole.Utils;
+using Spectre.Console;
 
 namespace SKonsole.Commands;
 
