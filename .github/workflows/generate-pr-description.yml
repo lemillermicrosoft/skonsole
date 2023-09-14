@@ -21,7 +21,7 @@ jobs:
       - name: Generate PR description
         uses: mkarle/skonsole-generate-pr-description@v1
         with:
-          target-branch: ${{ steps.comment-branch.outputs.base_ref }}
+          target-branch: ${{ steps.comment-branch.outputs.base_sha }}
           source-branch: ${{ steps.comment-branch.outputs.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
           update-type:  ${{ contains(github.event.comment.body, 'replace') && 'replace' || (contains(github.event.comment.body, 'prefix') && 'prefix' || 'suffix') }}
