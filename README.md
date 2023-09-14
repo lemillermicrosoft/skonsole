@@ -1,4 +1,6 @@
 
+This is a test PR. Please ignore!
+
 # SKonsole - A Console App built on Semantic Skills
 
 This repository contains a demo of a console application called SKonsole, which uses the Semantic Kernel to run various skills. The app currently supports two skills: generating commit messages and generating pull request feedback. The app uses environment variables to configure the Azure OpenAI backend.
