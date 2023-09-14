@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 
 namespace SKonsole;
@@ -9,7 +10,7 @@ public class ConfigurationProvider
     private const string _file = ".skonsole";
 
     private readonly string _path;
-    private readonly IConfiguration _configuration;
+    private IConfiguration _configuration;
     private readonly Dictionary<string, string?> _config = new();
 
     public ConfigurationProvider()
@@ -22,6 +23,40 @@ public class ConfigurationProvider
             this._config = FromJson<Dictionary<string, string?>>(File.ReadAllText(this._path)) ?? new();
         }
 
+        this.LoadConfig();
+        this.MergeDefaultConfig();
+    }
+
+    private void MergeDefaultConfig()
+    {
+        var defaultConfig = new Dictionary<string, string>()
+        {
+            { ConfigConstants.OPENAI_CHAT_MODEL_ID , "gpt-35-turbo" }
+        };
+
+        bool hasChanged = false;
+
+        foreach (var defaultConfigItem in defaultConfig)
+        {
+            if (!string.IsNullOrWhiteSpace(this._configuration[defaultConfigItem.Key]))
+            {
+                this._config[defaultConfigItem.Key] = defaultConfigItem.Value;
+                hasChanged = true;
+            }
+        }
+
+        if (hasChanged)
+        {
+            this.LoadConfig();
+        }
+    }
+
+    /// <summary>
+    /// Load or reload the configuration from the in-memory collection.
+    /// </summary>
+    [MemberNotNull(nameof(_configuration))]
+    private void LoadConfig()
+    {
         this._configuration = new ConfigurationBuilder()
             .AddEnvironmentVariables()
             .AddInMemoryCollection(this._config)
@@ -33,6 +68,8 @@ public class ConfigurationProvider
         this._config[key] = value;
 
         await File.WriteAllTextAsync(this._path, ToJson(this._config));
+
+        this.LoadConfig();
     }
 
     public string? Get(string key)
