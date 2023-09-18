@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.RegularExpressions;
 
@@ -55,7 +55,6 @@ internal static class StringEx
         return fileDiffChunks;
     }
 
-
     internal static List<string> SplitByRegex(this string input, string pattern, RegexOptions options)
     {
         var matches = Regex.Matches(input, pattern, options);
@@ -84,5 +83,4 @@ internal static class StringEx
 
         return chunks;
     }
-
 }

@@ -1,8 +1,8 @@
-namespace PRSkill.Utils;
-public class FormatInstructionsProvider
+﻿namespace PRSkill.Utils;
+public static class FormatInstructionsProvider
 {
     private const string OUTPUT_FORMAT_INSTRUCTIONS_JSON = @"
-Output the result as JSON with fields for Title, Summary, and a list of Changes. 
+Output the result as JSON with fields for Title, Summary, and a list of Changes.
 For example, result:
 {""Title"": ""My Title"", ""Summary"": ""My Summary"", ""Changes"": [""Change 1"", ""Change 2""]}
 ";
@@ -20,7 +20,7 @@ My Summary
 - Change 2
 ";
 
-    private static readonly Dictionary<string, string> _outputFormatInstructions = new()
+    private static readonly Dictionary<string, string> s_outputFormatInstructions = new()
     {
         { "json", OUTPUT_FORMAT_INSTRUCTIONS_JSON },
         { "text", OUTPUT_FORMAT_INSTRUCTIONS_TEXT },
@@ -30,13 +30,11 @@ My Summary
 
     public static string GetOutputFormatInstructions(string outputFormat)
     {
-        if (_outputFormatInstructions.TryGetValue(outputFormat, out string instructions))
+        if (s_outputFormatInstructions.TryGetValue(outputFormat, out string instructions))
         {
             return instructions;
         }
-        else
-        {
-            throw new ArgumentException($"Unsupported output format: {outputFormat}");
-        }
+
+        throw new ArgumentException($"Unsupported output format: {outputFormat}");
     }
 }
