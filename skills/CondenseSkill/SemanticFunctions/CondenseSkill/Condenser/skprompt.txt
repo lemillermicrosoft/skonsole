@@ -1,4 +1,4 @@
-[RESULTS]
+﻿[RESULTS]
 {{$input}}
 [END RESULTS]
 
