@@ -25,31 +25,36 @@ public class PRCommand : Command
                             new string[] { "--targetBranch", "-t" },
                             () => { return "origin/main"; },
                             "The target branch for the pull request.");
-
         this.AddOption(targetBranchOption);
 
         var outputFormatOption = new Option<string>(
                             new string[] { "--outputFormat", "-o" },
                             () => { return ""; },
                             "Output the result in a specified format. Supported formats are json, markdown, and text. Omit to output in plain text.");
-
         this.AddOption(outputFormatOption);
 
         var outputFileOption = new Option<string>(
                             new string[] { "--outputFile", "-f" },
                             () => { return ""; },
                             "Output the result to the specified file.");
-
         this.AddOption(outputFileOption);
 
+        var diffInputFileOption = new Option<string>(
+                            new string[] { "--diffInputFile", "-d" },
+                            () => { return ""; },
+                            "Use the specified file as the diff. Can be a file or URL.");
+        this.AddOption(diffInputFileOption);
+
         this.Add(this.GeneratePRFeedbackCommand(targetBranchOption));
-        this.Add(this.GeneratePRDescriptionCommand(targetBranchOption, outputFormatOption, outputFileOption));
+        this.Add(this.GeneratePRDescriptionCommand(targetBranchOption, outputFormatOption, outputFileOption, diffInputFileOption));
+
         this.SetHandler(async context => await RunPullRequestDescription(
             context.GetCancellationToken(),
             this._logger,
             this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main",
             this.TryGetValueFromOption(context, outputFormatOption) ?? "",
-            this.TryGetValueFromOption(context, outputFileOption) ?? ""));
+            this.TryGetValueFromOption(context, outputFileOption) ?? "",
+            this.TryGetValueFromOption(context, diffInputFileOption) ?? ""));
     }
 
     private T? TryGetValueFromOption<T>(InvocationContext context, Option<T> option)
@@ -64,13 +69,20 @@ public class PRCommand : Command
         return prFeedbackCommand;
     }
 
-    private Command GeneratePRDescriptionCommand(Option<string> targetBranchOption, Option<string> outputFormatOption, Option<string> outputFileOption)
+    private Command GeneratePRDescriptionCommand(Option<string> targetBranchOption, Option<string> outputFormatOption, Option<string> outputFileOption, Option<string> diffInputFileOption)
     {
         var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
         prDescriptionCommand.AddOption(targetBranchOption);
         prDescriptionCommand.AddOption(outputFormatOption);
         prDescriptionCommand.AddOption(outputFileOption);
-        prDescriptionCommand.SetHandler(async context => await RunPullRequestDescription(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main", this.TryGetValueFromOption(context, outputFormatOption) ?? "", this.TryGetValueFromOption(context, outputFileOption) ?? ""));
+        prDescriptionCommand.AddOption(diffInputFileOption);
+        prDescriptionCommand.SetHandler(async context => await RunPullRequestDescription(
+            context.GetCancellationToken(),
+            this._logger,
+            this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main",
+            this.TryGetValueFromOption(context, outputFormatOption) ?? "",
+            this.TryGetValueFromOption(context, outputFileOption) ?? "",
+            this.TryGetValueFromOption(context, diffInputFileOption) ?? ""));
         return prDescriptionCommand;
     }
 
@@ -101,25 +113,12 @@ public class PRCommand : Command
         logger.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
     }
 
-    private static async Task RunPullRequestDescription(CancellationToken token, ILogger logger, string targetBranch = "origin/main", string outputFormat = "", string outputFile = "")
+    private static async Task RunPullRequestDescription(CancellationToken token, ILogger logger, string targetBranch = "origin/main", string outputFormat = "", string outputFile = "", string diffInputFile = "")
     {
         var kernel = KernelProvider.Instance.Get();
 
-        using var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "git",
-                Arguments = $"show --ignore-space-change {targetBranch}..HEAD",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                StandardOutputEncoding = System.Text.Encoding.UTF8
-            }
-        };
-        process.Start();
+        var output = await FetchDiff(targetBranch, diffInputFile);
 
-        string output = process.StandardOutput.ReadToEnd();
         var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
         var contextVariables = new ContextVariables(output);
@@ -136,6 +135,37 @@ public class PRCommand : Command
                 Directory.CreateDirectory(directory);
             }
             System.IO.File.WriteAllText(outputFile, kernelResponse.Result);
+        }
+    }
+
+    private static async Task<string> FetchDiff(string targetBranch, string diffInputFile)
+    {
+        if (string.IsNullOrEmpty(diffInputFile))
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "git",
+                    Arguments = $"show --ignore-space-change {targetBranch}..HEAD",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = System.Text.Encoding.UTF8
+                }
+            };
+            process.Start();
+
+            return process.StandardOutput.ReadToEnd();
+        }
+        else if (diffInputFile.StartsWith("http"))
+        {
+            using var client = new HttpClient();
+            return await client.GetStringAsync(diffInputFile);
+        }
+        else
+        {
+            return await System.IO.File.ReadAllTextAsync(diffInputFile);
         }
     }
 
