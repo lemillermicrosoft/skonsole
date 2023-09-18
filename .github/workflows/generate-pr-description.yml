@@ -1,5 +1,7 @@
 name: Generate PR Description
 
+# Usage: Comment on a pull request with "/sk generate-pr-description <suffix(default) | prefix | replace>"
+
 on:
   issue_comment:
     types: [created]
