@@ -13,6 +13,13 @@ jobs:
         uses: xt0rted/pull-request-comment-branch@v1
         id: comment-branch
 
+      - name: Check out repo
+        uses: actions/checkout@v4
+        if: success()
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
       - name: Set latest commit status as pending
         uses: myrotvorets/set-commit-status-action@master
         with:
