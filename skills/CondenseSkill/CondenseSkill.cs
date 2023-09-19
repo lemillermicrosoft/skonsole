@@ -60,7 +60,7 @@ public class CondenseSkill
 
         // update memory with serialized list of results and call condense again
         this._logger.LogWarning($"Condensing {paragraphs.Count} paragraphs");
-        return await Condense(context, string.Join("\n", condenseResult), RESULTS_SEPARATOR);
+        return await this.Condense(context, string.Join("\n", condenseResult), RESULTS_SEPARATOR);
     }
 
     private static string CondenseSkillPath()

@@ -1,10 +1,10 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.ML.Tokenizers;
 using static Microsoft.SemanticKernel.Text.TextChunker;
 
 namespace CondenseSkillLib.Tokenizers;
 
-internal class EnglishRobertaTokenizer
+internal sealed class EnglishRobertaTokenizer
 {
     internal static TokenCounter Counter => (string input) =>
     {

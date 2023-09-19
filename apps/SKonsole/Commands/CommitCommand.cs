@@ -61,7 +61,7 @@ public class CommitCommand : Command
                 }
             };
             process.Start();
-            output = process.StandardOutput.ReadToEnd();
+            output = await process.StandardOutput.ReadToEndAsync();
         }
         else
         {
@@ -78,7 +78,7 @@ public class CommitCommand : Command
                 }
             };
             process.Start();
-            output = process.StandardOutput.ReadToEnd();
+            output = await process.StandardOutput.ReadToEndAsync();
             if (string.IsNullOrEmpty(output))
             {
                 using var retryProcess = new Process
@@ -94,7 +94,7 @@ public class CommitCommand : Command
                     }
                 };
                 retryProcess.Start();
-                output = retryProcess.StandardOutput.ReadToEnd();
+                output = await retryProcess.StandardOutput.ReadToEndAsync();
             }
         }
 
@@ -126,7 +126,7 @@ public class CommitCommand : Command
                 return result;
             });
 
-        AnsiConsole.WriteLine(botMessage.ToString());
+        AnsiConsole.WriteLine(botMessage);
         HorizontalRule(string.Empty);
     }
 

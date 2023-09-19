@@ -1,6 +1,6 @@
 ﻿namespace SKonsole;
 
-public class ConfigConstants
+public static class ConfigConstants
 {
     public const string OPENAI_CHAT_MODEL_ID = "OPENAI_CHAT_MODEL_ID";
 

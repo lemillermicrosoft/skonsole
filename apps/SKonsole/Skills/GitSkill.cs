@@ -8,7 +8,7 @@ namespace SKonsole.Skills;
 internal sealed class GitSkill
 {
     [SKFunction, Description("Run 'git diff --staged' and return it's output.")]
-    public static Task<SKContext> GitDiffStaged(SKContext context)
+    public static async Task<SKContext> GitDiffStaged(SKContext context)
     {
         using var process = new Process
         {
@@ -24,8 +24,8 @@ internal sealed class GitSkill
         };
         process.Start();
 
-        string output = process.StandardOutput.ReadToEnd();
+        string output = await process.StandardOutput.ReadToEndAsync();
         context.Variables.Update(output);
-        return Task.FromResult(context);
+        return context;
     }
 }

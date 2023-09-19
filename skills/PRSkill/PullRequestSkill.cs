@@ -1,16 +1,14 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel;
 using System.Reflection;
+using CondenseSkillLib;
 using Microsoft.Extensions.Logging;
-using PRSkill.Utils;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using CondenseSkillLib;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using System.ComponentModel;
-using System.Net.WebSockets;
-using System.Text.Json.Nodes;
+using PRSkill.Utils;
 
 namespace PRSkill;
 
@@ -208,7 +206,7 @@ internal sealed class RedirectTextCompletionResult : ITextResult
         this._completion = completion;
     }
 
-    public ModelResult ModelResult => new ModelResult(this._completion);
+    public ModelResult ModelResult => new(this._completion);
 
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {

@@ -115,13 +115,11 @@ public class ConfigCommand : Command
             {
                 await config.SaveConfig(configKey, value.Trim());
             }
-
         }, cancellationToken);
     }
 
     private static async Task LLMConfigAsync(CancellationToken cancellationToken)
     {
-
         await ConfigOrExitAsync(new[]
             {
                 ConfigConstants.AzureOpenAI,

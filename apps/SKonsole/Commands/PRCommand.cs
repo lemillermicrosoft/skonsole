@@ -104,7 +104,7 @@ public class PRCommand : Command
         };
         process.Start();
 
-        string output = process.StandardOutput.ReadToEnd();
+        string output = await process.StandardOutput.ReadToEndAsync();
 
         var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
 
@@ -156,7 +156,7 @@ public class PRCommand : Command
             };
             process.Start();
 
-            return process.StandardOutput.ReadToEnd();
+            return await process.StandardOutput.ReadToEndAsync();
         }
         else if (diffInputFile.StartsWith("http"))
         {
