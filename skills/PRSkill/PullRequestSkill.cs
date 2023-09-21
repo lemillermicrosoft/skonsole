@@ -123,7 +123,7 @@ public class PullRequestSkill
         var commitGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
 
         var commitGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
-        var prompt = (await commitGeneratorCapture.InvokeAsync(cancellationToken: cancellationToken)).Result;
+        var prompt = (await this._kernel.RunAsync(commitGeneratorCapture, cancellationToken)).Result;
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
         return await commitGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
@@ -153,7 +153,7 @@ public class PullRequestSkill
         var prGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
         var contextVariablesWithoutInput = context.Variables.Clone();
         contextVariablesWithoutInput.Set("input", "");
-        var prompt = (await prGeneratorCapture.InvokeAsync(variables: contextVariablesWithoutInput, cancellationToken: cancellationToken)).Result;
+        var prompt = (await this._kernel.RunAsync(prGeneratorCapture, contextVariablesWithoutInput, cancellationToken: cancellationToken)).Result;
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
         return await prGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult");

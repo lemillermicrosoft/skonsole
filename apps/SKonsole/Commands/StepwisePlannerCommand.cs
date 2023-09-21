@@ -6,9 +6,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SKonsole.Utils;
 using Spectre.Console;
 
@@ -50,31 +50,31 @@ public class StepwisePlannerCommand : Command
         if (optionSet.Contains("bing"))
         {
             var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
-            var bing = new WebSearchEngineSkill(bingConnector);
+            var bing = new WebSearchEnginePlugin(bingConnector);
             var search = kernel.ImportSkill(bing, "bing");
         }
 
         if (optionSet.Contains("++"))
         {
-            kernel.ImportSkill(new TimeSkill(), "time");
-            kernel.ImportSkill(new ConversationSummarySkill(kernel), "summary");
-            kernel.ImportSkill(new FileIOSkill(), "file");
+            kernel.ImportSkill(new TimePlugin(), "time");
+            kernel.ImportSkill(new ConversationSummaryPlugin(kernel), "summary");
+            kernel.ImportSkill(new FileIOPlugin(), "file");
         }
         else
         {
             if (optionSet.Contains("time"))
             {
-                kernel.ImportSkill(new TimeSkill(), "time");
+                kernel.ImportSkill(new TimePlugin(), "time");
             }
 
             if (optionSet.Contains("summary"))
             {
-                kernel.ImportSkill(new ConversationSummarySkill(kernel), "summary");
+                kernel.ImportSkill(new ConversationSummaryPlugin(kernel), "summary");
             }
 
             if (optionSet.Contains("file"))
             {
-                kernel.ImportSkill(new FileIOSkill(), "file");
+                kernel.ImportSkill(new FileIOPlugin(), "file");
             }
         }
 
@@ -104,7 +104,7 @@ public class StepwisePlannerCommand : Command
 
             // Option 3 - Respond to the history with prompt
             var plan2 = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message.");
-            var result = await plan2.InvokeAsync();
+            var result = await this._kernel.RunAsync(plan2);
 
             return result;
         }

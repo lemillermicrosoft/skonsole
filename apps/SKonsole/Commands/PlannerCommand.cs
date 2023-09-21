@@ -1,9 +1,8 @@
 ﻿using System.CommandLine;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SKonsole.Skills;
 using SKonsole.Utils;
 
@@ -50,14 +49,14 @@ public class PlannerCommand : Command
 
         kernel.ImportSkill(new WriterSkill(kernel), "writer");
         var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
-        var bing = new WebSearchEngineSkill(bingConnector);
+        var bing = new WebSearchEnginePlugin(bingConnector);
         var search = kernel.ImportSkill(bing, "bing");
 
         // var planner = new ActionPlanner();
         var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(message);
 
-        await plan.InvokeAsync();
+        await kernel.RunAsync(plan);
     }
 
     private readonly ILogger _logger;
