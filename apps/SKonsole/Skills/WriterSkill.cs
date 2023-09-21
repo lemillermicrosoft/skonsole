@@ -1,4 +1,5 @@
 ﻿using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SKonsole.Skills;
@@ -15,9 +16,15 @@ internal sealed class WriterSkill
             FunnyPoemDefinition,
             skillName: nameof(WriterSkill),
             description: "Given a input topic or description or list, write a funny poem.",
-            maxTokens: MaxTokens,
-            temperature: 0.1,
-            topP: 0.5);
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "Temperature", 0.1 },
+                    { "TopP", 0.5 },
+                    { "MaxTokens", MaxTokens }
+                }
+            });
     }
 
     private const string FunnyPoemDefinition =

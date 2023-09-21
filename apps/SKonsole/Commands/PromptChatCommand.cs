@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -49,11 +50,15 @@ public class PromptChatCommand : Command
         var promptConfig = new PromptTemplateConfig
         {
             Completion =
+            new AIRequestSettings()
             {
-                MaxTokens = 2000,
-                Temperature = 0.7,
-                TopP = 0.5,
-                StopSequences = new List<string> { "Human:", "AI:" },
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "Temperature", 0.7 },
+                    { "TopP", 0.5 },
+                    { "MaxTokens", 2000 },
+                    { "StopSequences", new List<string> { "Human:", "AI:" } }
+                }
             }
         };
         var promptTemplate = new PromptTemplate(SkPrompt, promptConfig, kernel);

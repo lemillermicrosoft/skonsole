@@ -5,6 +5,7 @@ using System.Reflection;
 using CondenseSkillLib;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -189,12 +190,12 @@ public class PullRequestSkill
 
 public class RedirectTextCompletion : ITextCompletion
 {
-    Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+    Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, AIRequestSettings requestSettings, CancellationToken cancellationToken)
     {
         return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
     }
 
-    IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+    IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, AIRequestSettings requestSettings, CancellationToken cancellationToken)
     {
         throw new NotImplementedException(); // TODO
     }
