@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SKonsole.Skills;
 

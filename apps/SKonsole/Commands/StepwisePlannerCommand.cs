@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -38,7 +37,7 @@ public class StepwisePlannerCommand : Command
         IKernel kernel = LoadOptionSet(optionSet);
 
         var stepKernel = KernelProvider.Instance.Get();
-        var functions = stepKernel.ImportSkill(new StepwiseSkill(kernel), "stepwise");
+        var functions = stepKernel.ImportPlugin(new StepwiseSkill(kernel), "stepwise");
 
         await RunChat(stepKernel, null, functions["RespondTo"]).ConfigureAwait(false);
     }
@@ -51,30 +50,30 @@ public class StepwisePlannerCommand : Command
         {
             var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
             var bing = new WebSearchEnginePlugin(bingConnector);
-            var search = kernel.ImportSkill(bing, "bing");
+            var search = kernel.ImportPlugin(bing, "bing");
         }
 
         if (optionSet.Contains("++"))
         {
-            kernel.ImportSkill(new TimePlugin(), "time");
-            kernel.ImportSkill(new ConversationSummaryPlugin(kernel), "summary");
-            kernel.ImportSkill(new FileIOPlugin(), "file");
+            kernel.ImportPlugin(new TimePlugin(), "time");
+            kernel.ImportPlugin(new ConversationSummaryPlugin(kernel), "summary");
+            kernel.ImportPlugin(new FileIOPlugin(), "file");
         }
         else
         {
             if (optionSet.Contains("time"))
             {
-                kernel.ImportSkill(new TimePlugin(), "time");
+                kernel.ImportPlugin(new TimePlugin(), "time");
             }
 
             if (optionSet.Contains("summary"))
             {
-                kernel.ImportSkill(new ConversationSummaryPlugin(kernel), "summary");
+                kernel.ImportPlugin(new ConversationSummaryPlugin(kernel), "summary");
             }
 
             if (optionSet.Contains("file"))
             {
-                kernel.ImportSkill(new FileIOPlugin(), "file");
+                kernel.ImportPlugin(new FileIOPlugin(), "file");
             }
         }
 

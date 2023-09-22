@@ -5,7 +5,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using SKonsole.Utils;
 using Spectre.Console;
 

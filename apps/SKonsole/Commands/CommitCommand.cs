@@ -98,7 +98,7 @@ public class CommitCommand : Command
             }
         }
 
-        var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
+        var pullRequestSkill = kernel.ImportPlugin(new PRSkill.PullRequestSkill(kernel));
 
         void HorizontalRule(string title, string style = "white bold")
         {

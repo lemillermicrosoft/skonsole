@@ -6,7 +6,6 @@ using CondenseSkillLib.Tokenizers;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Text;
 
 namespace CondenseSkillLib;
@@ -23,7 +22,7 @@ public class CondenseSkill
         {
             // Load semantic skill defined with prompt templates
             var folder = CondenseSkillPath();
-            var condenseSkill = kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+            var condenseSkill = kernel.ImportSemanticPluginFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
             this._logger = kernel.LoggerFactory.CreateLogger<CondenseSkill>();
         }
         catch (Exception e)
@@ -41,7 +40,7 @@ public class CondenseSkill
         string separator = "",
         CancellationToken cancellationToken = default)
     {
-        var condenser = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "Condenser");
+        var condenser = context.Functions.GetFunction(SEMANTIC_FUNCTION_PATH, "Condenser");
 
         List<string> lines = TextChunker.SplitPlainTextLines(input, CHUNK_SIZE / 8, EnglishRobertaTokenizer.Counter);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, CHUNK_SIZE, 100, tokenCounter: EnglishRobertaTokenizer.Counter);

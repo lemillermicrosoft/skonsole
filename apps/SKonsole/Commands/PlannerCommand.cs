@@ -41,16 +41,16 @@ public class PlannerCommand : Command
         var kernel = KernelProvider.Instance.Get();
 
         // Eventually, Kernel will be smarter about what skills it uses for an ask.
-        // kernel.ImportSkill(new EmailSkill(), "email");
-        // kernel.ImportSkill(new GitSkill(), "git");
-        // kernel.ImportSkill(new SearchUrlSkill(), "url");
-        // kernel.ImportSkill(new HttpSkill(), "http");
-        // kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel), "PullRequest");
+        // kernel.ImportPlugin(new EmailSkill(), "email");
+        // kernel.ImportPlugin(new GitSkill(), "git");
+        // kernel.ImportPlugin(new SearchUrlSkill(), "url");
+        // kernel.ImportPlugin(new HttpSkill(), "http");
+        // kernel.ImportPlugin(new PRSkill.PullRequestSkill(kernel), "PullRequest");
 
-        kernel.ImportSkill(new WriterSkill(kernel), "writer");
+        kernel.ImportPlugin(new WriterSkill(kernel), "writer");
         var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
         var bing = new WebSearchEnginePlugin(bingConnector);
-        var search = kernel.ImportSkill(bing, "bing");
+        var search = kernel.ImportPlugin(bing, "bing");
 
         // var planner = new ActionPlanner();
         var planner = new SequentialPlanner(kernel);
