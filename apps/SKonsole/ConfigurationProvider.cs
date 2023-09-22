@@ -7,7 +7,7 @@ namespace SKonsole;
 public class ConfigurationProvider
 {
     public static ConfigurationProvider Instance = new();
-    private const string _file = ".skonsole";
+    private const string File = ".skonsole";
 
     private readonly string _path;
     private IConfiguration _configuration;
@@ -16,11 +16,11 @@ public class ConfigurationProvider
     public ConfigurationProvider()
     {
         var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        this._path = Path.Combine(userProfile, _file);
+        this._path = Path.Combine(userProfile, File);
 
-        if (File.Exists(this._path))
+        if (System.IO.File.Exists(this._path))
         {
-            this._config = FromJson<Dictionary<string, string?>>(File.ReadAllText(this._path)) ?? new();
+            this._config = FromJson<Dictionary<string, string?>>(System.IO.File.ReadAllText(this._path)) ?? new();
         }
 
         this.LoadConfig();
@@ -67,7 +67,7 @@ public class ConfigurationProvider
     {
         this._config[key] = value;
 
-        await File.WriteAllTextAsync(this._path, ToJson(this._config));
+        await System.IO.File.WriteAllTextAsync(this._path, ToJson<Dictionary<string, string?>>(this._config));
 
         this.LoadConfig();
     }

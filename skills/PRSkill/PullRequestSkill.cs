@@ -71,7 +71,7 @@ public class PullRequestSkill
     public const string SEMANTIC_FUNCTION_PATH = "PRSkill";
     private const int CHUNK_SIZE = 8000; // Eventually this should come from the kernel
 
-    private readonly CondenseSkill condenseSkill;
+    private readonly CondenseSkill _condenseSkill;
 
     private readonly IKernel _kernel;
     private readonly ILogger _logger;
@@ -83,7 +83,7 @@ public class PullRequestSkill
             // Load semantic skill defined with prompt templates
             var folder = PRSkillsPath();
             var PRSkill = kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
-            this.condenseSkill = new CondenseSkill(kernel);
+            this._condenseSkill = new CondenseSkill(kernel);
 
             this._kernel = Kernel.Builder
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
@@ -115,24 +115,26 @@ public class PullRequestSkill
     public async Task<SKContext> GenerateCommitMessage(
         [Description("Output of a `git diff` command.")]
         string input,
-        SKContext context)
+        SKContext context,
+        CancellationToken cancellationToken = default)
     {
         this._logger.LogTrace("GenerateCommitMessage called");
 
         var commitGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
 
         var commitGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
-        var prompt = (await commitGeneratorCapture.InvokeAsync()).Result;
+        var prompt = (await commitGeneratorCapture.InvokeAsync(cancellationToken: cancellationToken)).Result;
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-        return await commitGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
+        return await commitGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
     }
 
     [SKFunction, Description("Generate a pull request description based on a git diff or git show file output using a rolling query mechanism.")]
     public async Task<SKContext> GeneratePR_Rolling(
         [Description("Output of a `git diff` or `git show` command.")]
         string input,
-        SKContext context)
+        SKContext context,
+        CancellationToken cancellationToken = default)
     {
         var prGenerator_Rolling = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator_Rolling");
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
@@ -143,17 +145,18 @@ public class PullRequestSkill
     public async Task<SKContext> GeneratePR(
         [Description("Output of a `git diff` or `git show` command.")]
         string input,
-        SKContext context)
+        SKContext context,
+        CancellationToken cancellationToken = default)
     {
         var prGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
 
         var prGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
         var contextVariablesWithoutInput = context.Variables.Clone();
         contextVariablesWithoutInput.Set("input", "");
-        var prompt = (await prGeneratorCapture.InvokeAsync(contextVariablesWithoutInput)).Result;
+        var prompt = (await prGeneratorCapture.InvokeAsync(variables: contextVariablesWithoutInput, cancellationToken: cancellationToken)).Result;
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-        return await prGenerator.CondenseChunkProcess(this.condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult");
+        return await prGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult");
     }
 
     #region MISC

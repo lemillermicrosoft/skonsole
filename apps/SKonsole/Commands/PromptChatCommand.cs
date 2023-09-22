@@ -39,7 +39,7 @@ public class PromptChatCommand : Command
     {
         var kernel = KernelProvider.Instance.Get();
 
-        const string skPrompt = @"
+        const string SkPrompt = @"
     You are a prompt generation robot. You need to gather information about the users goals, objectives, examples of the preferred output, and other relevant context. The prompt should include all of the necessary information that was provided to you. Ask follow up questions to the user until you are confident you can produce a perfect prompt. Your return should be formatted clearly and optimized for GPT models. Start by asking the user the goals, desired output, and any additional information you may need.
 
     {{$history}}
@@ -56,7 +56,7 @@ public class PromptChatCommand : Command
                 StopSequences = new List<string> { "Human:", "AI:" },
             }
         };
-        var promptTemplate = new PromptTemplate(skPrompt, promptConfig, kernel);
+        var promptTemplate = new PromptTemplate(SkPrompt, promptConfig, kernel);
         var functionConfig = new SemanticFunctionConfig(promptConfig, promptTemplate);
         var chatFunction = kernel.RegisterSemanticFunction("PromptBot", "Chat", functionConfig);
         await RunChat(kernel, logger, chatFunction);

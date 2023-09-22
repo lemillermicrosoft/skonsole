@@ -38,7 +38,8 @@ public class CondenseSkill
         [Description("String of text that contains multiple chunks of similar formatting, style, and tone.")]
         string input,
         [Description("Separator to use between chunks.")]
-        string separator = "")
+        string separator = "",
+        CancellationToken cancellationToken = default)
     {
         var condenser = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "Condenser");
 
@@ -49,7 +50,7 @@ public class CondenseSkill
         foreach (var paragraph in paragraphs)
         {
             context.Variables.Update(paragraph + separator);
-            context = await condenser.InvokeAsync(context);
+            context = await condenser.InvokeAsync(context, cancellationToken: cancellationToken);
             condenseResult.Add(context.Result);
         }
 
@@ -60,7 +61,7 @@ public class CondenseSkill
 
         // update memory with serialized list of results and call condense again
         this._logger.LogWarning($"Condensing {paragraphs.Count} paragraphs");
-        return await this.Condense(context, string.Join("\n", condenseResult), RESULTS_SEPARATOR);
+        return await this.Condense(context, string.Join("\n", condenseResult), RESULTS_SEPARATOR, cancellationToken);
     }
 
     private static string CondenseSkillPath()
