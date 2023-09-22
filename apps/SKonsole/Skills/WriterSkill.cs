@@ -7,11 +7,11 @@ internal sealed class WriterSkill
 {
     private const int MaxTokens = 1024;
 
-    private readonly ISKFunction funnyPoemFunction;
+    private readonly ISKFunction _funnyPoemFunction;
 
     public WriterSkill(IKernel kernel)
     {
-        this.funnyPoemFunction = kernel.CreateSemanticFunction(
+        this._funnyPoemFunction = kernel.CreateSemanticFunction(
             FunnyPoemDefinition,
             skillName: nameof(WriterSkill),
             description: "Given a input topic or description or list, write a funny poem.",
