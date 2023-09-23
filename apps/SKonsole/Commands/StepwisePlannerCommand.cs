@@ -89,7 +89,7 @@ public class StepwisePlannerCommand : Command
         }
 
         [SKFunction, Description("Respond to a message.")]
-        public async Task<SKContext> RespondTo(string message, string history)
+        public async Task<string?> RespondTo(string message, string history)
         {
             var planner = new StepwisePlanner(this._kernel);
 
@@ -105,7 +105,7 @@ public class StepwisePlannerCommand : Command
             var plan2 = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message.");
             var result = await this._kernel.RunAsync(plan2);
 
-            return result;
+            return result.GetValue<string>();
         }
     }
 
@@ -158,7 +158,7 @@ public class StepwisePlannerCommand : Command
             contextVariables.Set("history", history);
             contextVariables.Set("message", userMessage);
 
-            botMessage = await AnsiConsole.Progress()
+            var kernelResult = await AnsiConsole.Progress()
                 .AutoClear(true)
                 .Columns(new ProgressColumn[]
                 {
@@ -174,6 +174,7 @@ public class StepwisePlannerCommand : Command
                     task.StopTask();
                     return result;
                 });
+            botMessage = kernelResult.FunctionResults.LastOrDefault()?.GetValue<SKContext>() ?? botMessage;
         }
     }
 

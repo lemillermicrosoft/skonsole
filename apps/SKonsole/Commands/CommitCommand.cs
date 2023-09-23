@@ -121,7 +121,7 @@ public class CommitCommand : Command
                 var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GenerateCommitMessage"]);
                 task.StopTask();
 
-                var result = kernelResponse.Result;
+                var result = kernelResponse.GetValue<string>() ?? string.Empty;
                 await ClipboardService.SetTextAsync(result);
                 return result;
             });

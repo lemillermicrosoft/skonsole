@@ -89,7 +89,7 @@ public class PromptChatCommand : Command
         {
             HorizontalRule("AI", "green bold");
             AnsiConsole.Foreground = ConsoleColor.Green;
-            AnsiConsole.WriteLine(botMessage.ToString());
+            AnsiConsole.WriteLine(botMessage?.ToString());
             AnsiConsole.ResetColors();
 
             HorizontalRule("User");

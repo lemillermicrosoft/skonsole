@@ -49,8 +49,9 @@ public class CondenseSkill
         foreach (var paragraph in paragraphs)
         {
             context.Variables.Update(paragraph + separator);
-            context = await condenser.InvokeAsync(context, cancellationToken: cancellationToken);
-            condenseResult.Add(context.Result);
+            var kernel = context.Kernel;
+            var result = await context.Kernel.RunAsync(condenser, context.Variables, cancellationToken: cancellationToken);
+            condenseResult.Add(result.GetValue<string>());
         }
 
         if (paragraphs.Count <= 1)
