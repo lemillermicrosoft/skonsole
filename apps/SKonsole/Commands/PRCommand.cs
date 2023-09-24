@@ -21,10 +21,9 @@ public class PRCommand : Command
             this._logger = logger;
         }
 
-        var targetBranchOption = new Option<string>(
+        var targetBranchOption = new Option<string?>(
                             new string[] { "--targetBranch", "-t" },
-                            () => { return "origin/main"; },
-                            "The target branch for the pull request.");
+                            "The target branch for the pull request. Defaults to the current");
         this.AddOption(targetBranchOption);
 
         var outputFormatOption = new Option<string>(
@@ -51,7 +50,7 @@ public class PRCommand : Command
         this.SetHandler(async context => await RunPullRequestDescription(
             context.GetCancellationToken(),
             this._logger,
-            this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main",
+            this.TryGetValueFromOption(context, targetBranchOption),
             this.TryGetValueFromOption(context, outputFormatOption) ?? "",
             this.TryGetValueFromOption(context, outputFileOption) ?? "",
             this.TryGetValueFromOption(context, diffInputFileOption) ?? ""));
@@ -61,15 +60,15 @@ public class PRCommand : Command
     {
         return context.ParseResult.GetValueForOption(option);
     }
-    private Command GeneratePRFeedbackCommand(Option<string> targetBranchOption)
+    private Command GeneratePRFeedbackCommand(Option<string?> targetBranchOption)
     {
         var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
         prFeedbackCommand.AddOption(targetBranchOption);
-        prFeedbackCommand.SetHandler(async context => await RunPullRequestFeedback(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main"));
+        prFeedbackCommand.SetHandler(async context => await RunPullRequestFeedback(context.GetCancellationToken(), this._logger, this.TryGetValueFromOption(context, targetBranchOption)));
         return prFeedbackCommand;
     }
 
-    private Command GeneratePRDescriptionCommand(Option<string> targetBranchOption, Option<string> outputFormatOption, Option<string> outputFileOption, Option<string> diffInputFileOption)
+    private Command GeneratePRDescriptionCommand(Option<string?> targetBranchOption, Option<string> outputFormatOption, Option<string> outputFileOption, Option<string> diffInputFileOption)
     {
         var prDescriptionCommand = new Command("description", "Pull Request description subcommand");
         prDescriptionCommand.AddOption(targetBranchOption);
@@ -79,23 +78,29 @@ public class PRCommand : Command
         prDescriptionCommand.SetHandler(async context => await RunPullRequestDescription(
             context.GetCancellationToken(),
             this._logger,
-            this.TryGetValueFromOption(context, targetBranchOption) ?? "origin/main",
+            this.TryGetValueFromOption(context, targetBranchOption),
             this.TryGetValueFromOption(context, outputFormatOption) ?? "",
             this.TryGetValueFromOption(context, outputFileOption) ?? "",
             this.TryGetValueFromOption(context, diffInputFileOption) ?? ""));
         return prDescriptionCommand;
     }
 
-    private static async Task RunPullRequestFeedback(CancellationToken token, ILogger logger, string targetBranch = "origin/main")
+    private static async Task RunPullRequestFeedback(CancellationToken token, ILogger logger, string? targetBranch)
     {
         var kernel = KernelProvider.Instance.Get();
+
+        if (!string.IsNullOrEmpty(targetBranch))
+        {
+            targetBranch = $"{targetBranch}..";
+        }
 
         using var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
+                WorkingDirectory = Environment.CurrentDirectory,
                 FileName = "git",
-                Arguments = $"show --ignore-space-change {targetBranch}..HEAD",
+                Arguments = $"show --ignore-space-change {targetBranch}HEAD",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -113,7 +118,7 @@ public class PRCommand : Command
         logger.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
     }
 
-    private static async Task RunPullRequestDescription(CancellationToken token, ILogger logger, string targetBranch = "origin/main", string outputFormat = "", string outputFile = "", string diffInputFile = "")
+    private static async Task RunPullRequestDescription(CancellationToken token, ILogger logger, string? targetBranch, string outputFormat = "", string outputFile = "", string diffInputFile = "")
     {
         var kernel = KernelProvider.Instance.Get();
 
@@ -138,16 +143,22 @@ public class PRCommand : Command
         }
     }
 
-    private static async Task<string> FetchDiff(string targetBranch, string diffInputFile)
+    private static async Task<string> FetchDiff(string? targetBranch, string diffInputFile)
     {
         if (string.IsNullOrEmpty(diffInputFile))
         {
+            if (!string.IsNullOrEmpty(targetBranch))
+            {
+                targetBranch = $"{targetBranch}..";
+            }
+
             using var process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
+                    WorkingDirectory = Environment.CurrentDirectory,
                     FileName = "git",
-                    Arguments = $"show --ignore-space-change {targetBranch}..HEAD",
+                    Arguments = $"show --ignore-space-change {targetBranch}HEAD",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
