@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.TypeChat;
 using PRSkill.Utils;
 
 namespace PRSkill;
@@ -76,6 +77,9 @@ public class PullRequestSkill
     private readonly IKernel _kernel;
     private readonly ILogger _logger;
 
+    private readonly JsonTranslator<BasicCommitMessage> _translator;
+    private readonly JsonTranslator<ConventionalCommitMessage> _conventionalTranslator;
+
     public PullRequestSkill(IKernel kernel)
     {
         try
@@ -89,6 +93,9 @@ public class PullRequestSkill
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .Build();
             this._kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+
+            this._translator = new JsonTranslator<BasicCommitMessage>(kernel.LanguageModel(new ModelInfo("gpt-4-32k"))); // todo why do I have to name the model?
+            this._conventionalTranslator = new JsonTranslator<ConventionalCommitMessage>(kernel.LanguageModel(new ModelInfo("gpt-4-32k")));
 
             this._logger = this._kernel.LoggerFactory.CreateLogger<PullRequestSkill>();
         }
@@ -126,7 +133,18 @@ public class PullRequestSkill
         var prompt = (await commitGeneratorCapture.InvokeAsync(cancellationToken: cancellationToken)).Result;
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-        return await commitGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
+        var result = await commitGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
+
+        // This will translate the output of the skill into a ConventionalCommitMessage.
+        // TODO -- Eventually I want the translator to impact the prompt for `commitGenerator` so that the output
+        // already followed the translation.
+        // TODO -- Try validation and see if that helps?
+        ConventionalCommitMessage conventionalCommitMessage = await this._conventionalTranslator.TranslateAsync(result.Result, cancellationToken);
+        BasicCommitMessage basicCommitMessage = await this._translator.TranslateAsync(result.Result, cancellationToken);
+        result.Variables.Update(conventionalCommitMessage.ToString());
+
+
+        return result;
     }
 
     [SKFunction, Description("Generate a pull request description based on a git diff or git show file output using a rolling query mechanism.")]
