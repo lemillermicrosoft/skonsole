@@ -29,12 +29,17 @@ public static class FunctionEx
         return context;
     }
 
-    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondenseSkill condenseSkill, List<string> chunkedInput, string prompt, SKContext context, string resultTag)
+    public static async Task<SKContext> CondenseChunkProcess<T>(this ISKFunction func, CondenseSkill condenseSkill, List<string> chunkedInput, string prompt, SKContext context, string resultTag, IJsonTypeValidator<T>? validator = null)
     {
         var results = new List<string>();
         foreach (var chunk in chunkedInput)
         {
             context.Variables.Update(chunk);
+            // todo plumb through formatting
+            var prompts = CommitMessageTranslatorPrompts.Default;
+            // context.Variables.Set("resultformat", "The result format should be \"<TITLE>\n\n<SUMMARY>\"");
+            var formatInstructions = validator is not null ? prompts.CreateRequestPrompt(validator.Schema, new Prompt()).ToString() : "The result format should be \"<TITLE>\n\n<SUMMARY>\"";
+            context.Variables.Set("resultformat", formatInstructions);
             context = await func.InvokeAsync(context);
 
             results.Add(context.Result);
@@ -119,7 +124,7 @@ public class PullRequestSkill
     }
 
     [SKFunction, Description("Generate a commit message based on a git diff file output.")]
-    public async Task<SKContext> GenerateCommitMessage(
+    public async Task<string> GenerateCommitMessage(
         [Description("Output of a `git diff` command.")]
         string input,
         SKContext context,
@@ -130,21 +135,75 @@ public class PullRequestSkill
         var commitGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
 
         var commitGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
-        var prompt = (await commitGeneratorCapture.InvokeAsync(cancellationToken: cancellationToken)).Result;
+        var contextVariables = new ContextVariables();
+        var prompts = CommitMessageTranslatorPrompts.Default;
+
+        var Validator = this._conventionalTranslator.Validator;
+        var _constraintsValidator = this._conventionalTranslator.ConstraintsValidator;
+
+        Result<ConventionalCommitMessage> ValidateJson(string json)
+        {
+            if (Validator is null)
+            {
+                return Result<ConventionalCommitMessage>.Error("No validator found.");
+            }
+
+            var result = Validator.Validate(json);
+            // if (!OnValidationComplete(result))
+            // {
+            //     return result;
+            // }
+            if (result.Success)
+            {
+                result = (_constraintsValidator != null) ?
+                         _constraintsValidator.Validate(result.Value) :
+                         result;
+            }
+            return result;
+        }
+
+        var formatInstructions = this._conventionalTranslator is not null ? prompts.CreateRequestPrompt(this._conventionalTranslator.Validator.Schema, new Prompt()).ToString() : "The result format should be \"<TITLE>\n\n<SUMMARY>\"";
+        contextVariables.Set("resultformat", formatInstructions);
+        var prompt = (await commitGeneratorCapture.InvokeAsync(contextVariables, cancellationToken: cancellationToken)).Result;
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-        var result = await commitGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
+        var result = await commitGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "CommitMessageResult", this._conventionalTranslator?.Validator);
 
         // This will translate the output of the skill into a ConventionalCommitMessage.
         // TODO -- Eventually I want the translator to impact the prompt for `commitGenerator` so that the output
         // already followed the translation.
         // TODO -- Try validation and see if that helps?
-        ConventionalCommitMessage conventionalCommitMessage = await this._conventionalTranslator.TranslateAsync(result.Result, cancellationToken);
+        ConventionalCommitMessage conventionalCommitMessage = await this._conventionalTranslator!.TranslateAsync(result.Result, cancellationToken);
         BasicCommitMessage basicCommitMessage = await this._translator.TranslateAsync(result.Result, cancellationToken);
-        result.Variables.Update(conventionalCommitMessage.ToString());
+        result.Variables.Set("ConventionalCommitMessage", conventionalCommitMessage.ToString());
+        result.Variables.Set("BasicCommitMessage", basicCommitMessage.ToString());
 
+        JsonResponse jsonResponse = JsonResponse.Parse(result.Result);
+        Result<ConventionalCommitMessage> validationResult;
+        if (jsonResponse.HasCompleteJson)
+        {
+            validationResult = ValidateJson(jsonResponse.Json!);
+            if (validationResult.Success)
+            {
+                return validationResult.Value.ToString();
+            }
+        }
+        else if (jsonResponse.HasJson)
+        {
+            // Partial json
+            // validationResult = Result<T>.Error(TypeChatException.IncompleteJson(jsonResponse));
+            throw new Exception("Incomplete json");
+        }
+        else
+        {
+            // validationResult = Result<T>.Error(TypeChatException.NoJson(jsonResponse));
+            throw new Exception("No json");
+        }
 
-        return result;
+        // TypeChatException.ThrowJsonValidation(request, jsonResponse, validationResult.Message);
+        throw new Exception("Failed to validate json");
+
+        // return result;
     }
 
     [SKFunction, Description("Generate a pull request description based on a git diff or git show file output using a rolling query mechanism.")]
@@ -174,7 +233,8 @@ public class PullRequestSkill
         var prompt = (await prGeneratorCapture.InvokeAsync(variables: contextVariablesWithoutInput, cancellationToken: cancellationToken)).Result;
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-        return await prGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult");
+        // TODO Should be a different type
+        return await prGenerator.CondenseChunkProcess<CommitMessage>(this._condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult", null);
     }
 
     #region MISC
