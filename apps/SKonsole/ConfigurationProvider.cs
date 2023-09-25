@@ -31,14 +31,14 @@ public class ConfigurationProvider
     {
         var defaultConfig = new Dictionary<string, string>()
         {
-            { ConfigConstants.OPENAI_CHAT_MODEL_ID , "gpt-35-turbo" }
+            { ConfigConstants.OPENAI_CHAT_MODEL_ID , "gpt-3.5-turbo" }
         };
 
         bool hasChanged = false;
 
         foreach (var defaultConfigItem in defaultConfig)
         {
-            if (!string.IsNullOrWhiteSpace(this._configuration[defaultConfigItem.Key]))
+            if (!string.IsNullOrWhiteSpace(this._config[defaultConfigItem.Key]))
             {
                 this._config[defaultConfigItem.Key] = defaultConfigItem.Value;
                 hasChanged = true;
