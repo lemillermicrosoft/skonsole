@@ -37,7 +37,7 @@ public class StepwisePlannerCommand : Command
         IKernel kernel = LoadOptionSet(optionSet);
 
         var stepKernel = KernelProvider.Instance.Get();
-        var functions = stepKernel.ImportPlugin(new StepwiseSkill(kernel), "stepwise");
+        var functions = stepKernel.ImportFunctions(new StepwiseSkill(kernel), "stepwise");
 
         await RunChat(stepKernel, null, functions["RespondTo"]).ConfigureAwait(false);
     }
@@ -50,30 +50,30 @@ public class StepwisePlannerCommand : Command
         {
             var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
             var bing = new WebSearchEnginePlugin(bingConnector);
-            var search = kernel.ImportPlugin(bing, "bing");
+            var search = kernel.ImportFunctions(bing, "bing");
         }
 
         if (optionSet.Contains("++"))
         {
-            kernel.ImportPlugin(new TimePlugin(), "time");
-            kernel.ImportPlugin(new ConversationSummaryPlugin(kernel), "summary");
-            kernel.ImportPlugin(new FileIOPlugin(), "file");
+            kernel.ImportFunctions(new TimePlugin(), "time");
+            kernel.ImportFunctions(new ConversationSummaryPlugin(kernel), "summary");
+            kernel.ImportFunctions(new FileIOPlugin(), "file");
         }
         else
         {
             if (optionSet.Contains("time"))
             {
-                kernel.ImportPlugin(new TimePlugin(), "time");
+                kernel.ImportFunctions(new TimePlugin(), "time");
             }
 
             if (optionSet.Contains("summary"))
             {
-                kernel.ImportPlugin(new ConversationSummaryPlugin(kernel), "summary");
+                kernel.ImportFunctions(new ConversationSummaryPlugin(kernel), "summary");
             }
 
             if (optionSet.Contains("file"))
             {
-                kernel.ImportPlugin(new FileIOPlugin(), "file");
+                kernel.ImportFunctions(new FileIOPlugin(), "file");
             }
         }
 

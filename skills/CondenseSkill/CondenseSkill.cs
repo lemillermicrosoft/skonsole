@@ -22,7 +22,7 @@ public class CondenseSkill
         {
             // Load semantic skill defined with prompt templates
             var folder = CondenseSkillPath();
-            var condenseSkill = kernel.ImportSemanticPluginFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+            var condenseSkill = kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
             this._logger = kernel.LoggerFactory.CreateLogger<CondenseSkill>();
         }
         catch (Exception e)

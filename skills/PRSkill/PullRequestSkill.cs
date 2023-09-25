@@ -82,13 +82,13 @@ public class PullRequestSkill
         {
             // Load semantic skill defined with prompt templates
             var folder = PRSkillsPath();
-            var PRSkill = kernel.ImportSemanticPluginFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+            var PRSkill = kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
             this._condenseSkill = new CondenseSkill(kernel);
 
             this._kernel = Kernel.Builder
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .Build();
-            this._kernel.ImportSemanticPluginFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+            this._kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
 
             this._logger = this._kernel.LoggerFactory.CreateLogger<PullRequestSkill>();
         }

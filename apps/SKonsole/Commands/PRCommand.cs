@@ -61,6 +61,7 @@ public class PRCommand : Command
     {
         return context.ParseResult.GetValueForOption(option);
     }
+
     private Command GeneratePRFeedbackCommand(Option<string> targetBranchOption)
     {
         var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
@@ -106,7 +107,7 @@ public class PRCommand : Command
 
         string output = await process.StandardOutput.ReadToEndAsync();
 
-        var pullRequestSkill = kernel.ImportPlugin(new PRSkill.PullRequestSkill(kernel));
+        var pullRequestSkill = kernel.ImportFunctions(new PRSkill.PullRequestSkill(kernel));
 
         var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GeneratePullRequestFeedback"]);
 
@@ -119,7 +120,7 @@ public class PRCommand : Command
 
         var output = await FetchDiff(targetBranch, diffInputFile);
 
-        var pullRequestSkill = kernel.ImportPlugin(new PRSkill.PullRequestSkill(kernel));
+        var pullRequestSkill = kernel.ImportFunctions(new PRSkill.PullRequestSkill(kernel));
 
         var contextVariables = new ContextVariables(output);
         contextVariables.Set("outputFormatInstructions", PRSkill.Utils.FormatInstructionsProvider.GetOutputFormatInstructions(outputFormat));
