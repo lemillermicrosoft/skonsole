@@ -84,6 +84,7 @@ public class PullRequestSkill
 
     private readonly JsonTranslator<BasicCommitMessage> _translator;
     private readonly JsonTranslator<ConventionalCommitMessage> _conventionalTranslator;
+    private readonly JsonTranslator<EmojiCommitMessage> _emojiTranslator;
 
     public PullRequestSkill(IKernel kernel)
     {
@@ -101,6 +102,7 @@ public class PullRequestSkill
 
             this._translator = new JsonTranslator<BasicCommitMessage>(kernel.LanguageModel(new ModelInfo("gpt-4-32k"))); // todo why do I have to name the model?
             this._conventionalTranslator = new JsonTranslator<ConventionalCommitMessage>(kernel.LanguageModel(new ModelInfo("gpt-4-32k")));
+            this._emojiTranslator = new JsonTranslator<EmojiCommitMessage>(kernel.LanguageModel(new ModelInfo("gpt-4-32k")));
 
             this._logger = this._kernel.LoggerFactory.CreateLogger<PullRequestSkill>();
         }
@@ -127,6 +129,7 @@ public class PullRequestSkill
     public async Task<string> GenerateCommitMessage(
         [Description("Output of a `git diff` command.")]
         string input,
+        CommitMessageType commitMessageType,
         SKContext context,
         CancellationToken cancellationToken = default)
     {
@@ -135,24 +138,54 @@ public class PullRequestSkill
         var commitGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
 
         var commitGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
+
         var contextVariables = new ContextVariables();
-        var prompts = CommitMessageTranslatorPrompts.Default;
+        var formatInstructions = this.GetFormatInstructions(commitMessageType);
+        contextVariables.Set("resultformat", formatInstructions);
+        var prompt = (await commitGeneratorCapture.InvokeAsync(contextVariables, cancellationToken: cancellationToken)).Result;
 
-        var Validator = this._conventionalTranslator.Validator;
-        var _constraintsValidator = this._conventionalTranslator.ConstraintsValidator;
+        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
+        var result = await commitGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "CommitMessageResult", this._conventionalTranslator?.Validator);
 
-        Result<ConventionalCommitMessage> ValidateJson(string json)
+        var validationResult = this.GetValidatedResponse(commitMessageType, result.Result);
+        return validationResult;
+    }
+
+    private string GetValidatedResponse(CommitMessageType commitMessageType, string responseToParse)
+    {
+        Func<string, string> Validator;
+        switch (commitMessageType)
+        {
+            case CommitMessageType.Default:
+                Validator = this.GetValidationResult(this._translator);
+                break;
+            case CommitMessageType.Conventional:
+                Validator = this.GetValidationResult(this._conventionalTranslator);
+                break;
+            case CommitMessageType.Emoji:
+                Validator = this.GetValidationResult(this._emojiTranslator);
+                break;
+            default:
+                throw new Exception("Invalid commit message type");
+        }
+
+        return Validator(responseToParse);
+    }
+
+    private Func<string, string> GetValidationResult<T>(JsonTranslator<T> translator)
+    {
+        var Validator = translator.Validator;
+        var _constraintsValidator = translator.ConstraintsValidator;
+
+        Result<T> ValidateJson(string json)
         {
             if (Validator is null)
             {
-                return Result<ConventionalCommitMessage>.Error("No validator found.");
+                return Result<T>.Error("No validator found.");
             }
 
             var result = Validator.Validate(json);
-            // if (!OnValidationComplete(result))
-            // {
-            //     return result;
-            // }
+
             if (result.Success)
             {
                 result = (_constraintsValidator != null) ?
@@ -162,48 +195,61 @@ public class PullRequestSkill
             return result;
         }
 
-        var formatInstructions = this._conventionalTranslator is not null ? prompts.CreateRequestPrompt(this._conventionalTranslator.Validator.Schema, new Prompt()).ToString() : "The result format should be \"<TITLE>\n\n<SUMMARY>\"";
-        contextVariables.Set("resultformat", formatInstructions);
-        var prompt = (await commitGeneratorCapture.InvokeAsync(contextVariables, cancellationToken: cancellationToken)).Result;
-
-        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-        var result = await commitGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "CommitMessageResult", this._conventionalTranslator?.Validator);
-
-        // This will translate the output of the skill into a ConventionalCommitMessage.
-        // TODO -- Eventually I want the translator to impact the prompt for `commitGenerator` so that the output
-        // already followed the translation.
-        // TODO -- Try validation and see if that helps?
-        ConventionalCommitMessage conventionalCommitMessage = await this._conventionalTranslator!.TranslateAsync(result.Result, cancellationToken);
-        BasicCommitMessage basicCommitMessage = await this._translator.TranslateAsync(result.Result, cancellationToken);
-        result.Variables.Set("ConventionalCommitMessage", conventionalCommitMessage.ToString());
-        result.Variables.Set("BasicCommitMessage", basicCommitMessage.ToString());
-
-        JsonResponse jsonResponse = JsonResponse.Parse(result.Result);
-        Result<ConventionalCommitMessage> validationResult;
-        if (jsonResponse.HasCompleteJson)
+        string getValidationResult(string s)
         {
-            validationResult = ValidateJson(jsonResponse.Json!);
-            if (validationResult.Success)
+            JsonResponse jsonResponse = JsonResponse.Parse(s);
+            Result<T> validationResult;
+            if (jsonResponse.HasCompleteJson)
             {
-                return validationResult.Value.ToString();
+                validationResult = ValidateJson(jsonResponse.Json!);
+                if (validationResult.Success)
+                {
+                    return validationResult.Value?.ToString() ?? string.Empty; // formatter options will come into play here, maybe you want the raw json, copy/paste formatting, etc.
+                }
             }
-        }
-        else if (jsonResponse.HasJson)
-        {
-            // Partial json
-            // validationResult = Result<T>.Error(TypeChatException.IncompleteJson(jsonResponse));
-            throw new Exception("Incomplete json");
-        }
-        else
-        {
-            // validationResult = Result<T>.Error(TypeChatException.NoJson(jsonResponse));
-            throw new Exception("No json");
+            else if (jsonResponse.HasJson)
+            {
+                throw new Exception("Incomplete json");
+            }
+            else
+            {
+                throw new Exception("No json");
+            }
+
+            throw new Exception("Failed to validate json");
         }
 
-        // TypeChatException.ThrowJsonValidation(request, jsonResponse, validationResult.Message);
-        throw new Exception("Failed to validate json");
+        return getValidationResult;
+    }
 
-        // return result;
+    private string GetFormatInstructions(CommitMessageType commitMessageType)
+    {
+        var formatInstructions = "The result format should be \"<TITLE>\n\n<SUMMARY>\"";
+        var prompts = CommitMessageTranslatorPrompts.Default;
+
+        switch (commitMessageType)
+        {
+            case CommitMessageType.Default:
+                if (this._translator is not null)
+                {
+                    formatInstructions = prompts.CreateRequestPrompt(this._translator.Validator.Schema, new Prompt()).ToString();
+                }
+                break;
+            case CommitMessageType.Conventional:
+                if (this._conventionalTranslator is not null)
+                {
+                    formatInstructions = prompts.CreateRequestPrompt(this._conventionalTranslator.Validator.Schema, new Prompt()).ToString();
+                }
+                break;
+            case CommitMessageType.Emoji:
+                if (this._emojiTranslator is not null)
+                {
+                    formatInstructions = prompts.CreateRequestPrompt(this._emojiTranslator.Validator.Schema, new Prompt()).ToString();
+                }
+                break;
+        }
+
+        return formatInstructions;
     }
 
     [SKFunction, Description("Generate a pull request description based on a git diff or git show file output using a rolling query mechanism.")]
@@ -234,7 +280,7 @@ public class PullRequestSkill
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
         // TODO Should be a different type
-        return await prGenerator.CondenseChunkProcess<CommitMessage>(this._condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult", null);
+        return await prGenerator.CondenseChunkProcess<BasicCommitMessage>(this._condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult", null);
     }
 
     #region MISC

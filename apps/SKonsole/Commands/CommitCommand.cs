@@ -1,6 +1,8 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Orchestration;
+using PRSkill;
 using SKonsole.Utils;
 using Spectre.Console;
 using TextCopy;
@@ -32,16 +34,22 @@ public class CommitCommand : Command
             {
                 return string.Empty;
             }, "commit hash argument that is parsed as a string.");
+        var commitStyleArgument = new Option<CommitMessageType>("commitType", () =>
+        {
+            return CommitMessageType.Default;
+        }, "commit type argument that is parsed as a string.");
+
         var createCommand = new Command("create", "create commit message");
         createCommand.AddArgument(commitArgument);
-        createCommand.SetHandler(async (commitArgumentValue) =>
+        createCommand.AddOption(commitStyleArgument);
+        createCommand.SetHandler(async (commitArgumentValue, commitStyleValue) =>
                 {
-                    await RunCommitMessage(CancellationToken.None, this._logger, commitArgumentValue);
-                }, commitArgument);
+                    await RunCommitMessage(CancellationToken.None, this._logger, commitArgumentValue, commitStyleValue);
+                }, commitArgument, commitStyleArgument);
         return createCommand;
     }
 
-    private static async Task RunCommitMessage(CancellationToken token, ILogger logger, string commitHash = "")
+    private static async Task RunCommitMessage(CancellationToken token, ILogger logger, string commitHash = "", CommitMessageType commitStyle = CommitMessageType.Default)
     {
         var kernel = KernelProvider.Instance.Get();
 
@@ -118,7 +126,9 @@ public class CommitCommand : Command
             .StartAsync(async ctx =>
             {
                 var task = ctx.AddTask("[green]Thinking...[/]", autoStart: true).IsIndeterminate();
-                var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GenerateCommitMessage"]);
+                var context = new ContextVariables(output);
+                context.Set("commitMessageType", commitStyle.ToString());
+                var kernelResponse = await kernel.RunAsync(context, token, pullRequestSkill["GenerateCommitMessage"]);
                 task.StopTask();
 
                 var result = kernelResponse.Result;

@@ -4,10 +4,10 @@
   "description": "Generate a commit message based on a git diff file output.",
   "completion": {
     "max_tokens": 1024,
-    "temperature": 0.0,
-    "top_p": 0.0,
-    "presence_penalty": 0.0,
-    "frequency_penalty": 0.0,
+    "temperature": 0,
+    "top_p": 0,
+    "presence_penalty": 0,
+    "frequency_penalty": 0,
     "stop_sequences": ["[END RESULT]"]
   },
   "input": {
@@ -16,6 +16,11 @@
         "name": "input",
         "default": "",
         "description": "Output of a `git diff` command."
+      },
+      {
+        "name": "resultformat",
+        "description": "The instructions on how to format the result",
+        "defaultValue": "The result format should be \"<TITLE>\n\n<SUMMARY>\""
       }
     ]
   }

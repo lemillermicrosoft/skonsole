@@ -4,40 +4,38 @@ using Microsoft.TypeChat.Schema;
 
 namespace PRSkill;
 
-public abstract partial class CommitMessage
-{
-    [JsonPropertyName("message")]
-    public CommitItem? Message { get; set; }
-}
-
-[JsonPolymorphic]
-[JsonDerivedType(typeof(BasicCommitMessage), typeDiscriminator: nameof(BasicCommitMessage))]
-[JsonDerivedType(typeof(ConventionalCommitMessage), typeDiscriminator: nameof(ConventionalCommitMessage))]
-public abstract partial class CommitItem
-{
-}
-
 [Comment("A basic commit message with a title and body.")]
-public partial class BasicCommitMessage : CommitItem
+public partial class BasicCommitMessage
 {
     [Comment("The title of the commit message. Should be less than 50 characters.")]
     public string? Title { get; set; }
     [Comment("The body of the commit message. Should be formatted with newlines every 72 characters.")]
-    public string? Body { get; set; }
+    public string? Body { get; set; } // todo even this is hallucinating the #123 related-by
+
+    public override string ToString()
+    {
+        return
+@$"{this.Title}
+
+{this.Body}";
+    }
 }
 
 [Comment("A basic commit message with a title and body.")]
-public partial class EmojiCommitMessage : CommitItem
+public partial class EmojiCommitMessage : BasicCommitMessage
 {
     [JsonVocab(CommitMessageVocabs.Emoji, PropertyName = "emoji")]
     [Comment("The emoji to prefix the title with.")]
     public string? Emoji { get; set; }
-    public string? Title { get; set; }
-    public string? Body { get; set; }
+
+    public override string ToString()
+    {
+        return $"{this.Emoji} {base.ToString()}";
+    }
 }
 
 [Comment("A conventional commit message with a type, scope, subject, optional body, and optional footer.")]
-public partial class ConventionalCommitMessage //: CommitItem
+public partial class ConventionalCommitMessage
 {
     [JsonVocab(CommitMessageVocabs.Type, PropertyName = "type")]
     [JsonPropertyName("type")]
@@ -71,6 +69,13 @@ public partial class ConventionalCommitMessage //: CommitItem
 
 {this.Footer}";
     }
+}
+
+public enum CommitMessageType
+{
+    Default,
+    Conventional,
+    Emoji,
 }
 
 public static class CommitMessageVocabs
