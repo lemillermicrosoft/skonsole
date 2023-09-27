@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <PackageId>SKonsole</PackageId>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Authors>Lee Miller</Authors>
     <Company>Microsoft</Company>
     <PackageDescription>A console app built on Semantic Skills</PackageDescription>
