@@ -38,7 +38,7 @@ public class ConfigurationProvider
 
         foreach (var defaultConfigItem in defaultConfig)
         {
-            if (!string.IsNullOrWhiteSpace(this._config[defaultConfigItem.Key]))
+            if (string.IsNullOrWhiteSpace(this._config[defaultConfigItem.Key]))
             {
                 this._config[defaultConfigItem.Key] = defaultConfigItem.Value;
                 hasChanged = true;
