@@ -89,7 +89,7 @@ public class StepwisePlannerCommand : Command
         }
 
         [SKFunction, Description("Respond to a message.")]
-        public async Task<string?> RespondTo(string message, string history)
+        public async Task<SKContext?> RespondTo(string message, string history)
         {
             var planner = new StepwisePlanner(this._kernel);
 
@@ -102,10 +102,24 @@ public class StepwisePlannerCommand : Command
             // var result = await plan.InvokeAsync();
 
             // Option 3 - Respond to the history with prompt
-            var plan2 = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message.");
-            var result = await this._kernel.RunAsync(plan2);
+            var plan = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message.");
+            var result = await this._kernel.RunAsync(plan);
 
-            return result.GetValue<string>();
+            // Extract metadata and result string into new SKContext -- Is there a better way?
+            var functionResult = result?.FunctionResults?.FirstOrDefault();
+            if (functionResult == null)
+            {
+                return null;
+            }
+
+            var context = new SKContext(this._kernel);
+            context.Variables.Update(functionResult.GetValue<string>());
+            foreach (var key in functionResult.Metadata.Keys)
+            {
+                context.Variables.Set(key, functionResult.Metadata[key]?.ToString());
+            }
+
+            return context;
         }
     }
 
@@ -118,9 +132,7 @@ public class StepwisePlannerCommand : Command
         var history = string.Empty;
         contextVariables.Set("history", history);
 
-        var botMessage = kernel.CreateNewContext();
-        botMessage.Variables.Update("Hello!");
-        //var botMessage = await kernel.RunAsync(contextVariables, chatFunction);
+        KernelResult botMessage = KernelResult.FromFunctionResults("Hello!", new List<FunctionResult>());
 
         var userMessage = string.Empty;
 
@@ -133,7 +145,8 @@ public class StepwisePlannerCommand : Command
 
         while (userMessage != "exit")
         {
-            if (botMessage.Variables.TryGetValue("skillCount", out string? skillCount) && skillCount != "0 ()")
+            var functionResult = botMessage.FunctionResults.FirstOrDefault();
+            if (functionResult is not null && functionResult.TryGetMetadataValue("skillCount", out string? skillCount) && skillCount != "0 ()")
             {
                 HorizontalRule($"AI - {skillCount}", "green bold");
             }
@@ -143,7 +156,7 @@ public class StepwisePlannerCommand : Command
             }
 
             AnsiConsole.Foreground = ConsoleColor.Green;
-            AnsiConsole.WriteLine(botMessage.ToString());
+            AnsiConsole.WriteLine(botMessage.GetValue<string>() ?? string.Empty);
             AnsiConsole.ResetColors();
 
             HorizontalRule("User");
@@ -154,7 +167,7 @@ public class StepwisePlannerCommand : Command
                 break;
             }
 
-            history += $"AI: {botMessage}\nHuman: {userMessage} \n";
+            history += $"AI: {botMessage.GetValue<string>()}\nHuman: {userMessage} \n";
             contextVariables.Set("history", history);
             contextVariables.Set("message", userMessage);
 
@@ -174,7 +187,7 @@ public class StepwisePlannerCommand : Command
                     task.StopTask();
                     return result;
                 });
-            botMessage = kernelResult.FunctionResults.LastOrDefault()?.GetValue<SKContext>() ?? botMessage;
+            botMessage = kernelResult ?? botMessage;
         }
     }
 
