@@ -1,6 +1,6 @@
 ﻿using System.CommandLine;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SKonsole.Skills;
