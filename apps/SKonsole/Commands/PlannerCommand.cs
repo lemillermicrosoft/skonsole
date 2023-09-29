@@ -30,8 +30,10 @@ public class PlannerCommand : Command
     {
         var messageArgument = new Argument<string>
             ("message", "An argument that is parsed as a string.");
-        var createPlanCommand = new Command("create", "Create Plan subcommand");
-        createPlanCommand.Add(messageArgument);
+        var createPlanCommand = new Command("create", "Create Plan subcommand")
+        {
+            messageArgument
+        };
         createPlanCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(CancellationToken.None, this._logger, messageArgumentValue), messageArgument);
         return createPlanCommand;
     }

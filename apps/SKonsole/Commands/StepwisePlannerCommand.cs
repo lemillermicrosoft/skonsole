@@ -124,7 +124,7 @@ public class StepwisePlannerCommand : Command
 
         var userMessage = string.Empty;
 
-        void HorizontalRule(string title, string style = "white bold")
+        static void HorizontalRule(string title, string style = "white bold")
         {
             AnsiConsole.WriteLine();
             AnsiConsole.Write(new Rule($"[{style}]{title}[/]").RuleStyle("grey").LeftJustified());
