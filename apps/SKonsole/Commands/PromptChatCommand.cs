@@ -46,9 +46,8 @@ public class PromptChatCommand : Command
     AI:
     ";
 
-        var promptConfig = new PromptTemplateConfig
-        {
-            Completion =
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.ModelSettings.Add(
             new AIRequestSettings()
             {
                 ExtensionData = new Dictionary<string, object>()
@@ -59,7 +58,7 @@ public class PromptChatCommand : Command
                     { "StopSequences", new List<string> { "Human:", "AI:" } }
                 }
             }
-        };
+        );
         var promptTemplate = new PromptTemplate(SkPrompt, promptConfig, kernel);
         var functionConfig = new SemanticFunctionConfig(promptConfig, promptTemplate);
         var chatFunction = kernel.RegisterSemanticFunction("PromptBot", "Chat", functionConfig);
