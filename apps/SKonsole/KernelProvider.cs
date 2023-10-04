@@ -26,7 +26,8 @@ public class KernelProvider
                 kernelBuilder = kernelBuilder.WithAzureChatCompletionService(
                                        Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME),
                                        Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_API_ENDPOINT),
-                                       Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_API_KEY));
+                                       Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_API_KEY),
+                                       serviceId: Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME));
                 break;
         }
 

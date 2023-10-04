@@ -20,9 +20,17 @@
     <PackageReference Include="Microsoft.SemanticKernel.Skills.Web"/>
     <PackageReference Include="Microsoft.SemanticKernel.Planning.StepwisePlanner"/>
     <PackageReference Include="Microsoft.SemanticKernel.Reliability.Basic"/>
+    <PackageReference Include="Microsoft.TypeChat" />
+    <PackageReference Include="Microsoft.TypeChat.SemanticKernel" />
+    <PackageReference Include="Microsoft.TypeChat.Program" />
     <PackageReference Include="Spectre.Console"/>
     <PackageReference Include="System.CommandLine"  />
     <PackageReference Include="TextCopy" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Skills/GenerateResponse/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\skills\PRSkill\PRSkill.csproj" />

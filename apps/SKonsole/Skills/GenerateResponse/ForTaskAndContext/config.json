@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "type": "completion",
+  "description": "Generate a response for a task with given context.",
+  "completion": {
+    "max_tokens": 256,
+    "temperature": 0,
+    "top_p": 0,
+    "presence_penalty": 0,
+    "frequency_penalty": 0
+  },
+  "input": {
+    "parameters": [
+      {
+        "name": "context",
+        "description": "Any context to be used for generating the response.",
+        "defaultValue": ""
+      },
+      {
+        "name": "task",
+        "description": "The task or instruction in words to be used for generating the response.",
+        "defaultValue": ""
+      }
+    ]
+  },
+  "default_backends": []
+}

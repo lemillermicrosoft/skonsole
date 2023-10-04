@@ -1,0 +1,8 @@
+ Given the following content and task, generate a response.
+[[[Context]]]
+{{ $context }}
+[[[End Context]]]
+[[[Task]]]
+{{{ $task }}
+[[[End Task]]]
+[[[Response]]]

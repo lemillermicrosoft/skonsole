@@ -12,6 +12,10 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Skills.Web" Version="0.24.230918.1-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Planning.StepwisePlanner" Version="0.24.230918.1-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Reliability.Basic" Version="0.24.230918.1-preview" />
+    <PackageVersion Include="Microsoft.TypeChat" Version="0.1.230923.1-nightly" />
+    <PackageVersion Include="Microsoft.TypeChat.SemanticKernel" Version="0.1.230923.1-nightly" />
+    <PackageVersion Include="Microsoft.TypeChat.Program" Version="0.1.230923.1-nightly" />
+    <PackageVersion Include="System.Text.Json" Version="7.0.3"/>
     <PackageVersion Include="Spectre.Console" Version="0.47.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="TextCopy" Version="6.2.1" />
