@@ -1,0 +1,136 @@
+> sk typechat optionset bing++
+Press Enter twice to send a message.
+Enter 'exit' to exit.
+
+── AI ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Hello!
+
+── User ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Hey, can you tell me some current events from today?
+
+
+Thinking... ⡿
+             fail: SKonsole.Commands.TypeChatCommand.TypeChatPlugin[0]
+      Native function typechat.RespondTo execution failed with error @func bing__Search: Wrong number of arguments passed. Expected 3, Got 2
+
+{
+      "@func": "bing__Search",
+      "@args": [
+        {
+          "@ref": 0
+        },
+        "current events"
+      ]
+    }
+      Error: JsonValidation
+@func bing__Search: Wrong number of arguments passed. Expected 3, Got 2
+
+{
+      "@func": "bing__Search",
+      "@args": [
+        {
+          "@ref": 0
+        },
+        "current events"
+      ]
+    }
+
+Request:
+AI: Hello!
+Human: Hey, can you tell me some current events from today?
+
+---
+Given the conversation history, respond to the most recent message.
+
+
+Response:
+{
+  "@steps": [
+    {
+      "@func": "time__Today"
+    },
+    {
+      "@func": "bing__Search",
+      "@args": [
+        {
+          "@ref": 0
+        },
+        "current events"
+      ]
+    },
+    {
+      "@func": "GenerateResponse__ForTaskAndContext",
+      "@args": [
+        {
+          "AI": "Hello!",
+          "Human": "Hey, can you tell me some current events from today?"
+        },
+        {
+          "@ref": 1
+        }
+      ]
+    }
+fail: Microsoft.SemanticKernel.Kernel[0]
+      Plugin typechat function RespondTo call fail during pipeline step 0 with error @func bing__Search: Wrong number of arguments passed. Expected 3, Got 2
+
+{
+      "@func": "bing__Search",
+      "@args": [
+        {
+          "@ref": 0
+        },
+        "current events"
+      ]
+    }:
+Unhandled exception: Error: JsonValidation
+@func bing__Search: Wrong number of arguments passed. Expected 3, Got 2
+
+{
+      "@func": "bing__Search",
+      "@args": [
+        {
+          "@ref": 0
+        },
+        "current events"
+      ]
+    }
+
+Request:
+AI: Hello!
+Human: Hey, can you tell me some current events from today?
+
+---
+Given the conversation history, respond to the most recent message.
+
+
+Response:
+{
+  "@steps": [
+    {
+      "@func": "time__Today"
+    },
+    {
+      "@func": "bing__Search",
+      "@args": [
+        {
+          "@ref": 0
+        },
+        "current events"
+      ]
+    },
+    {
+      "@func": "GenerateResponse__ForTaskAndContext",
+      "@args": [
+        {
+          "AI": "Hello!",
+          "Human": "Hey, can you tell me some current events from today?"
+        },
+        {
+          "@ref": 1
+        }
+      ]
+    }
+  ]
+}

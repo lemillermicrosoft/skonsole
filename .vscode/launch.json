@@ -10,11 +10,10 @@
       "request": "launch",
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/apps/SKonsole/bin/Debug/net7.0/SKonsole.dll",
-      "args": [
-        /*"commit"*/
-      ],
+      "args": ["typechat"],
       "cwd": "${workspaceFolder}",
-      "console": "internalConsole",
+      "console": "integratedTerminal",
+      "justMyCode": false,
       "stopAtEntry": false
     },
     {

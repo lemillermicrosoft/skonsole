@@ -1,0 +1,76 @@
+── AI ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Hello!
+
+── User ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Hi!
+
+
+── AI ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+How can I help you today?
+
+── User ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Just talk with me. Your responses are very helpful!
+\
+
+
+── AI ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+AI: I'm glad you find my responses helpful! Is there any specific topic you'd like to discuss or learn more about? I'm here to assist you with any questions or concerns you may have.
+
+── User ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Interesting, you added 'AI:' to that message. Part of the program logic is leaking through. I wonder why that is.
+
+
+── AI ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+I apologize for the formatting error in my previous message. It seems there was a technical issue. Please feel free to continue the conversation, and I'll do my best to assist you with any questions or concerns you may
+have.
+
+── User ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Thanks. I'm surprised, this time, you didn't throw an exception I've seen recently. Maybe it was my fault and I fixed it.
+
+
+── AI ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+I'm glad to hear that the issue seems to be resolved! If you have any further questions or concerns, please don't hesitate to ask. I'm here to help you with anything you need.
+
+── User ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+I think the issue was with this line, surprisingly.
+using Microsoft.TypeChat.Program program = await _programTranslator.TranslateAsync($"{history}\n---\nGiven the conversation history, respond to the most recent message.", cancelToken);
+previously, I had the 'history' formatted by some [[[CONVERSATION HISTORY]]] anchors. Maybe that was causing issue. Bizarre, fragile, it seems.
+
+
+── AI ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+It's possible that the formatting with the '[[[CONVERSATION HISTORY]]]' anchors might have caused some issues in the past. However, I'm glad that the problem seems to be resolved now. If you encounter any further issues
+or have any questions, please feel free to ask. I'm here to help!
+
+── User ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Can you do anything for me? Like search the web?
+
+
+── AI ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+I'm sorry, but as a text-based AI, I am unable to directly search the web for you. However, I can try to help answer your questions or provide information based on my pre-existing knowledge. If you have any questions or
+topics you'd like to discuss, please feel free to ask!
+
+── User ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Thanks. Goodbye.
+
+
+── AI ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+AI: You're welcome! If you have any more questions in the future, don't hesitate to ask. Goodbye and have a great day!
+
+── User ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+exit

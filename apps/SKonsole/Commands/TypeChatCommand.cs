@@ -155,8 +155,15 @@ public class TypeChatCommand : Command
             }
 
             // https://github.com/microsoft/typechat.net/issues/162
-            string result = await _interpreter.RunAsync(program, _programTranslator.Api.InvokeAsync);
-            return result;
+            try
+            {
+                string result = await _interpreter.RunAsync(program, _programTranslator.Api.InvokeAsync);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
     }
 
