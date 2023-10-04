@@ -15,6 +15,7 @@
     <PackageVersion Include="Microsoft.TypeChat" Version="0.1.230923.1-nightly" />
     <PackageVersion Include="Microsoft.TypeChat.SemanticKernel" Version="0.1.230923.1-nightly" />
     <PackageVersion Include="Microsoft.TypeChat.Program" Version="0.1.230923.1-nightly" />
+    <PackageVersion Include="Microsoft.TypeChat.Dialog" Version="0.1.230923.1-nightly" />
     <PackageVersion Include="System.Text.Json" Version="7.0.3"/>
     <PackageVersion Include="Spectre.Console" Version="0.47.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />

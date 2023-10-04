@@ -23,6 +23,7 @@
     <PackageReference Include="Microsoft.TypeChat" />
     <PackageReference Include="Microsoft.TypeChat.SemanticKernel" />
     <PackageReference Include="Microsoft.TypeChat.Program" />
+    <PackageReference Include="Microsoft.TypeChat.Dialog" />
     <PackageReference Include="Spectre.Console"/>
     <PackageReference Include="System.CommandLine"  />
     <PackageReference Include="TextCopy" />
