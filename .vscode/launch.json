@@ -10,7 +10,7 @@
       "request": "launch",
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/apps/SKonsole/bin/Debug/net7.0/SKonsole.dll",
-      "args": ["typechat"],
+      "args": ["typechat", "optionset", "bing++"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "justMyCode": false,

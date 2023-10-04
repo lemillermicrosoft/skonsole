@@ -131,6 +131,14 @@ public class TypeChatCommand : Command
             _programTranslator = new PluginProgramTranslator(_kernel, Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME));
             _programTranslator.Translator.MaxRepairAttempts = 2;
             _interpreter = new ProgramInterpreter();
+
+            var schema = _programTranslator.Schema;
+            var api = _programTranslator.Api;
+
+            //base.SubscribeAllEvents(_translator.Translator);
+            // _programTranslator.SendingPrompt += this.OnSendingPrompt;
+            // _programTranslator.AttemptingRepair += this.OnAttemptingRepairs;
+            // _programTranslator.CompletionReceived += this.OnCompletionReceived;
         }
 
         [SKFunction, Description("Respond to a message.")]
@@ -158,10 +166,13 @@ public class TypeChatCommand : Command
             try
             {
                 string result = await _interpreter.RunAsync(program, _programTranslator.Api.InvokeAsync);
+                // taking the program when its succesful and add it to my kernel or memory
                 return result;
             }
             catch (Exception ex)
             {
+
+                var json = Json.Stringify(program.Source);
                 return ex.Message;
             }
         }
@@ -267,6 +278,7 @@ public class TypeChatCommand : Command
             int actualCount = (args != null) ? args.Length : 0;
             if (actualCount != expectedCount)
             {
+                // TODO this is the bug with bing sometimes
                 ProgramException.ThrowArgCountMismatch(call, expectedCount, actualCount);
             }
         }
