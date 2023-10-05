@@ -10,11 +10,13 @@ internal static class Logging
             {
                 builder
                     .SetMinimumLevel(LogLevel.Information)
+                    .AddFilter("Microsoft.SemanticKernel.Planners.StepwisePlanner", LogLevel.Information)
                     .AddFilter("Microsoft", LogLevel.Error)
                     .AddFilter("AzureChatCompletion", LogLevel.Error)
                     .AddFilter("System", LogLevel.Error)
                     .AddFilter("SKonsole", LogLevel.Information)
-                    .AddConsole();
+                    // .AddConsole();// todo instead of Console use Spectre.Console | AnsiConsole
+                    .AddSpectreConsole();
             });
     }
 }
