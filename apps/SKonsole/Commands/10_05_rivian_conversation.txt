@@ -1,0 +1,186 @@
+> sk stepwise optionset bing++
+Press Enter twice to send a message.
+Enter 'exit' to exit.
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Hello!
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Hi there! I'm excited to chat with you. Can you tell me a joke to start our conversation on a fun note?
+
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Here's a joke for you: What do dentists call their x-rays? Tooth pics!
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Haha good one. Can you give me the latest Rivian news? I'm curious to know what's happening with them and in their industry.
+
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Here are some recent updates on Rivian:
+
+1. Rivian has introduced a Max pack battery for the R1T and R1S, offering up to 410 miles of range.
+2. The company plans to offer $1.5 billion worth of senior, unsecured "green" convertible notes due in 2030.
+3. Rivian's losses per vehicle have been decreasing, with a loss of over $32,500 per vehicle in Q2.
+4. Rivian has experienced explosive growth in California, with registrations growing 156% in the second quarter of 2023.
+5. Dr. Kjell Gruner has been appointed as Rivian's Chief Commercial Officer and President of Business Growth.
+
+These are some of the latest developments in Rivian's industry.
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Tell me more about the 'green' notes. What is that?
+
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Rivian announced its intention to offer $1.5 billion in green convertible senior notes due in 2030. These notes are a type of bond offering aimed at qualified
+institutional buyers. Green notes are a form of financing that specifically supports projects and initiatives with positive environmental impacts, such as
+reducing greenhouse gas emissions or promoting sustainable resource use. In Rivian's case, the green notes will help fund the company's electric vehicle
+production and other environmentally friendly projects.
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Why wouldn't people just buy their stock?
+
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+People might choose to buy green notes instead of stocks for several reasons. Stocks represent ownership in a company, and their value can fluctuate based on the
+company's performance and market conditions. Green notes, on the other hand, are a type of debt security that pays a fixed interest rate over a specified period.
+They offer a more predictable income stream and are generally considered less risky than stocks.
+
+Investors who are more focused on income generation and lower risk might prefer green notes, while those seeking potential capital appreciation and are willing to
+accept higher risk might opt for stocks. Additionally, green notes specifically support environmentally friendly projects, which may appeal to investors with a
+focus on sustainability and social responsibility.
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Do they have details on what the rates of these notes will be?
+
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+The green notes offered by Rivian will accrue interest at a rate of 4.625% per annum. The interest will be payable semi-annually in arrears on March 15 and
+September 15 of each year. The notes will mature on October 15, 2030, unless they are earlier repurchased, redeemed, or converted.
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+That seems low compared to current interest rates, why would I choose this?
+
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+While the interest rate on Rivian's green notes might seem low compared to current interest rates, there are several reasons why investors might still choose
+them:
+
+1. Lower risk: Green notes are generally considered less risky than stocks, as they provide a fixed income stream and have a higher claim on a company's assets in
+case of bankruptcy.
+
+2. Environmental focus: Investors who prioritize sustainability and social responsibility might be attracted to green notes, as they specifically support
+environmentally friendly projects.
+
+3. Diversification: Including green notes in an investment portfolio can help diversify risk and provide a more balanced mix of assets.
+
+4. Market conditions: Interest rates can fluctuate over time, and some investors might find the fixed rate on green notes appealing if they believe interest rates
+will decrease in the future.
+
+Ultimately, the decision to invest in green notes depends on an individual's investment goals, risk tolerance, and focus on sustainability.
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Thanks, can you save this conversation history to a file in the current directory with a relevant name and date in teh file name?
+
+
+Thinking... ⣾
+             fail: Microsoft.SemanticKernel.Planners.StepwisePlanner[0]
+      Native function StepwisePlanner_Excluded.ExecutePlan execution failed with error ChatHistory is too long to get a completion. Try reducing the available functions.
+      Microsoft.SemanticKernel.Diagnostics.SKException: ChatHistory is too long to get a completion. Try reducing the available functions.
+         at Microsoft.SemanticKernel.Planners.StepwisePlanner.GetNextStepCompletionAsync(List`1 stepsTaken, ChatHistory chatHistory, IAIService aiService, Int32 startingMessageCount, CancellationToken token)
+         at Microsoft.SemanticKernel.Planners.StepwisePlanner.<>c__DisplayClass2_0.<<ExecutePlanAsync>g__GetNextStepAsync|0>d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Microsoft.SemanticKernel.Planners.StepwisePlanner.ExecutePlanAsync(String question, SKContext context, CancellationToken cancellationToken)
+         at Microsoft.SemanticKernel.NativeFunction.<>c.<<GetReturnValueMarshalerDelegate>b__37_4>d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Microsoft.SemanticKernel.NativeFunction.InvokeAsync(SKContext context, AIRequestSettings requestSettings, CancellationToken cancellationToken)
+fail: Microsoft.SemanticKernel.InstrumentedSKFunction[0]
+      StepwisePlanner_Excluded.ExecutePlan: Function execution exception details: ChatHistory is too long to get a completion. Try reducing the available functions.
+      Microsoft.SemanticKernel.Diagnostics.SKException: ChatHistory is too long to get a completion. Try reducing the available functions.
+         at Microsoft.SemanticKernel.Planners.StepwisePlanner.GetNextStepCompletionAsync(List`1 stepsTaken, ChatHistory chatHistory, IAIService aiService, Int32 startingMessageCount, CancellationToken token)
+         at Microsoft.SemanticKernel.Planners.StepwisePlanner.<>c__DisplayClass2_0.<<ExecutePlanAsync>g__GetNextStepAsync|0>d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Microsoft.SemanticKernel.Planners.StepwisePlanner.ExecutePlanAsync(String question, SKContext context, CancellationToken cancellationToken)
+         at Microsoft.SemanticKernel.NativeFunction.<>c.<<GetReturnValueMarshalerDelegate>b__37_4>d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Microsoft.SemanticKernel.NativeFunction.InvokeAsync(SKContext context, AIRequestSettings requestSettings, CancellationToken cancellationToken)
+         at Microsoft.SemanticKernel.InstrumentedSKFunction.InvokeWithInstrumentationAsync(Func`1 func)
+fail: Microsoft.SemanticKernel.Kernel[0]
+      Plugin StepwisePlanner_Excluded function ExecutePlan call fail during pipeline step 0 with error ChatHistory is too long to get a completion. Try reducing the available functions.:
+fail: SKonsole.Commands.StepwisePlannerCommand.StepwiseSkill[0]
+      Native function stepwise.RespondTo execution failed with error ChatHistory is too long to get a completion. Try reducing the available functions.
+      Microsoft.SemanticKernel.Diagnostics.SKException: ChatHistory is too long to get a completion. Try reducing the available functions.
+         at Microsoft.SemanticKernel.Planners.StepwisePlanner.GetNextStepCompletionAsync(List`1 stepsTaken, ChatHistory chatHistory, IAIService aiService, Int32 startingMessageCount, CancellationToken token)
+         at Microsoft.SemanticKernel.Planners.StepwisePlanner.<>c__DisplayClass2_0.<<ExecutePlanAsync>g__GetNextStepAsync|0>d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Microsoft.SemanticKernel.Planners.StepwisePlanner.ExecutePlanAsync(String question, SKContext context, CancellationToken cancellationToken)
+         at Microsoft.SemanticKernel.NativeFunction.<>c.<<GetReturnValueMarshalerDelegate>b__37_4>d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Microsoft.SemanticKernel.NativeFunction.InvokeAsync(SKContext context, AIRequestSettings requestSettings, CancellationToken cancellationToken)
+         at Microsoft.SemanticKernel.InstrumentedSKFunction.InvokeWithInstrumentationAsync(Func`1 func)
+         at Microsoft.SemanticKernel.InstrumentedSKFunction.InvokeAsync(SKContext context, AIRequestSettings requestSettings, CancellationToken cancellationToken)
+         at Microsoft.SemanticKernel.Planning.Plan.InvokeAsync(SKContext context, AIRequestSettings requestSettings, CancellationToken cancellationToken)
+         at Microsoft.SemanticKernel.Kernel.RunAsync(ContextVariables variables, CancellationToken cancellationToken, ISKFunction[] pipeline)
+         at SKonsole.Commands.StepwisePlannerCommand.StepwiseSkill.RespondTo(String message, String history) in D:\repos\skonsole\apps\SKonsole\Commands\StepwisePlannerCommand.cs:line 107
+         at Microsoft.SemanticKernel.NativeFunction.<>c.<<GetReturnValueMarshalerDelegate>b__37_4>d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Microsoft.SemanticKernel.NativeFunction.InvokeAsync(SKContext context, AIRequestSettings requestSettings, CancellationToken cancellationToken)
+fail: Microsoft.SemanticKernel.Kernel[0]
+Unhandled exception: Microsoft.SemanticKernel.Diagnostics.SKException: ChatHistory is too long to get a completion. Try reducing the available functions.
+   at Microsoft.SemanticKernel.Planners.StepwisePlanner.GetNextStepCompletionAsync(List`1 stepsTaken, ChatHistory chatHistory, IAIService aiService, Int32 startingMessageCount, CancellationToken token)
+   at Microsoft.SemanticKernel.Planners.StepwisePlanner.<>c__DisplayClass2_0.<<ExecutePlanAsync>g__GetNextStepAsync|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.SemanticKernel.Planners.StepwisePlanner.ExecutePlanAsync(String question, SKContext context, CancellationToken cancellationToken)
+   at Microsoft.SemanticKernel.NativeFunction.<>c.<<GetReturnValueMarshalerDelegate>b__37_4>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.SemanticKernel.NativeFunction.InvokeAsync(SKContext context, AIRequestSettings requestSettings, CancellationToken cancellationToken)
+   at Microsoft.SemanticKernel.InstrumentedSKFunction.InvokeWithInstrumentationAsync(Func`1 func)
+   at Microsoft.SemanticKernel.InstrumentedSKFunction.InvokeAsync(SKContext context, AIRequestSettings requestSettings, CancellationToken cancellationToken)
+   at Microsoft.SemanticKernel.Planning.Plan.InvokeAsync(SKContext context, AIRequestSettings requestSettings, CancellationToken cancellationToken)
+   at Microsoft.SemanticKernel.Kernel.RunAsync(ContextVariables variables, CancellationToken cancellationToken, ISKFunction[] pipeline)
+   at SKonsole.Commands.StepwisePlannerCommand.StepwiseSkill.RespondTo(String message, String history) in D:\repos\skonsole\apps\SKonsole\Commands\StepwisePlannerCommand.cs:line 107
+   at Microsoft.SemanticKernel.NativeFunction.<>c.<<GetReturnValueMarshalerDelegate>b__37_4>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.SemanticKernel.NativeFunction.InvokeAsync(SKContext context, AIRequestSettings requestSettings, CancellationToken cancellationToken)
+   at Microsoft.SemanticKernel.Kernel.RunAsync(ContextVariables variables, CancellationToken cancellationToken, ISKFunction[] pipeline)
+   at SKonsole.Commands.StepwisePlannerCommand.<>c__DisplayClass4_0.<<RunChat>b__1>d.MoveNext() in D:\repos\skonsole\apps\SKonsole\Commands\StepwisePlannerCommand.cs:line 194
+--- End of stack trace from previous location ---
+   at Spectre.Console.Progress.<>c__DisplayClass28_0`1.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Progress/Progress.cs:line 133
+--- End of stack trace from previous location ---
+   at Spectre.Console.Internal.DefaultExclusivityMode.RunAsync[T](Func`1 func) in /_/src/Spectre.Console/Internal/DefaultExclusivityMode.cs:line 40
+   at Spectre.Console.Progress.StartAsync[T](Func`2 action) in /_/src/Spectre.Console/Live/Progress/Progress.cs:line 116
+   at SKonsole.Commands.StepwisePlannerCommand.RunChat(IKernel kernel, ILogger logger, ISKFunction chatFunction) in D:\repos\skonsole\apps\SKonsole\Commands\StepwisePlannerCommand.cs:line 183
+   at SKonsole.Commands.StepwisePlannerCommand.RunCreatePlan(CancellationToken token, ILogger logger, String message, String optionSet) in D:\repos\skonsole\apps\SKonsole\Commands\StepwisePlannerCommand.cs:line 43
+   at SKonsole.Commands.StepwisePlannerCommand.<.ctor>b__0_0(String optionSetValue) in D:\repos\skonsole\apps\SKonsole\Commands\StepwisePlannerCommand.cs:line 33
+   at System.CommandLine.Invocation.AnonymousCommandHandler.InvokeAsync(InvocationContext context)
+   at System.CommandLine.Invocation.InvocationPipeline.<>c__DisplayClass4_0.<<BuildInvocationChain>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.CommandLine.Builder.CommandLineBuilderExtensions.<>c__DisplayClass17_0.<<UseParseErrorReporting>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.CommandLine.Builder.CommandLineBuilderExtensions.<>c__DisplayClass12_0.<<UseHelp>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.CommandLine.Builder.CommandLineBuilderExtensions.<>c__DisplayClass22_0.<<UseVersionOption>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.CommandLine.Builder.CommandLineBuilderExtensions.<>c__DisplayClass19_0.<<UseTypoCorrections>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.CommandLine.Builder.CommandLineBuilderExtensions.<>c.<<UseSuggestDirective>b__18_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.CommandLine.Builder.CommandLineBuilderExtensions.<>c__DisplayClass16_0.<<UseParseDirective>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.CommandLine.Builder.CommandLineBuilderExtensions.<>c.<<RegisterWithDotnetSuggest>b__5_0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at System.CommandLine.Builder.CommandLineBuilderExtensions.<>c__DisplayClass8_0.<<UseExceptionHandler>b__0>d.MoveNext()
