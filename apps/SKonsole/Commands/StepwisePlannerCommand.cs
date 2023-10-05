@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using SKonsole.Skills;
 using SKonsole.Utils;
 using Spectre.Console;
 
@@ -57,7 +58,7 @@ public class StepwisePlannerCommand : Command
         {
             kernel.ImportFunctions(new TimePlugin(), "time");
             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel), "summary");
-            kernel.ImportFunctions(new FileIOPlugin(), "file");
+            kernel.ImportFunctions(new SuperFileIOPlugin(), "file");
         }
         else
         {
@@ -73,7 +74,7 @@ public class StepwisePlannerCommand : Command
 
             if (optionSet.Contains("file"))
             {
-                kernel.ImportFunctions(new FileIOPlugin(), "file");
+                kernel.ImportFunctions(new SuperFileIOPlugin(), "file");
             }
         }
 
@@ -146,9 +147,9 @@ public class StepwisePlannerCommand : Command
         while (userMessage != "exit")
         {
             var functionResult = botMessage.FunctionResults.FirstOrDefault();
-            if (functionResult is not null && functionResult.TryGetMetadataValue("skillCount", out string? skillCount) && skillCount != "0 ()")
+            if (functionResult is not null && functionResult.TryGetMetadataValue("functionCount", out string? functionCount) && functionCount != "0 ()")
             {
-                HorizontalRule($"AI - {skillCount}", "green bold");
+                HorizontalRule($"AI - {functionCount}", "green bold");
             }
             else
             {
@@ -156,7 +157,15 @@ public class StepwisePlannerCommand : Command
             }
 
             AnsiConsole.Foreground = ConsoleColor.Green;
-            AnsiConsole.WriteLine(botMessage.GetValue<string>() ?? string.Empty);
+            var message = botMessage.GetValue<string>() ?? string.Empty;
+            if (message.Contains("Result not found"))
+            {
+                if (functionResult is not null && functionResult.TryGetMetadataValue("stepsTaken", out string? stepsTaken))
+                {
+                    message += $"\n{stepsTaken}";
+                }
+            }
+            AnsiConsole.WriteLine(message);
             AnsiConsole.ResetColors();
 
             HorizontalRule("User");
