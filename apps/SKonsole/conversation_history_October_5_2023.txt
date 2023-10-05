@@ -1,0 +1,10 @@
+AI: Hello!
+Human: search skonsole
+AI: SKonsole is a console application built on Semantic Skills. It currently supports two skills: generating commit messages and generating pull request feedback. You can find more information about it in the search results provided.
+Human: find the github and figure out what the project is
+AI: SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request feedback. The project is maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and enhancements to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR feedback.
+Human: explain what skonsole is in a file named skonsole.txt
+AI: Here is the content for the "skonsole.txt" file:
+
+SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request feedback. The project is maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and enhancements to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR feedback.
+Human: Save our conversation history to a file with appropriate naming including todays date.

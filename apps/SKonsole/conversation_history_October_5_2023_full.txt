@@ -1,0 +1,161 @@
+Press Enter twice to send a message.
+Enter 'exit' to exit.
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Hello!
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+search skonsole
+
+Thought:  The user wants me to search for "skonsole". I should use the bing.Search function to find relevant results.
+Action:  bing.Search({"query":"skonsole"}).
+Observation:  ["SKonsole - A Console App built on Semantic Skills. This repository contains a demo of a console application called SKonsole, which uses the
+Semantic Kernel to run various skills. The app currently supports two skills: generating commit messages and generating pull request feedback. The app uses
+environment variables to configure the Azure ...","skonsole promptChat: Engage in interactive prompt chat sessions. \\n \\n \\n Dependencies \\n. This project
+requires the following dependencies: \\n \\n; Semantic Kernel \\n \\n Future Work \\n. In the future, the SKonsole app could be expanded to support more skills
+and to parse arguments on launch. Additionally, the repository could include ...","Description is currently not available. Perform basic website maintenance from
+a secure and central point. KonsoleH is xneelo\u2019s control panel, giving you command of your online presence.","Konsole is a free and open-source terminal
+emulator graphical application which is part of KDE Applications and ships with the KDE desktop environment.Konsole was originally written by Lars Doelle. It ls
+licensed under the GPL-2.0-or-later and the GNU Free Documentation License.. KDE applications, including Dolphin, Kate, KDevelop, Kile, Konversation, Konqueror,
+and Krusader, use Konsole to ...","\u4F7F\u7528Skonsole\u81EA\u52A8\u751F\u6210Git\u63D0\u4EA4\u4FE1\u606F.
+\u968F\u7740LLM\u5E94\u7528\u7684\u666E\u53CA\uFF0C\u65E5\u5E38\u5DE5\u4F5C\u4E2D\u7684\u5F88\u591A\u4F7F\u7528\u90FD\u53EF\u4EE5\u4F7F\u7528LLM\u6765\u5B8C\u6210
+\uFF0C\u6BD4\u5982Git\u63D0\u4EA4\u4FE1\u606F\u7684\u751F\u6210\u3002. Skonsole\u662F\u4E00\u4E2A\u57FA\u4E8ESemantic
+Kernel\u7684\u547D\u4EE4\u884C\u5C0F\u5DE5\u5177\uFF0C\u96C6\u6210\u4E86Git\u63D0\u4EA4\u4FE1\u606F\u751F\u6210\u3001PR\u5185\u5BB9\u751F\u6210\u3001PR\u8BC4\u5BA
+1\u7B49\u529F\u80FD\u3002. \u5176\u4F5C\u8005Lee Miller\u4E5F\u662FSemantic Kernel\u7684 ...","Install Konsole Terminal in Linux. Depending on the Linux operating
+system distribution you are under, you should be able to install and run Konsole from either of the following commands: $ sudo apt-get install konsole [On Debian,
+Ubuntu and Mint ] $ sudo yum install konsole [On RHEL/CentOS/Fedora and Rocky Linux/AlmaLinux ] $ sudo emerge -a ...","SKONSOLE is a small tool line based on
+Semantic Kernel, which integrates Git to submit information generation, PR content generation, PR review and other functions. The author Lee Miller is also the
+main developer of Semantic Kernel. Prepare.","The SKonsole repository contains projects and classes that help automate the process of authoring pull requests and
+commit messages. The PRSkill, for example, can generate feedback, commit messages, and pull request descriptions based on git diff or git show output. This skill
+is built on top of the CondenseSkill, which is a skill that can ...","301 Moved The document has moved here.","console: [noun] an architectural member projecting
+from a wall to form a bracket or from a keystone for ornament."]
+Final Answer:  SKonsole is a console application built on Semantic Skills. It currently supports two skills: generating commit messages and generating pull
+request feedback. You can find more information about it in the search results provided.
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+SKonsole is a console application built on Semantic Skills. It currently supports two skills: generating commit messages and generating pull request feedback. You
+can find more information about it in the search results provided.
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+find the github and figure out what the project is
+
+Thought:  I need to search for the SKonsole GitHub repository to find more information about the project.
+Action:  bing.Search({"query":"SKonsole GitHub"}).
+Observation:  ["2022 Contribution activity July 2023 skonsole has no activity yet for this period. Show more activity Seeing something unexpected? Take a look at
+the GitHub profile guide .","2 weeks ago Directory.Packages.props Update and Refactor Codebase: Improve Async Usage, Package Management\u2026 2 weeks ago LICENSE
+Initial commit 8 months ago README.md Add SKonsole Tool installation instructions 2 months ago extensions.json Refactor SKonsole Commands and Improve Code
+Consistency ( #7) 2 months ago","v1.0.5 Summary: This release introduces a series of improvements to the SKonsole project, including updating the SKonsole
+version, fixing the OpenAI chat model ID, and enhancing CancellationToken usage. Changes: Fix OpenAI chat model ID from \u0022gpt-35-turbo\u0022 to
+\u0022gpt-3.5-turbo\u0022 in ConfigurationProvider.cs","Launching GitHub Desktop. If nothing happens, download GitHub Desktop and try again. Launching Xcode. If
+nothing happens, download Xcode and try again. Launching Visual Studio Code. Your codespace will open once ready. There was a problem preparing your codespace,
+please try again. Latest commit . Git stats.","on Mar 18 Maintainer Are you tired of spending too much time crafting the perfect commit message or PR feedback?
+SKonsole might just be the tool you need. This console app, built on Semantic Kernel, uses various skills to generate commit messages and pull request
+feedback.","XboxConsole. XboxConsole makes it easy to programmatically control the Xbox One developer and test consoles. The core purpose for creating XboxConsole
+is to enable developers who prefer to write their development and test tooling with managed code. We\u2019ve designed XboxConsole to be backward compatible
+allowing developers to write tools that ...","A Pull Request Skill example built on the Semantic Kernel - Generate PR Description \u00B7 Workflow runs \u00B7
+lemillermicrosoft/skonsole","Konsole is a terminal program for KDE. As well as being a standalone program, it is also used by other KDE programs such as the Kate
+editor and KDevelop development environment to provide easy access to a terminal window."]
+Final Answer:  SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request feedback. The
+project is maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and
+enhancements to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR feedback.
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request feedback. The project is
+maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and enhancements
+to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR feedback.
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+explain what skonsole is in a file named skonsole.txt
+
+Thought:  I need to create a file named "skonsole.txt" and write a brief explanation of what SKonsole is.
+Action:  file.Write({"path":"skonsole.txt","content":"SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit
+messages and pull request feedback. The project is maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes
+fixes to the OpenAI chat model ID and enhancements to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting
+commit messages and PR feedback."}).
+Observation:  Got no result from action
+Final Answer:  Here is the content for the "skonsole.txt" file:
+Thinking... ⡿
+SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request feedback. The project is
+maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and enhancements
+to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR feedback.
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Here is the content for the "skonsole.txt" file:
+
+SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request feedback. The project is
+maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and enhancements
+to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR feedback.
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Save our conversation history to a file with appropriate naming including todays date.
+
+Thought:  I need to save the conversation history to a file with an appropriate name that includes today's date. First, I need to get today's date.
+Action:  time.Today({}).
+Observation:  Thursday, October 5, 2023
+Thought:  Now that I have today's date, I can create an appropriate file name and save the conversation history to that file.
+Action:  file.Write({"path":"conversation_history_October_5_2023.txt","content":"AI: Hello!\nHuman: search skonsole\nAI: SKonsole is a console application built
+on Semantic Skills. It currently supports two skills: generating commit messages and generating pull request feedback. You can find more information about it in
+the search results provided.\nHuman: find the github and figure out what the project is\nAI: SKonsole is a console application built on Semantic Kernel. It
+primarily focuses on generating commit messages and pull request feedback. The project is maintained on GitHub and has undergone several updates and improvements.
+The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and enhancements to CancellationToken usage. The tool aims to save time for developers by
+automating the process of crafting commit messages and PR feedback.\nHuman: explain what skonsole is in a file named skonsole.txt\nAI: Here is the content for the
+\u0022skonsole.txt\u0022 file:\n\nSKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request
+feedback. The project is maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat
+model ID and enhancements to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR
+feedback.\nHuman: Save our conversation history to a file with appropriate naming including todays date."}).
+Observation:  Got no result from action
+Final Answer:  I am unable to save the file directly, but you can save our conversation history manually using the following file name and content:
+Thinking... ⣟
+File name: conversation_history_October_5_2023.txt
+
+Content:
+AI: Hello!
+Human: search skonsole
+AI: SKonsole is a console application built on Semantic Skills. It currently supports two skills: generating commit messages and generating pull request feedback.
+You can find more information about it in the search results provided.
+Human: find the github and figure out what the project is
+AI: SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request feedback. The project is
+maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and enhancements
+to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR feedback.
+Human: explain what skonsole is in a file named skonsole.txt
+AI: Here is the content for the "skonsole.txt" file:
+
+SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request feedback. The project is
+maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and enhancements
+to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR feedback.
+Human: Save our conversation history to a file with appropriate naming including todays date.
+
+── AI ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+I am unable to save the file directly, but you can save our conversation history manually using the following file name and content:
+
+File name: conversation_history_October_5_2023.txt
+
+Content:
+AI: Hello!
+Human: search skonsole
+AI: SKonsole is a console application built on Semantic Skills. It currently supports two skills: generating commit messages and generating pull request feedback.
+You can find more information about it in the search results provided.
+Human: find the github and figure out what the project is
+AI: SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request feedback. The project is
+maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and enhancements
+to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR feedback.
+Human: explain what skonsole is in a file named skonsole.txt
+AI: Here is the content for the "skonsole.txt" file:
+
+SKonsole is a console application built on Semantic Kernel. It primarily focuses on generating commit messages and pull request feedback. The project is
+maintained on GitHub and has undergone several updates and improvements. The latest version, v1.0.5, includes fixes to the OpenAI chat model ID and enhancements
+to CancellationToken usage. The tool aims to save time for developers by automating the process of crafting commit messages and PR feedback.
+Human: Save our conversation history to a file with appropriate naming including todays date.
+
+── User ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+exit
