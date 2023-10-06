@@ -43,7 +43,7 @@ public class StepwisePlannerCommand : Command
         await RunChat(stepKernel, null, functions["RespondTo"]).ConfigureAwait(false);
     }
 
-    private static IKernel LoadOptionSet(string optionSet)
+    public static IKernel LoadOptionSet(string optionSet)
     {
         var kernel = KernelProvider.Instance.Get();
 
@@ -137,6 +137,15 @@ public class StepwisePlannerCommand : Command
 
         var userMessage = string.Empty;
 
+        var messageStack = new List<string>
+        {
+            "search semantic kernel",
+            "find the github and figure out what the project is",
+            "explain what semantic kernel is in a file named sk.txt",
+            "save our conversation history to a file with appropriate naming including todays date.",
+            "exit"
+        };
+
         static void HorizontalRule(string title, string style = "white bold")
         {
             AnsiConsole.WriteLine();
@@ -169,7 +178,17 @@ public class StepwisePlannerCommand : Command
             AnsiConsole.ResetColors();
 
             HorizontalRule("User");
-            userMessage = ReadMultiLineInput();
+            if (messageStack.Count == 0)
+            {
+                userMessage = ReadMultiLineInput();
+            }
+            else
+            {
+                userMessage = messageStack.First();
+                messageStack.RemoveAt(0);
+                AnsiConsole.WriteLine(userMessage);
+                AnsiConsole.WriteLine();
+            }
 
             if (userMessage == "exit")
             {
