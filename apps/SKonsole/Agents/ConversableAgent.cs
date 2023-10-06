@@ -1,5 +1,4 @@
-﻿using Azure.AI.OpenAI;
-using Microsoft.SemanticKernel;
+﻿using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Spectre.Console;
@@ -41,8 +40,8 @@ public class ConversableAgent : Agent
     };
 
     // private Dictionary<string, List<Dictionary<string, object>>> _oaiMessages;
-    private Dictionary<string, ChatHistory> _chatHistories;
-    private List<Dictionary<string, object>> _oaiSystemMessage;
+    protected DefaultDictionary<string, ChatHistory> _chatHistories;
+    private string _systemMessage;
     private Func<string, bool> _isTerminationMsg;
     private DefaultDictionary<string, int> _consecutiveAutoReplyCounter;
     private DefaultDictionary<string, int> _maxConsecutiveAutoReplyDict;
@@ -61,20 +60,21 @@ public class ConversableAgent : Agent
         Func<string, bool>? isTerminationMsg = null,
         int? maxConsecutiveAutoReply = null,
         string humanInputMode = "TERMINATE",
-        // Dictionary<string, Func<object[], object>> functionMap = null,
         Dictionary<string, object>? codeExecutionConfig = null,
-        // Dictionary<string, object> llmConfig = null,
         IKernel? kernel = null,
+        // function_map: Optional[Dict[str, Callable]] = None,  // This is how you advertise functions you can execute/handle
         object? defaultAutoReply = null)
         : base(name)
     {
-        // this._oaiMessages = new Dictionary<string, List<Dictionary<string, object>>>();
-        // this._oaiSystemMessage = new List<Dictionary<string, object>> { new Dictionary<string, object> { { "content", systemMessage }, { "role", "system" } } };
+        this._systemMessage = systemMessage;
 
-        this._chatHistories = new Dictionary<string, ChatHistory>();
-        // this._chatHistory
+        this._chatHistories = new DefaultDictionary<string, ChatHistory>(() =>
+        {
+            var history = new ChatHistory();
+            history.AddSystemMessage(systemMessage);
+            return history;
+        });
 
-        // self.reply_at_receive = defaultdict(bool)
         this._replyAtReceive = new DefaultDictionary<Agent, bool>(() => false);
 
         this._kernel = kernel;
@@ -96,29 +96,14 @@ public class ConversableAgent : Agent
 
         this._consecutiveAutoReplyCounter = new DefaultDictionary<string, int>(() => 0) { { name, 0 } };
 
-        // Initialize other member variables as needed
-
-        // self.register_reply([Agent, None], ConversableAgent.generate_oai_reply)
-        // self.register_reply([Agent, None], ConversableAgent.generate_code_execution_reply)
-        // self.register_reply([Agent, None], ConversableAgent.generate_function_call_reply)
-        // self.register_reply([Agent, None], ConversableAgent.check_termination_and_human_reply)
-
-        this.RegisterReply(new List<object?> { typeof(Agent), null }, this.GenerateOAIReturnAsync);
+        this.RegisterReply(new List<object?> { typeof(Agent), null }, this.GenerateCompletionAsync);
         // this.RegisterReply(new List<object?> { typeof(Agent), null }, this.GenerateCodeExecutionReplyAsync);
         // this.RegisterReply(new List<object?> { typeof(Agent), null }, this.GenerateFunctionCallReplyAsync);
         this.RegisterReply(new List<object?> { typeof(Agent), null }, this.CheckTerminationAndHumanReply);
     }
 
-    private async Task<(bool final, object? reply)> GenerateOAIReturnAsync(ChatHistory messages, Agent sender, object config)
+    private async Task<(bool final, object? reply)> GenerateCompletionAsync(ChatHistory messages, Agent sender, object config)
     {
-        // Cast config to the appropriate type, or use default if it's null
-        // var llmConfig = config as Dictionary<string, object> ?? this.llmConfig;
-
-        // if (llmConfig == null || llmConfig == false)
-        // {
-        //     return (false, null);
-        // }
-
         if (this._kernel == null)
         {
             return (false, null);
@@ -129,29 +114,25 @@ public class ConversableAgent : Agent
             messages = this._chatHistories[sender.Name];
         }
 
-        // TODO: Handle token limit exceeded error - Implement error handling here
-
-        // var context = (messages.Count > 0) ? messages[messages.Count - 1].GetValueOrDefault("context", null) : null;
-        // var systemMessage = this.oaiSystemMessage.Concat(messages).ToList();
-
-        // var response = oai.ChatCompletion.Create(context, systemMessage, llmConfig);
-        // var extractedTextOrFunctionCall = oai.ChatCompletion.ExtractTextOrFunctionCall(response);
-
         var service = this._kernel.GetService<IChatCompletion>();
         if (service == null)
         {
             return (false, null);
         }
 
+        // TODO: Handle token limit exceeded error - Implement error handling here
+
         var result = await service.GenerateMessageAsync(messages);
 
-        return (true, result); // todo handle function calls?
+        // TODO: handle function calls
+        // var extractedTextOrFunctionCall = oai.ChatCompletion.ExtractTextOrFunctionCall(response);
+
+        return (true, result);
     }
 
     protected virtual string GetHumanInput(string prompt)
     {
-        string reply = AnsiConsole.Ask<string>(prompt);
-        return reply;
+        return new TextPrompt<string>(prompt).AllowEmpty().Show(AnsiConsole.Console);
     }
 
     private Task<(bool final, object? reply)> CheckTerminationAndHumanReply(ChatHistory messages, Agent sender, object config)
@@ -290,9 +271,9 @@ public class ConversableAgent : Agent
 
     private void _PrepareChat(ConversableAgent recipient, bool clearHistory)
     {
-        if (clearHistory && this._chatHistories.TryGetValue(recipient.Name, out var chatHistory))
+        if (clearHistory)
         {
-            chatHistory.Clear();
+            this._chatHistories[recipient.Name].Clear();
         }
 
         this._consecutiveAutoReplyCounter[recipient.Name] = 0;
@@ -326,12 +307,12 @@ public class ConversableAgent : Agent
 
     public string SystemMessage
     {
-        get { return this._oaiSystemMessage[0]["content"].ToString(); }
+        get { return this._chatHistories[this.Name][0].Content; }
     }
 
     public void UpdateSystemMessage(string systemMessage)
     {
-        this._oaiSystemMessage[0]["content"] = systemMessage;
+        this._chatHistories[this.Name][0].Content = systemMessage;
     }
 
     public void UpdateMaxConsecutiveAutoReply(int value, Agent? sender = null)
@@ -377,8 +358,9 @@ public class ConversableAgent : Agent
     {
         var messageDict = _MessageToDict(message);
 
-        // var oaiMessage = new Dictionary<string, object>();
-        var aiMessage = new ChatMessage();
+        // var aiMessage = new SKChatMessage(); // Wish I could use this but I can't
+        var aiMessage = new Azure.AI.OpenAI.ChatMessage();
+
         foreach (var key in new string[] { "content", "function_call", "name", "context" })
         {
             if (messageDict.ContainsKey(key))
@@ -416,17 +398,10 @@ public class ConversableAgent : Agent
         aiMessage.Role = (messageDict.ContainsKey("role") && messageDict["role"].ToString() == "function") ? "function" : role;
         if (aiMessage.FunctionCall is not null)
         {
-            aiMessage.Role = ChatRole.Assistant;
+            aiMessage.Role = Azure.AI.OpenAI.ChatRole.Assistant;
         }
 
-        if (this._chatHistories.TryGetValue(conversationId.Name, out var chatHistory))
-        {
-            chatHistory.Add(new SKChatMessage(aiMessage));
-        }
-        else
-        {
-            this._chatHistories[conversationId.Name] = new ChatHistory() { new SKChatMessage(aiMessage) };
-        }
+        this._chatHistories[conversationId.Name].Add(new SKChatMessage(aiMessage));
         return true;
     }
 
@@ -458,7 +433,7 @@ public class ConversableAgent : Agent
         {
             return;
         }
-        object reply = await this.GenerateReplyAsync(messages: this._chatHistories[sender.Name], sender: sender);
+        object reply = await this.GenerateReplyAsync(/*messages: this._chatHistories[sender.Name],*/ sender: sender);
         if (reply != null)
         {
             await this.SendAsync(reply, recipient: sender, silent: silent);
@@ -506,7 +481,7 @@ public class ConversableAgent : Agent
                     // content = OAI.ChatCompletion.Instantiate(content, context, allowFormatStrTemplate);
                 }
 
-                AnsiConsole.MarkupLine(content);
+                AnsiConsole.MarkupLineInterpolated($"{content}");
             }
 
             if (message.ContainsKey("function_call"))

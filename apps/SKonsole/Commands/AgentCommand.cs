@@ -23,6 +23,7 @@ public class AgentCommand : Command
 
     private static async Task Run(CancellationToken token, ILogger logger, string message = "")
     {
+        var stepwiseKernel = StepwisePlannerCommand.LoadOptionSet("bing++");
         var assistantKernel = KernelProvider.Instance.Get();
         var userKernel = KernelProvider.Instance.Get();
         // var functions = stepKernel.ImportFunctions(new StepwiseSkill(kernel), "stepwise");
@@ -55,14 +56,19 @@ public class AgentCommand : Command
         //     message = """What date is today? Compare the year-to-date gain for META and TESLA.""",
         // )
 
+        // Depends on the userProxy being able to *do* something.
         var assistant = new SKonsole.Agents.AssistantAgent(
             name: "assistant",
             kernel: assistantKernel);
 
+        var stepwiseAssistant = new SKonsole.Agents.StepwiseAgent(
+            name: "stepwise_assistant",
+            kernel: stepwiseKernel);
+
         var userProxy = new SKonsole.Agents.UserProxyAgent(
             name: "user_proxy",
             kernel: userKernel,
-            humanInputMode: "NEVER",
+            humanInputMode: "ALWAYS",// "NEVER",
             maxConsecutiveAutoReply: 10,
             isTerminationMsg: (msg) => msg.TrimEnd().EndsWith("TERMINATE"),
             codeExecutionConfig: new Dictionary<string, object>
@@ -71,6 +77,7 @@ public class AgentCommand : Command
                 { "use_docker", false } // set to True or image name like "python:3" to use docker
             });
 
+        // await userProxy.StartChatAsync(stepwiseAssistant, context: new Dictionary<string, object>() { { "message", "What date is today? Compare the year-to-date gain for META and TESLA." } });
         await userProxy.StartChatAsync(assistant, context: new Dictionary<string, object>() { { "message", "What date is today? Compare the year-to-date gain for META and TESLA." } });
     }
 
