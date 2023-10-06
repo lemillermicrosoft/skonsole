@@ -113,7 +113,7 @@ public class StepwisePlannerCommand : Command
                 return null;
             }
 
-            var context = new SKContext(this._kernel);
+            var context = this._kernel.CreateNewContext();
             context.Variables.Update(functionResult.GetValue<string>());
             foreach (var key in functionResult.Metadata.Keys)
             {

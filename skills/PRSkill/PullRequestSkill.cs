@@ -20,7 +20,7 @@ public static class FunctionEx
         foreach (var chunk in chunkedInput)
         {
             context.Variables.Update(chunk);
-            var result = await context.Kernel.RunAsync(func, context.Variables);
+            var result = await context.Runner.RunAsync(func, context.Variables);
 
             context.Variables.Set("previousresults", result.GetValue<string>());
         }
@@ -34,7 +34,7 @@ public static class FunctionEx
         foreach (var chunk in chunkedInput)
         {
             context.Variables.Update(chunk);
-            var result = await context.Kernel.RunAsync(func, context.Variables);
+            var result = await context.Runner.RunAsync(func, context.Variables);
 
             results.Add(result.GetValue<string>());
         }
@@ -56,7 +56,7 @@ public static class FunctionEx
         foreach (var chunk in chunkedInput)
         {
             context.Variables.Update(chunk);
-            var result = await context.Kernel.RunAsync(func, context.Variables);
+            var result = await context.Runner.RunAsync(func, context.Variables);
 
             results.Add(result.GetValue<string>());
         }
