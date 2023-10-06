@@ -1,0 +1,10 @@
+AI: Hello!
+Human: search semantic kernel
+AI: Semantic Kernel is an open-source SDK that allows developers to easily combine AI services like OpenAI, Azure OpenAI, and Hugging Face with conventional programming languages such as C# and Python. This enables the creation of AI applications that combine the best of both worlds, allowing developers to build intelligent applications with ease.
+Human: find the github and figure out what the project is
+AI: The Semantic Kernel is an open-source project hosted on GitHub under the Microsoft organization. It contains starter projects for different programming languages and application runtimes. The repository provides multiple learning samples to help users understand the core concepts of Semantic Kernel. You can find the repository at https://github.com/semantic-kernel/semantic-kernel-starters.
+Human: explain what semantic kernel is in a file named sk.txt
+AI: Here is the content for the "sk.txt" file:
+
+Semantic Kernel is an open-source SDK that allows developers to easily combine AI services like OpenAI, Azure OpenAI, and Hugging Face with conventional programming languages such as C# and Python. This enables the creation of AI applications that combine the best of both worlds, allowing developers to build intelligent applications with ease. The project is hosted on GitHub under the Microsoft organization and provides starter projects for different programming languages and application runtimes. The repository also contains multiple learning samples to help users understand the core concepts of Semantic Kernel.
+Human: save our conversation history to a file with appropriate naming including todays date.
