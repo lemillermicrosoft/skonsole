@@ -10,10 +10,11 @@
       "request": "launch",
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/apps/SKonsole/bin/Debug/net7.0/SKonsole.dll",
-      "args": ["stepwise", "optionset", "bing++"],
+      "args": ["agent"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "stopAtEntry": false
+      "stopAtEntry": false,
+      "justMyCode": false
     },
     {
       "name": ".NET Core Attach",

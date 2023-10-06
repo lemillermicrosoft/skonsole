@@ -13,7 +13,8 @@ var rootCommand = new RootCommand
     new PRCommand(ConfigurationProvider.Instance),
     new PlannerCommand(ConfigurationProvider.Instance),
     new StepwisePlannerCommand(ConfigurationProvider.Instance),
-    new PromptChatCommand(ConfigurationProvider.Instance)
+    new PromptChatCommand(ConfigurationProvider.Instance),
+    new AgentCommand(ConfigurationProvider.Instance)
 };
 
 return await rootCommand.InvokeAsync(args);
