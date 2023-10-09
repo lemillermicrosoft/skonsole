@@ -47,7 +47,7 @@ internal static class StringEx
             }
 
             var fileDiffMetadata = fileDiffMatch.Value;
-            var nextMatch = j == fileDiffMatches.Count - 1 || (fileDiffMatches[j + 1].Index) >= inputEnd ? inputEnd : fileDiffMatches[j + 1].Index;
+            var nextMatch = j == fileDiffMatches.Count - 1 || fileDiffMatches[j + 1].Index >= inputEnd ? inputEnd : fileDiffMatches[j + 1].Index;
             var fileDiff = input[(fileDiffMatch.Index + fileDiffMatch.Length)..nextMatch];
             fileDiffChunks.Add((fileDiffMetadata, fileDiff));
         }
