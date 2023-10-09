@@ -2,9 +2,9 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using SKonsole.Utils;
 using Spectre.Console;
 
@@ -46,16 +46,19 @@ public class PromptChatCommand : Command
     AI:
     ";
 
-        var promptConfig = new PromptTemplateConfig
-        {
-            Completion =
+        var promptConfig = new PromptTemplateConfig();
+        promptConfig.ModelSettings.Add(
+            new AIRequestSettings()
             {
-                MaxTokens = 2000,
-                Temperature = 0.7,
-                TopP = 0.5,
-                StopSequences = new List<string> { "Human:", "AI:" },
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "Temperature", 0.7 },
+                    { "TopP", 0.5 },
+                    { "MaxTokens", 2000 },
+                    { "StopSequences", new List<string> { "Human:", "AI:" } }
+                }
             }
-        };
+        );
         var promptTemplate = new PromptTemplate(SkPrompt, promptConfig, kernel);
         var functionConfig = new SemanticFunctionConfig(promptConfig, promptTemplate);
         var chatFunction = kernel.RegisterSemanticFunction("PromptBot", "Chat", functionConfig);
@@ -74,7 +77,7 @@ public class PromptChatCommand : Command
         var botMessage = await kernel.RunAsync(contextVariables, chatFunction);
         var userMessage = string.Empty;
 
-        void HorizontalRule(string title, string style = "white bold")
+        static void HorizontalRule(string title, string style = "white bold")
         {
             AnsiConsole.WriteLine();
             AnsiConsole.Write(new Rule($"[{style}]{title}[/]").RuleStyle("grey").LeftJustified());
@@ -85,7 +88,7 @@ public class PromptChatCommand : Command
         {
             HorizontalRule("AI", "green bold");
             AnsiConsole.Foreground = ConsoleColor.Green;
-            AnsiConsole.WriteLine(botMessage.ToString());
+            AnsiConsole.WriteLine(botMessage?.ToString() ?? "NO MESSAGE FROM BOT");
             AnsiConsole.ResetColors();
 
             HorizontalRule("User");
