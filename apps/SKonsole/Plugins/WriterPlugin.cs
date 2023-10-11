@@ -1,19 +1,19 @@
 ﻿using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 
-namespace SKonsole.Skills;
+namespace SKonsole.Plugins;
 
-internal sealed class WriterSkill
+internal sealed class WriterPlugin
 {
     private const int MaxTokens = 1024;
 
     private readonly ISKFunction _funnyPoemFunction;
 
-    public WriterSkill(IKernel kernel)
+    public WriterPlugin(IKernel kernel)
     {
         this._funnyPoemFunction = kernel.CreateSemanticFunction(
             FunnyPoemDefinition,
-            pluginName: nameof(WriterSkill),
+            pluginName: nameof(WriterPlugin),
             description: "Given a input topic or description or list, write a funny poem.",
             requestSettings: new AIRequestSettings()
             {

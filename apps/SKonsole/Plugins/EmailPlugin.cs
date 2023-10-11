@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace SKonsole.Skills;
+namespace SKonsole.Plugins;
 
-internal sealed class EmailSkill
+internal sealed class EmailPlugin
 {
     [SKFunction, Description("Given an e-mail and message body, send an email")]
     public static Task<SKContext> SendEmail(

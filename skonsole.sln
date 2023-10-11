@@ -7,11 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{AF700D54-3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SKonsole", "apps\SKonsole\SKonsole.csproj", "{374F7AE0-DBD5-46E5-AA32-676D26C4F06A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{A772B0DB-6D53-4DE7-8CB5-ABA07DA0AE7E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{A772B0DB-6D53-4DE7-8CB5-ABA07DA0AE7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CondenseSkill", "skills\CondenseSkill\CondenseSkill.csproj", "{F812ABEF-5853-4DED-9897-2F599998E7CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CondensePlugin", "plugins\CondensePlugin\CondensePlugin.csproj", "{F812ABEF-5853-4DED-9897-2F599998E7CA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PRSkill", "skills\PRSkill\PRSkill.csproj", "{E2F9A912-EBC2-4608-9946-8E377F3C03DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PRPlugin", "plugins\PRPlugin\PRPlugin.csproj", "{E2F9A912-EBC2-4608-9946-8E377F3C03DB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{450292C8-5ED2-4CBB-8624-F1F05EC12625}"
 	ProjectSection(SolutionItems) = preProject

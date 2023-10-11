@@ -2,7 +2,7 @@
 using Microsoft.ML.Tokenizers;
 using static Microsoft.SemanticKernel.Text.TextChunker;
 
-namespace CondenseSkillLib.Tokenizers;
+namespace CondensePluginLib.Tokenizers;
 
 internal sealed class EnglishRobertaTokenizer
 {

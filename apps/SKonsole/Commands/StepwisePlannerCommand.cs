@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using SKonsole.Skills;
+using SKonsole.Plugins;
 using SKonsole.Utils;
 using Spectre.Console;
 
@@ -38,7 +38,7 @@ public class StepwisePlannerCommand : Command
         IKernel kernel = LoadOptionSet(optionSet);
 
         var stepKernel = KernelProvider.Instance.Get();
-        var functions = stepKernel.ImportFunctions(new StepwiseSkill(kernel), "stepwise");
+        var functions = stepKernel.ImportFunctions(new StepwisePlugin(kernel), "stepwise");
 
         await RunChat(stepKernel, null, functions["RespondTo"]).ConfigureAwait(false);
     }
@@ -81,10 +81,10 @@ public class StepwisePlannerCommand : Command
         return kernel;
     }
 
-    public class StepwiseSkill
+    public class StepwisePlugin
     {
         private readonly IKernel _kernel;
-        public StepwiseSkill(IKernel kernel)
+        public StepwisePlugin(IKernel kernel)
         {
             this._kernel = kernel;
         }

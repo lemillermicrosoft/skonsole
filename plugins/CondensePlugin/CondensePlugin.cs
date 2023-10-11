@@ -2,32 +2,32 @@
 
 using System.ComponentModel;
 using System.Reflection;
-using CondenseSkillLib.Tokenizers;
+using CondensePluginLib.Tokenizers;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Text;
 
-namespace CondenseSkillLib;
+namespace CondensePluginLib;
 
-public class CondenseSkill
+public class CondensePlugin
 {
     public static readonly string RESULTS_SEPARATOR = string.Format("\n====={0}=====\n", "EndResult");
-    public const string SEMANTIC_FUNCTION_PATH = "CondenseSkill";
+    public const string SEMANTIC_FUNCTION_PATH = "CondensePlugin";
     private const int CHUNK_SIZE = 8000; // Eventually this should come from the kernel
     private readonly ILogger _logger;
-    public CondenseSkill(IKernel kernel)
+    public CondensePlugin(IKernel kernel)
     {
         try
         {
-            // Load semantic skill defined with prompt templates
-            var folder = CondenseSkillPath();
-            var condenseSkill = kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
-            this._logger = kernel.LoggerFactory.CreateLogger<CondenseSkill>();
+            // Load semantic plugin defined with prompt templates
+            var folder = CondensePluginPath();
+            var condensePlugin = kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+            this._logger = kernel.LoggerFactory.CreateLogger<CondensePlugin>();
         }
         catch (Exception e)
         {
-            throw new Exception("Failed to load skill.", e);
+            throw new Exception("Failed to load plugin.", e);
         }
     }
 
@@ -63,7 +63,7 @@ public class CondenseSkill
         return await this.Condense(context, string.Join("\n", condenseResult), RESULTS_SEPARATOR, cancellationToken);
     }
 
-    private static string CondenseSkillPath()
+    private static string CondensePluginPath()
     {
         const string PARENT = "SemanticFunctions";
         static bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
@@ -82,7 +82,7 @@ public class CondenseSkill
 
         if (!SearchPath(PARENT, out string path))
         {
-            throw new Exception("Skills directory not found. The app needs the skills from the library to work.");
+            throw new Exception("Plugins directory not found. The app needs the plugins from the library to work.");
         }
 
         return path;

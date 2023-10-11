@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace PRSkill.Utils;
+namespace PRPlugin.Utils;
 
 public static class CommitChunker
 {

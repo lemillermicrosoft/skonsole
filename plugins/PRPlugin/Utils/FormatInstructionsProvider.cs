@@ -1,4 +1,4 @@
-﻿namespace PRSkill.Utils;
+﻿namespace PRPlugin.Utils;
 public static class FormatInstructionsProvider
 {
     private const string OUTPUT_FORMAT_INSTRUCTIONS_JSON = @"

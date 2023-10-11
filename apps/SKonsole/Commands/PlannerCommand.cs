@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using SKonsole.Skills;
+using SKonsole.Plugins;
 using SKonsole.Utils;
 
 namespace SKonsole.Commands;
@@ -42,14 +42,14 @@ public class PlannerCommand : Command
     {
         var kernel = KernelProvider.Instance.Get();
 
-        // Eventually, Kernel will be smarter about what skills it uses for an ask.
-        // kernel.ImportFunctions(new EmailSkill(), "email");
-        // kernel.ImportFunctions(new GitSkill(), "git");
-        // kernel.ImportFunctions(new SearchUrlSkill(), "url");
-        // kernel.ImportFunctions(new HttpSkill(), "http");
-        // kernel.ImportFunctions(new PRSkill.PullRequestSkill(kernel), "PullRequest");
+        // Eventually, Kernel will be smarter about what plugins it uses for an ask.
+        // kernel.ImportFunctions(new EmailPlugin(), "email");
+        // kernel.ImportFunctions(new GitPlugin(), "git");
+        // kernel.ImportFunctions(new SearchUrlPlugin(), "url");
+        // kernel.ImportFunctions(new HttpPlugin(), "http");
+        // kernel.ImportFunctions(new PRPlugin.PullRequestPlugin(kernel), "PullRequest");
 
-        kernel.ImportFunctions(new WriterSkill(kernel), "writer");
+        kernel.ImportFunctions(new WriterPlugin(kernel), "writer");
         var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
         var bing = new WebSearchEnginePlugin(bingConnector);
         var search = kernel.ImportFunctions(bing, "bing");

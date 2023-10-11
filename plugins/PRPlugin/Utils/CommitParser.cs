@@ -2,7 +2,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace PRSkill.Utils;
+namespace PRPlugin.Utils;
 
 internal static class StringEx
 {

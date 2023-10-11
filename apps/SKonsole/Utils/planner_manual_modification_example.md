@@ -6,7 +6,7 @@ Find news about technology and write a funny poem about it.
 <plan>
   <function.bing.SearchAsync input="technology news" setContextVariable="SEARCH_RESULT" />
   <function._GLOBAL_FUNCTIONS_.BucketOutputs input="$SEARCH_RESULT" bucketCount="3" bucketLabelPrefix="NEWS" />
-  <function.WriterSkill.ShortPoem input="$NEWS_1; $NEWS_2; $NEWS_3" appendToResult="RESULT__POEM" />
+  <function.WriterPlugin.ShortPoem input="$NEWS_1; $NEWS_2; $NEWS_3" appendToResult="RESULT__POEM" />
 </plan>
 
 [note]: # (I don't like that the plan uses ShortPoem, so I will manually modify it and execute the new plan. Additionally, I want it to just use the first 2 headlines.)
@@ -16,7 +16,7 @@ Find news about technology and write a funny poem about it.
 <plan>
   <function.bing.SearchAsync input="technology news" setContextVariable="SEARCH_RESULT" />
   <function._GLOBAL_FUNCTIONS_.BucketOutputs input="$SEARCH_RESULT" bucketCount="3" bucketLabelPrefix="NEWS" />
-  <function.WriterSkill.LongPoem input="$NEWS_1; $NEWS_2" appendToResult="RESULT__POEM" />
+  <function.WriterPlugin.LongPoem input="$NEWS_1; $NEWS_2" appendToResult="RESULT__POEM" />
 </plan>
 
 [note]: # (Execute the manually modified plan)

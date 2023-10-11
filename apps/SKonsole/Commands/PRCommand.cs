@@ -107,9 +107,9 @@ public class PRCommand : Command
 
         string output = await process.StandardOutput.ReadToEndAsync();
 
-        var pullRequestSkill = kernel.ImportFunctions(new PRSkill.PullRequestSkill(kernel));
+        var pullRequestPlugin = kernel.ImportFunctions(new PRPlugin.PullRequestPlugin(kernel));
 
-        var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GeneratePullRequestFeedback"]);
+        var kernelResponse = await kernel.RunAsync(output, token, pullRequestPlugin["GeneratePullRequestFeedback"]);
 
         logger.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.GetValue<string>());
     }
@@ -120,12 +120,12 @@ public class PRCommand : Command
 
         var output = await FetchDiff(targetBranch, diffInputFile);
 
-        var pullRequestSkill = kernel.ImportFunctions(new PRSkill.PullRequestSkill(kernel));
+        var pullRequestPlugin = kernel.ImportFunctions(new PRPlugin.PullRequestPlugin(kernel));
 
         var contextVariables = new ContextVariables(output);
-        contextVariables.Set("outputFormatInstructions", PRSkill.Utils.FormatInstructionsProvider.GetOutputFormatInstructions(outputFormat));
+        contextVariables.Set("outputFormatInstructions", PRPlugin.Utils.FormatInstructionsProvider.GetOutputFormatInstructions(outputFormat));
 
-        var kernelResponse = await kernel.RunAsync(contextVariables, token, pullRequestSkill["GeneratePR"]);
+        var kernelResponse = await kernel.RunAsync(contextVariables, token, pullRequestPlugin["GeneratePR"]);
         logger.LogInformation("Pull Request Description:\n{result}", kernelResponse.GetValue<string>());
 
         if (!string.IsNullOrEmpty(outputFile))

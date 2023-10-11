@@ -98,7 +98,7 @@ public class CommitCommand : Command
             }
         }
 
-        var pullRequestSkill = kernel.ImportFunctions(new PRSkill.PullRequestSkill(kernel));
+        var pullRequestPlugin = kernel.ImportFunctions(new PRPlugin.PullRequestPlugin(kernel));
 
         static void HorizontalRule(string title, string style = "white bold")
         {
@@ -118,7 +118,7 @@ public class CommitCommand : Command
             .StartAsync(async ctx =>
             {
                 var task = ctx.AddTask("[green]Thinking...[/]", autoStart: true).IsIndeterminate();
-                var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GenerateCommitMessage"]);
+                var kernelResponse = await kernel.RunAsync(output, token, pullRequestPlugin["GenerateCommitMessage"]);
                 task.StopTask();
 
                 var result = kernelResponse.GetValue<string>() ?? string.Empty;

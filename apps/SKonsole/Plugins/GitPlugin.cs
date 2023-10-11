@@ -3,9 +3,9 @@ using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace SKonsole.Skills;
+namespace SKonsole.Plugins;
 
-internal sealed class GitSkill
+internal sealed class GitPlugin
 {
     [SKFunction, Description("Run 'git diff --staged' and return it's output.")]
     public static async Task<SKContext> GitDiffStaged(SKContext context,

@@ -8,7 +8,7 @@
     <PackageReference Include="Microsoft.SemanticKernel" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CondenseSkill\CondenseSkill.csproj" />
+    <ProjectReference Include="..\CondensePlugin\CondensePlugin.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="SemanticFunctions/**/*">

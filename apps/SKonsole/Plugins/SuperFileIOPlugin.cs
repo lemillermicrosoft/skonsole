@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Text;
 using Microsoft.SemanticKernel;
 
-namespace SKonsole.Skills;
+namespace SKonsole.Plugins;
 
 public class SuperFileIOPlugin
 {

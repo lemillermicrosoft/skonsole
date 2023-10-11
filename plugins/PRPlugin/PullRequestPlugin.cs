@@ -2,15 +2,15 @@
 
 using System.ComponentModel;
 using System.Reflection;
-using CondenseSkillLib;
+using CondensePluginLib;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using PRSkill.Utils;
+using PRPlugin.Utils;
 
-namespace PRSkill;
+namespace PRPlugin;
 
 public static class FunctionEx
 {
@@ -28,7 +28,7 @@ public static class FunctionEx
         return context;
     }
 
-    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondenseSkill condenseSkill, List<string> chunkedInput, string prompt, SKContext context, string resultTag)
+    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondensePlugin condensePlugin, List<string> chunkedInput, string prompt, SKContext context, string resultTag)
     {
         var results = new List<string>();
         foreach (var chunk in chunkedInput)
@@ -47,7 +47,7 @@ public static class FunctionEx
 
         // update memory with serialized list of results
         context.Variables.Set("prompt", prompt);
-        return await condenseSkill.Condense(context, string.Join($"\n ====={resultTag}=====\n", results) + $"\n ====={resultTag}=====\n");
+        return await condensePlugin.Condense(context, string.Join($"\n ====={resultTag}=====\n", results) + $"\n ====={resultTag}=====\n");
     }
 
     public static async Task<SKContext> AggregateChunkProcess(this ISKFunction func, List<string> chunkedInput, SKContext context)
@@ -66,35 +66,35 @@ public static class FunctionEx
     }
 }
 
-public class PullRequestSkill
+public class PullRequestPlugin
 {
-    public const string SEMANTIC_FUNCTION_PATH = "PRSkill";
+    public const string SEMANTIC_FUNCTION_PATH = "PRPlugin";
     private const int CHUNK_SIZE = 8000; // Eventually this should come from the kernel
 
-    private readonly CondenseSkill _condenseSkill;
+    private readonly CondensePlugin _condensePlugin;
 
     private readonly IKernel _kernel;
     private readonly ILogger _logger;
 
-    public PullRequestSkill(IKernel kernel)
+    public PullRequestPlugin(IKernel kernel)
     {
         try
         {
-            // Load semantic skill defined with prompt templates
-            var folder = PRSkillsPath();
-            var PRSkill = kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
-            this._condenseSkill = new CondenseSkill(kernel);
+            // Load semantic plugin defined with prompt templates
+            var folder = PRPluginsPath();
+            var PRPlugin = kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+            this._condensePlugin = new CondensePlugin(kernel);
 
             this._kernel = Kernel.Builder
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .Build();
             this._kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
 
-            this._logger = this._kernel.LoggerFactory.CreateLogger<PullRequestSkill>();
+            this._logger = this._kernel.LoggerFactory.CreateLogger<PullRequestPlugin>();
         }
         catch (Exception e)
         {
-            throw new Exception("Failed to load skill.", e);
+            throw new Exception("Failed to load plugin.", e);
         }
     }
 
@@ -126,7 +126,7 @@ public class PullRequestSkill
         var prompt = (await this._kernel.RunAsync(commitGeneratorCapture, cancellationToken: cancellationToken)).GetValue<string>();
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-        return await commitGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
+        return await commitGenerator.CondenseChunkProcess(this._condensePlugin, chunkedInput, prompt, context, "CommitMessageResult");
     }
 
     [SKFunction, Description("Generate a pull request description based on a git diff or git show file output using a rolling query mechanism.")]
@@ -156,11 +156,11 @@ public class PullRequestSkill
         var prompt = (await this._kernel.RunAsync(prGeneratorCapture, contextVariablesWithoutInput, cancellationToken: cancellationToken)).GetValue<string>();
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-        return await prGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult");
+        return await prGenerator.CondenseChunkProcess(this._condensePlugin, chunkedInput, prompt, context, "PullRequestDescriptionResult");
     }
 
     #region MISC
-    private static string PRSkillsPath()
+    private static string PRPluginsPath()
     {
         const string PARENT = "SemanticFunctions";
         static bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
@@ -179,7 +179,7 @@ public class PullRequestSkill
 
         if (!SearchPath(PARENT, out string path))
         {
-            throw new Exception("Skills directory not found. The app needs the skills from the library to work.");
+            throw new Exception("Plugins directory not found. The app needs the plugins from the library to work.");
         }
 
         return path;

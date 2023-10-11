@@ -6,10 +6,10 @@ Find the latest news headlines and write a funny poem about it.
 <plan>
   <function.bing.SearchAsync input="latest news headlines" setContextVariable="SEARCH_RESULT" />
   <function._GLOBAL_FUNCTIONS_.BucketOutputs input="$SEARCH_RESULT" bucketCount="3" bucketLabelPrefix="HEADLINE" />
-  <function.WriterSkill.funce0b2aafaf46c4761bb7d0cb34e0402f7 input="$HEADLINE_1; $HEADLINE_2; $HEADLINE_3" appendToResult="RESULT__POEM" />
+  <function.WriterPlugin.funce0b2aafaf46c4761bb7d0cb34e0402f7 input="$HEADLINE_1; $HEADLINE_2; $HEADLINE_3" appendToResult="RESULT__POEM" />
 </plan>
 
-[note]: # (Did not like that it passed all three headlines to WriterSkill, so will tweak my ask.)
+[note]: # (Did not like that it passed all three headlines to WriterPlugin, so will tweak my ask.)
 dotnet run createplan "Find the latest news headlines and write a funny poem about each of them."
 <goal>
 Find the latest news headlines and write a funny poem about each of them.
@@ -17,12 +17,12 @@ Find the latest news headlines and write a funny poem about each of them.
 <plan>
   <function.bing.SearchAsync input="latest news headlines" appendToResult="RESULT__HEADLINES" />
   <function._GLOBAL_FUNCTIONS_.BucketOutputs input="$RESULT__HEADLINES" bucketCount="3" bucketLabelPrefix="Headline" />
-  <function.WriterSkill.funcc033d61295e140d0b9713523add0f1a9 input="$Headline_1" appendToResult="RESULT__POEM_1" />
-  <function.WriterSkill.funcc033d61295e140d0b9713523add0f1a9 input="$Headline_2" appendToResult="RESULT__POEM_2" />
-  <function.WriterSkill.funcc033d61295e140d0b9713523add0f1a9 input="$Headline_3" appendToResult="RESULT__POEM_3" />
+  <function.WriterPlugin.funcc033d61295e140d0b9713523add0f1a9 input="$Headline_1" appendToResult="RESULT__POEM_1" />
+  <function.WriterPlugin.funcc033d61295e140d0b9713523add0f1a9 input="$Headline_2" appendToResult="RESULT__POEM_2" />
+  <function.WriterPlugin.funcc033d61295e140d0b9713523add0f1a9 input="$Headline_3" appendToResult="RESULT__POEM_3" />
 </plan>
 
-[note]: # (Success, I'm confident this will now generate three different poems about each of the headlines the bing skill Search function returns. Execute the plan.)
+[note]: # (Success, I'm confident this will now generate three different poems about each of the headlines the bing plugin Search function returns. Execute the plan.)
 RESULT__POEM_1
 
 There once was a website called Google
