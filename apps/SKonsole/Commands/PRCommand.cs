@@ -61,6 +61,7 @@ public class PRCommand : Command
     {
         return context.ParseResult.GetValueForOption(option);
     }
+
     private Command GeneratePRFeedbackCommand(Option<string> targetBranchOption)
     {
         var prFeedbackCommand = new Command("feedback", "Pull Request feedback subcommand");
@@ -106,11 +107,11 @@ public class PRCommand : Command
 
         string output = await process.StandardOutput.ReadToEndAsync();
 
-        var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
+        var pullRequestSkill = kernel.ImportFunctions(new PRSkill.PullRequestSkill(kernel));
 
         var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GeneratePullRequestFeedback"]);
 
-        logger.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.Result);
+        logger.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.GetValue<string>());
     }
 
     private static async Task RunPullRequestDescription(CancellationToken token, ILogger logger, string targetBranch = "origin/main", string outputFormat = "", string outputFile = "", string diffInputFile = "")
@@ -119,13 +120,13 @@ public class PRCommand : Command
 
         var output = await FetchDiff(targetBranch, diffInputFile);
 
-        var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
+        var pullRequestSkill = kernel.ImportFunctions(new PRSkill.PullRequestSkill(kernel));
 
         var contextVariables = new ContextVariables(output);
         contextVariables.Set("outputFormatInstructions", PRSkill.Utils.FormatInstructionsProvider.GetOutputFormatInstructions(outputFormat));
 
         var kernelResponse = await kernel.RunAsync(contextVariables, token, pullRequestSkill["GeneratePR"]);
-        logger.LogInformation("Pull Request Description:\n{result}", kernelResponse.Result);
+        logger.LogInformation("Pull Request Description:\n{result}", kernelResponse.GetValue<string>());
 
         if (!string.IsNullOrEmpty(outputFile))
         {
@@ -134,7 +135,7 @@ public class PRCommand : Command
             {
                 Directory.CreateDirectory(directory);
             }
-            System.IO.File.WriteAllText(outputFile, kernelResponse.Result);
+            System.IO.File.WriteAllText(outputFile, kernelResponse.GetValue<string>());
         }
     }
 

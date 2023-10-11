@@ -98,9 +98,9 @@ public class CommitCommand : Command
             }
         }
 
-        var pullRequestSkill = kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel));
+        var pullRequestSkill = kernel.ImportFunctions(new PRSkill.PullRequestSkill(kernel));
 
-        void HorizontalRule(string title, string style = "white bold")
+        static void HorizontalRule(string title, string style = "white bold")
         {
             AnsiConsole.WriteLine();
             AnsiConsole.Write(new Rule($"[{style}]{title}[/]").RuleStyle("grey").LeftJustified());
@@ -121,7 +121,7 @@ public class CommitCommand : Command
                 var kernelResponse = await kernel.RunAsync(output, token, pullRequestSkill["GenerateCommitMessage"]);
                 task.StopTask();
 
-                var result = kernelResponse.Result;
+                var result = kernelResponse.GetValue<string>() ?? string.Empty;
                 await ClipboardService.SetTextAsync(result);
                 return result;
             });

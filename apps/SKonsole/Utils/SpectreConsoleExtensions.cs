@@ -7,7 +7,7 @@ internal static class SpectreConsoleExtensions
     {
         if (obj == null)
         {
-            throw new ArgumentNullException("obj");
+            throw new ArgumentNullException(nameof(obj));
         }
 
         obj.IsSecret = IsSecret;

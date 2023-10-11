@@ -4,11 +4,11 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
+using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using SKonsole.Skills;
 using SKonsole.Utils;
 using Spectre.Console;
 
@@ -38,7 +38,7 @@ public class StepwisePlannerCommand : Command
         IKernel kernel = LoadOptionSet(optionSet);
 
         var stepKernel = KernelProvider.Instance.Get();
-        var functions = stepKernel.ImportSkill(new StepwiseSkill(kernel), "stepwise");
+        var functions = stepKernel.ImportFunctions(new StepwiseSkill(kernel), "stepwise");
 
         await RunChat(stepKernel, null, functions["RespondTo"]).ConfigureAwait(false);
     }
@@ -50,31 +50,31 @@ public class StepwisePlannerCommand : Command
         if (optionSet.Contains("bing"))
         {
             var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
-            var bing = new WebSearchEngineSkill(bingConnector);
-            var search = kernel.ImportSkill(bing, "bing");
+            var bing = new WebSearchEnginePlugin(bingConnector);
+            var search = kernel.ImportFunctions(bing, "bing");
         }
 
         if (optionSet.Contains("++"))
         {
-            kernel.ImportSkill(new TimeSkill(), "time");
-            kernel.ImportSkill(new ConversationSummarySkill(kernel), "summary");
-            kernel.ImportSkill(new FileIOSkill(), "file");
+            kernel.ImportFunctions(new TimePlugin(), "time");
+            kernel.ImportFunctions(new ConversationSummaryPlugin(kernel), "summary");
+            kernel.ImportFunctions(new SuperFileIOPlugin(), "file");
         }
         else
         {
             if (optionSet.Contains("time"))
             {
-                kernel.ImportSkill(new TimeSkill(), "time");
+                kernel.ImportFunctions(new TimePlugin(), "time");
             }
 
             if (optionSet.Contains("summary"))
             {
-                kernel.ImportSkill(new ConversationSummarySkill(kernel), "summary");
+                kernel.ImportFunctions(new ConversationSummaryPlugin(kernel), "summary");
             }
 
             if (optionSet.Contains("file"))
             {
-                kernel.ImportSkill(new FileIOSkill(), "file");
+                kernel.ImportFunctions(new SuperFileIOPlugin(), "file");
             }
         }
 
@@ -90,7 +90,7 @@ public class StepwisePlannerCommand : Command
         }
 
         [SKFunction, Description("Respond to a message.")]
-        public async Task<SKContext> RespondTo(string message, string history)
+        public async Task<SKContext?> RespondTo(string message, string history)
         {
             var planner = new StepwisePlanner(this._kernel);
 
@@ -103,10 +103,24 @@ public class StepwisePlannerCommand : Command
             // var result = await plan.InvokeAsync();
 
             // Option 3 - Respond to the history with prompt
-            var plan2 = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message.");
-            var result = await plan2.InvokeAsync();
+            var plan = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message.");
+            var result = await this._kernel.RunAsync(plan);
 
-            return result;
+            // Extract metadata and result string into new SKContext -- Is there a better way?
+            var functionResult = result?.FunctionResults?.FirstOrDefault();
+            if (functionResult == null)
+            {
+                return null;
+            }
+
+            var context = this._kernel.CreateNewContext();
+            context.Variables.Update(functionResult.GetValue<string>());
+            foreach (var key in functionResult.Metadata.Keys)
+            {
+                context.Variables.Set(key, functionResult.Metadata[key]?.ToString());
+            }
+
+            return context;
         }
     }
 
@@ -119,13 +133,11 @@ public class StepwisePlannerCommand : Command
         var history = string.Empty;
         contextVariables.Set("history", history);
 
-        var botMessage = kernel.CreateNewContext();
-        botMessage.Variables.Update("Hello!");
-        //var botMessage = await kernel.RunAsync(contextVariables, chatFunction);
+        KernelResult botMessage = KernelResult.FromFunctionResults("Hello!", new List<FunctionResult>());
 
         var userMessage = string.Empty;
 
-        void HorizontalRule(string title, string style = "white bold")
+        static void HorizontalRule(string title, string style = "white bold")
         {
             AnsiConsole.WriteLine();
             AnsiConsole.Write(new Rule($"[{style}]{title}[/]").RuleStyle("grey").LeftJustified());
@@ -134,9 +146,10 @@ public class StepwisePlannerCommand : Command
 
         while (userMessage != "exit")
         {
-            if (botMessage.Variables.TryGetValue("skillCount", out string? skillCount) && skillCount != "0 ()")
+            var functionResult = botMessage.FunctionResults.FirstOrDefault();
+            if (functionResult is not null && functionResult.TryGetMetadataValue("functionCount", out string? functionCount) && functionCount != "0 ()")
             {
-                HorizontalRule($"AI - {skillCount}", "green bold");
+                HorizontalRule($"AI - {functionCount}", "green bold");
             }
             else
             {
@@ -144,7 +157,15 @@ public class StepwisePlannerCommand : Command
             }
 
             AnsiConsole.Foreground = ConsoleColor.Green;
-            AnsiConsole.WriteLine(botMessage.ToString());
+            var message = botMessage.GetValue<string>() ?? string.Empty;
+            if (message.Contains("Result not found"))
+            {
+                if (functionResult is not null && functionResult.TryGetMetadataValue("stepsTaken", out string? stepsTaken))
+                {
+                    message += $"\n{stepsTaken}";
+                }
+            }
+            AnsiConsole.WriteLine(message);
             AnsiConsole.ResetColors();
 
             HorizontalRule("User");
@@ -155,11 +176,11 @@ public class StepwisePlannerCommand : Command
                 break;
             }
 
-            history += $"AI: {botMessage}\nHuman: {userMessage} \n";
+            history += $"AI: {botMessage.GetValue<string>()}\nHuman: {userMessage} \n";
             contextVariables.Set("history", history);
             contextVariables.Set("message", userMessage);
 
-            botMessage = await AnsiConsole.Progress()
+            var kernelResult = await AnsiConsole.Progress()
                 .AutoClear(true)
                 .Columns(new ProgressColumn[]
                 {
@@ -175,6 +196,7 @@ public class StepwisePlannerCommand : Command
                     task.StopTask();
                     return result;
                 });
+            botMessage = kernelResult ?? botMessage;
         }
     }
 

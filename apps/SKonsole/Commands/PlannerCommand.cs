@@ -1,9 +1,8 @@
 ﻿using System.CommandLine;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
+using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SKonsole.Skills;
 using SKonsole.Utils;
 
@@ -31,8 +30,10 @@ public class PlannerCommand : Command
     {
         var messageArgument = new Argument<string>
             ("message", "An argument that is parsed as a string.");
-        var createPlanCommand = new Command("create", "Create Plan subcommand");
-        createPlanCommand.Add(messageArgument);
+        var createPlanCommand = new Command("create", "Create Plan subcommand")
+        {
+            messageArgument
+        };
         createPlanCommand.SetHandler(async (messageArgumentValue) => await RunCreatePlan(CancellationToken.None, this._logger, messageArgumentValue), messageArgument);
         return createPlanCommand;
     }
@@ -42,22 +43,22 @@ public class PlannerCommand : Command
         var kernel = KernelProvider.Instance.Get();
 
         // Eventually, Kernel will be smarter about what skills it uses for an ask.
-        // kernel.ImportSkill(new EmailSkill(), "email");
-        // kernel.ImportSkill(new GitSkill(), "git");
-        // kernel.ImportSkill(new SearchUrlSkill(), "url");
-        // kernel.ImportSkill(new HttpSkill(), "http");
-        // kernel.ImportSkill(new PRSkill.PullRequestSkill(kernel), "PullRequest");
+        // kernel.ImportFunctions(new EmailSkill(), "email");
+        // kernel.ImportFunctions(new GitSkill(), "git");
+        // kernel.ImportFunctions(new SearchUrlSkill(), "url");
+        // kernel.ImportFunctions(new HttpSkill(), "http");
+        // kernel.ImportFunctions(new PRSkill.PullRequestSkill(kernel), "PullRequest");
 
-        kernel.ImportSkill(new WriterSkill(kernel), "writer");
+        kernel.ImportFunctions(new WriterSkill(kernel), "writer");
         var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
-        var bing = new WebSearchEngineSkill(bingConnector);
-        var search = kernel.ImportSkill(bing, "bing");
+        var bing = new WebSearchEnginePlugin(bingConnector);
+        var search = kernel.ImportFunctions(bing, "bing");
 
         // var planner = new ActionPlanner();
         var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(message);
 
-        await plan.InvokeAsync();
+        await kernel.RunAsync(plan);
     }
 
     private readonly ILogger _logger;

@@ -5,9 +5,9 @@ using System.Reflection;
 using CondenseSkillLib;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using PRSkill.Utils;
 
 namespace PRSkill;
@@ -20,9 +20,9 @@ public static class FunctionEx
         foreach (var chunk in chunkedInput)
         {
             context.Variables.Update(chunk);
-            context = await func.InvokeAsync(context);
+            var result = await context.Runner.RunAsync(func, context.Variables);
 
-            context.Variables.Set("previousresults", context.Result);
+            context.Variables.Set("previousresults", result.GetValue<string>());
         }
 
         return context;
@@ -34,9 +34,9 @@ public static class FunctionEx
         foreach (var chunk in chunkedInput)
         {
             context.Variables.Update(chunk);
-            context = await func.InvokeAsync(context);
+            var result = await context.Runner.RunAsync(func, context.Variables);
 
-            results.Add(context.Result);
+            results.Add(result.GetValue<string>());
         }
 
         if (chunkedInput.Count <= 1)
@@ -56,9 +56,9 @@ public static class FunctionEx
         foreach (var chunk in chunkedInput)
         {
             context.Variables.Update(chunk);
-            context = await func.InvokeAsync(context);
+            var result = await context.Runner.RunAsync(func, context.Variables);
 
-            results.Add(context.Result);
+            results.Add(result.GetValue<string>());
         }
 
         context.Variables.Update(string.Join("\n", results));
@@ -82,13 +82,13 @@ public class PullRequestSkill
         {
             // Load semantic skill defined with prompt templates
             var folder = PRSkillsPath();
-            var PRSkill = kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+            var PRSkill = kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
             this._condenseSkill = new CondenseSkill(kernel);
 
             this._kernel = Kernel.Builder
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .Build();
-            this._kernel.ImportSemanticSkillFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
+            this._kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
 
             this._logger = this._kernel.LoggerFactory.CreateLogger<PullRequestSkill>();
         }
@@ -106,7 +106,7 @@ public class PullRequestSkill
     {
         this._logger.LogTrace("GeneratePullRequestFeedback called");
 
-        var prFeedbackGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestFeedbackGenerator");
+        var prFeedbackGenerator = context.Functions.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestFeedbackGenerator");
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
         return await prFeedbackGenerator.AggregateChunkProcess(chunkedInput, context);
     }
@@ -120,10 +120,10 @@ public class PullRequestSkill
     {
         this._logger.LogTrace("GenerateCommitMessage called");
 
-        var commitGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
+        var commitGenerator = context.Functions.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
 
-        var commitGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
-        var prompt = (await commitGeneratorCapture.InvokeAsync(cancellationToken: cancellationToken)).Result;
+        var commitGeneratorCapture = this._kernel.Functions.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
+        var prompt = (await this._kernel.RunAsync(commitGeneratorCapture, cancellationToken: cancellationToken)).GetValue<string>();
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
         return await commitGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "CommitMessageResult");
@@ -136,7 +136,7 @@ public class PullRequestSkill
         SKContext context,
         CancellationToken cancellationToken = default)
     {
-        var prGenerator_Rolling = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator_Rolling");
+        var prGenerator_Rolling = context.Functions.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator_Rolling");
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
         return await prGenerator_Rolling.RollingChunkProcess(chunkedInput, context);
     }
@@ -148,12 +148,12 @@ public class PullRequestSkill
         SKContext context,
         CancellationToken cancellationToken = default)
     {
-        var prGenerator = context.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
+        var prGenerator = context.Functions.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
 
-        var prGeneratorCapture = this._kernel.Skills.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
+        var prGeneratorCapture = this._kernel.Functions.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator");
         var contextVariablesWithoutInput = context.Variables.Clone();
         contextVariablesWithoutInput.Set("input", "");
-        var prompt = (await prGeneratorCapture.InvokeAsync(variables: contextVariablesWithoutInput, cancellationToken: cancellationToken)).Result;
+        var prompt = (await this._kernel.RunAsync(prGeneratorCapture, contextVariablesWithoutInput, cancellationToken: cancellationToken)).GetValue<string>();
 
         var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
         return await prGenerator.CondenseChunkProcess(this._condenseSkill, chunkedInput, prompt, context, "PullRequestDescriptionResult");
@@ -189,12 +189,12 @@ public class PullRequestSkill
 
 public class RedirectTextCompletion : ITextCompletion
 {
-    Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+    Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, AIRequestSettings requestSettings, CancellationToken cancellationToken)
     {
         return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
     }
 
-    IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+    IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, AIRequestSettings requestSettings, CancellationToken cancellationToken)
     {
         throw new NotImplementedException(); // TODO
     }
