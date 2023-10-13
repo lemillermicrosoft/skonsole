@@ -6,7 +6,7 @@ using SKonsole.Commands;
 
 Console.OutputEncoding = Encoding.Unicode;
 
-var rootCommand = new RootCommand
+var rootCommand = new RootCommand(description: "SKonsole is a powerful command-line tool that leverages AI to assist you with various tasks.")
 {
     new ConfigCommand(ConfigurationProvider.Instance),
     new CommitCommand(ConfigurationProvider.Instance),
