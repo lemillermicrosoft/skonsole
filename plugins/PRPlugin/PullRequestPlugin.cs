@@ -28,13 +28,14 @@ public static class FunctionEx
         return context;
     }
 
-    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondensePlugin condensePlugin, List<string> chunkedInput, string prompt, SKContext context, string resultTag)
+    public static async Task<SKContext> CondenseChunkProcess(this ISKFunction func, CondensePlugin condensePlugin, List<string> chunkedInput, string prompt, SKContext context, string resultTag, CancellationToken cancellationToken = default)
     {
         var results = new List<string>();
         foreach (var chunk in chunkedInput)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             context.Variables.Update(chunk);
-            var result = await context.Runner.RunAsync(func, context.Variables);
+            var result = await context.Runner.RunAsync(func, context.Variables, cancellationToken);
 
             results.Add(result.GetValue<string>());
         }
@@ -47,7 +48,7 @@ public static class FunctionEx
 
         // update memory with serialized list of results
         context.Variables.Set("prompt", prompt);
-        return await condensePlugin.Condense(context, string.Join($"\n ====={resultTag}=====\n", results) + $"\n ====={resultTag}=====\n");
+        return await condensePlugin.Condense(context, string.Join($"\n ====={resultTag}=====\n", results) + $"\n ====={resultTag}=====\n", cancellationToken: cancellationToken);
     }
 
     public static async Task<SKContext> AggregateChunkProcess(this ISKFunction func, List<string> chunkedInput, SKContext context)
@@ -125,8 +126,8 @@ public class PullRequestPlugin
         var commitGeneratorCapture = this._kernel.Functions.GetFunction(SEMANTIC_FUNCTION_PATH, "CommitMessageGenerator");
         var prompt = (await this._kernel.RunAsync(commitGeneratorCapture, cancellationToken: cancellationToken)).GetValue<string>();
 
-        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-        return await commitGenerator.CondenseChunkProcess(this._condensePlugin, chunkedInput, prompt, context, "CommitMessageResult");
+        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE, cancellationToken);
+        return await commitGenerator.CondenseChunkProcess(this._condensePlugin, chunkedInput, prompt, context, "CommitMessageResult", cancellationToken);
     }
 
     [SKFunction, Description("Generate a pull request description based on a git diff or git show file output using a rolling query mechanism.")]
@@ -137,7 +138,7 @@ public class PullRequestPlugin
         CancellationToken cancellationToken = default)
     {
         var prGenerator_Rolling = context.Functions.GetFunction(SEMANTIC_FUNCTION_PATH, "PullRequestDescriptionGenerator_Rolling");
-        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
+        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE, cancellationToken);
         return await prGenerator_Rolling.RollingChunkProcess(chunkedInput, context);
     }
 
@@ -155,8 +156,8 @@ public class PullRequestPlugin
         contextVariablesWithoutInput.Set("input", "");
         var prompt = (await this._kernel.RunAsync(prGeneratorCapture, contextVariablesWithoutInput, cancellationToken: cancellationToken)).GetValue<string>();
 
-        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE);
-        return await prGenerator.CondenseChunkProcess(this._condensePlugin, chunkedInput, prompt, context, "PullRequestDescriptionResult");
+        var chunkedInput = CommitChunker.ChunkCommitInfo(input, CHUNK_SIZE, cancellationToken);
+        return await prGenerator.CondenseChunkProcess(this._condensePlugin, chunkedInput, prompt, context, "PullRequestDescriptionResult", cancellationToken);
     }
 
     #region MISC

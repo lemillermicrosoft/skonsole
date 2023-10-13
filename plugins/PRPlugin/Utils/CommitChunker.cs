@@ -4,7 +4,7 @@ namespace PRPlugin.Utils;
 
 public static class CommitChunker
 {
-    public static List<string> ChunkCommitInfo(string input, int chunkSize)
+    public static List<string> ChunkCommitInfo(string input, int chunkSize, CancellationToken token = default)
     {
         var commits = input.SplitCommitInfo();
 
@@ -13,6 +13,7 @@ public static class CommitChunker
 
         foreach (var commit in commits)
         {
+            token.ThrowIfCancellationRequested();
             if (currChunk.Length + commit.commit.Length > chunkSize)
             {
                 chunkedInput.Add(currChunk);
