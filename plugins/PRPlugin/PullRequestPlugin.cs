@@ -91,7 +91,7 @@ public class PullRequestPlugin
                 .Build();
             this._kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
 
-            this._logger = this._kernel.LoggerFactory.CreateLogger<PullRequestPlugin>();
+            this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
         }
         catch (Exception e)
         {

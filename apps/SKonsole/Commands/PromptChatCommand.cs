@@ -17,7 +17,7 @@ public class PromptChatCommand : Command
         if (logger is null)
         {
             using var loggerFactory = Logging.GetFactory();
-            this._logger = loggerFactory.CreateLogger<PromptChatCommand>();
+            this._logger = loggerFactory.CreateLogger(this.GetType());
         }
         else
         {

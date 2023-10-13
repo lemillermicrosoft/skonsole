@@ -11,6 +11,8 @@ internal static class Logging
                 builder
                     .SetMinimumLevel(LogLevel.Information)
                     // .AddFilter("Microsoft.SemanticKernel.Planners.StepwisePlanner", LogLevel.Information) // Toggle to see chain of thought
+                    // .AddFilter("SKonsole.Plugins.GitPlugin", LogLevel.Debug)
+                    // .AddFilter("PRPlugin.PullRequestPlugin", LogLevel.Debug)
                     .AddFilter("Microsoft", LogLevel.Error)
                     .AddFilter("AzureChatCompletion", LogLevel.Error)
                     .AddFilter("System", LogLevel.Error)

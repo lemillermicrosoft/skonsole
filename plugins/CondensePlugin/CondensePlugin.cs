@@ -23,7 +23,7 @@ public class CondensePlugin
             // Load semantic plugin defined with prompt templates
             var folder = CondensePluginPath();
             var condensePlugin = kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
-            this._logger = kernel.LoggerFactory.CreateLogger<CondensePlugin>();
+            this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
         }
         catch (Exception e)
         {
