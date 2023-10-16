@@ -1,24 +1,44 @@
-
 # SKonsole - A Console App built on Semantic Plugins
-This repository contains a demo of a console application called SKonsole, which uses the Semantic Kernel to run various plugins. The app currently supports two plugins: generating commit messages and generating pull request feedback. The app uses environment variables to configure the Azure OpenAI backend.
+Welcome to the SKonsole repository! SKonsole is a powerful command-line tool that leverages AI to assist you with various tasks. It provides a simple interface to interact with the AI model and perform operations like reading and writing files, searching for files, and even sending emails. The repository contains the source code for the SKonsole application and its plugins.
 
-## Getting Started
-To get started, simply run the following commands in the terminal:
+## Features
 
-```Copy code
-apps\SKonsole> dotnet build
-apps\SKonsole> dotnet run
-```
-This should build and run the SKonsole app. Note that you may need to configure your environment variables with your Azure OpenAI credentials before running the app.
+- AI-powered command-line interface
+- Customizable configuration
+- Generate commit messages, pull request descriptions, and feedback.
+- Engage in chat conversations that are powered by various Plugins.
 
-## Projects and Classes
-This repository contains several projects and classes, including:
+## Usage
 
-- PRPlugin: A plugin that can generate feedback, commit messages, and pull request descriptions based on git diff or git show output. The PRPlugin uses the CondensePlugin as a dependency and implements chunking and aggregation mechanisms to handle large inputs.
+### General Commands
 
-- CondensePlugin: A plugin built on the Semantic Kernel that can condense multiple chunks of text into a single chunk. The plugin uses a semantic function defined with prompt templates and a completion engine.
+These commands will execute and return a result from the LLM.
 
-- CommitParser and CommitChunker: Two utility classes that split and parse the input based on commit and file information. These classes are useful for generating pull request descriptions and feedback based on the git diff output.
+`skonsole commit <commitHash>`: Generate commit messages based on the provided commit hash.
+
+`skonsole pr feedback`: Generate valuable feedback for pull requests using git diff or git show output.
+
+`skonsole pr description`: Generate detailed descriptions for pull requests using git diff or git show output.
+
+### Chat Commands
+
+These commands will start a chat conversation with the LLM.
+
+`skonsole stepwise [options]`: Engage in a StepwisePlanner powered chat session. Use `optionSet` option to specify which optionSets should be used for planning.
+
+`skonsole createPlan <message>`: Create plans using a Planner by providing a message and then execute the plan.
+
+`skonsole promptChat`: Engage in interactive prompt chat sessions for building semantic prompts using the LLM.
+
+### Other Commands
+
+These commands are other utilities that do not directly leverage LLMs.
+
+`skonsole config [command] [options]`: Configure SKonsole application settings like LLM endpoints, keys, etc.
+
+## Configuration
+
+You can customize the behavior of SKonsole by modifying the configuration settings. In addition to the `config` command, the configuration file is located at `.skonsole` in your user profile directory. You can also set environment variables to override the default settings.
 
 ## Installing SKonsole Tool
 
@@ -36,27 +56,28 @@ Install the SKonsole Tool globally with a few quick steps:
    skonsole --version
    ```
 
-## Available Commands
+## Plugins
 
-- `skonsole commit <commitHash>`: Generate commit messages based on the provided commit hash.
+The repository includes the following plugins:
 
-- `skonsole pr feedback`: Generate valuable feedback for pull requests using git diff or git show output.
+### CondensePlugin
 
-- `skonsole pr description`: Generate detailed descriptions for pull requests using git diff or git show output.
+The CondensePlugin is designed to help condense text by using the LLM to merge multiple chunks of text.
 
-- `skonsole createPlan <message>`: Create plans using the Planner subcommand by providing a message.
+### PRPlugin
 
-- `skonsole promptChat`: Engage in interactive prompt chat sessions.
+The PRPlugin is designed to help generate pull request summaries and change lists from `git diff` output.
 
-## Dependencies
-This project requires the following dependencies:
+### SuperFileIOPlugin
 
-- [Semantic Kernel](https://github.com/microsoft/semantic-kernel)
-
-## Future Work
-In the future, the SKonsole app could be expanded to support more plugins and to parse arguments on launch. Additionally, the repository could include instructions for setting up NuGet credentials and using a GitHub Package source.
-
-I hope this README is helpful for you and others who may use your repository in the future. Let me know if there's anything else I can do to help!
+The SuperFileIOPlugin is an extension of the FileIOPlugin in Semantic Kernel. It includes additional capabilities for reading and writing from the file system.
 
 
-####_This README was generated using Semantic Kernel_
+## Contributing
+See [Contributing](CONTRIBUTING.md).
+
+## License
+
+SKonsole is licensed under the MIT License.
+
+*Powered by [Microsoft Semantic Kernel](https://github.com/microsoft/semantic-kernel)*

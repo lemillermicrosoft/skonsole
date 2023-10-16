@@ -1,30 +1,41 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <PackageId>SKonsole</PackageId>
-        <Version>1.0.6</Version>
-        <Authors>Lee Miller</Authors>
-        <Company>Microsoft</Company>
-        <PackageDescription>A console app built on Semantic Plugins</PackageDescription>
-        <RepositoryUrl>https://github.com/lemillermicrosoft/skonsole</RepositoryUrl>
-        <TargetFramework>net7.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <PackAsTool>true</PackAsTool>
-        <ToolCommandName>skonsole</ToolCommandName>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-        <PackageReference Include="Microsoft.SemanticKernel"/>
-        <PackageReference Include="Microsoft.SemanticKernel.Planners.Core"/>
-        <PackageReference Include="Microsoft.SemanticKernel.Plugins.Web"/>
-        <PackageReference Include="Microsoft.SemanticKernel.Reliability.Basic"/>
-        <PackageReference Include="Spectre.Console"/>
-        <PackageReference Include="System.CommandLine"  />
-        <PackageReference Include="TextCopy" />
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\..\plugins\PRPlugin\PRPlugin.csproj" />
-    </ItemGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PackageId>SKonsole</PackageId>
+    <Version>1.1.0</Version>
+    <Authors>Lee Miller</Authors>
+    <Owners>lemiller</Owners>
+    <PackageIcon>icon.png</PackageIcon>
+    <Company>Microsoft</Company>
+    <PackageDescription>A console app built on Semantic Plugins</PackageDescription>
+    <RepositoryUrl>https://github.com/lemillermicrosoft/skonsole</RepositoryUrl>
+    <RepositoryType>github</RepositoryType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageTags>semantickernel gpt AI llms command-line cli</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>skonsole</ToolCommandName>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>https://github.com/lemillermicrosoft/skonsole/blob/main/README.md</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.SemanticKernel"/>
+    <PackageReference Include="Microsoft.SemanticKernel.Planners.Core"/>
+    <PackageReference Include="Microsoft.SemanticKernel.Plugins.Web"/>
+    <PackageReference Include="Microsoft.SemanticKernel.Reliability.Basic"/>
+    <PackageReference Include="Spectre.Console"/>
+    <PackageReference Include="System.CommandLine"  />
+    <PackageReference Include="TextCopy" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\plugins\PRPlugin\PRPlugin.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\icon.png" Pack="true" PackagePath="\"/>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 </Project>

@@ -14,7 +14,7 @@ public class PRCommand : Command
         if (logger is null)
         {
             using var loggerFactory = Logging.GetFactory();
-            this._logger = loggerFactory.CreateLogger<PRCommand>();
+            this._logger = loggerFactory.CreateLogger(this.GetType());
         }
         else
         {

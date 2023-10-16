@@ -14,7 +14,7 @@ public class CommitCommand : Command
         if (logger is null)
         {
             using var loggerFactory = Logging.GetFactory();
-            this._logger = loggerFactory.CreateLogger<CommitCommand>();
+            this._logger = loggerFactory.CreateLogger(this.GetType());
         }
         else
         {

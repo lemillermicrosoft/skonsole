@@ -34,7 +34,7 @@ public class KernelProvider
             .WithLoggerFactory(s_loggerFactory)
             .Build();
 
-        _kernel.LoggerFactory.CreateLogger<KernelProvider>().LogTrace("KernelProvider.Instance: Added Azure OpenAI backends");
+        _kernel.LoggerFactory.CreateLogger(this.GetType()).LogTrace("KernelProvider.Instance: Added Azure OpenAI backends");
 
         return _kernel;
     }

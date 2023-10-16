@@ -23,7 +23,7 @@ public class CondensePlugin
             // Load semantic plugin defined with prompt templates
             var folder = CondensePluginPath();
             var condensePlugin = kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
-            this._logger = kernel.LoggerFactory.CreateLogger<CondensePlugin>();
+            this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
         }
         catch (Exception e)
         {
@@ -41,13 +41,14 @@ public class CondensePlugin
         CancellationToken cancellationToken = default)
     {
         var condenser = context.Functions.GetFunction(SEMANTIC_FUNCTION_PATH, "Condenser");
-
+        cancellationToken.ThrowIfCancellationRequested();
         List<string> lines = TextChunker.SplitPlainTextLines(input, CHUNK_SIZE / 8, EnglishRobertaTokenizer.Counter);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, CHUNK_SIZE, 100, tokenCounter: EnglishRobertaTokenizer.Counter);
 
         var condenseResult = new List<string>();
         foreach (var paragraph in paragraphs)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             context.Variables.Update(paragraph + separator);
             var result = await context.Runner.RunAsync(condenser, context.Variables, cancellationToken: cancellationToken);
             condenseResult.Add(result.GetValue<string>());
