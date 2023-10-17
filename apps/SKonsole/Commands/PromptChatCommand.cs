@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 using SKonsole.Utils;
 using Spectre.Console;
 
@@ -60,8 +60,7 @@ public class PromptChatCommand : Command
             }
         );
         var promptTemplate = new PromptTemplate(SkPrompt, promptConfig, kernel);
-        var functionConfig = new SemanticFunctionConfig(promptConfig, promptTemplate);
-        var chatFunction = kernel.RegisterSemanticFunction("PromptBot", "Chat", functionConfig);
+        var chatFunction = kernel.RegisterSemanticFunction("PromptBot", "Chat", promptConfig, promptTemplate);
         await RunChat(kernel, logger, chatFunction);
     }
 

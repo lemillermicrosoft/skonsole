@@ -2,6 +2,7 @@
 using System.CommandLine.Invocation;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using SKonsole.Utils;
 
