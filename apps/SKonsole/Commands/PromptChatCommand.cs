@@ -73,7 +73,8 @@ public class PromptChatCommand : Command
         var history = string.Empty;
         contextVariables.Set("history", history);
 
-        var botMessage = await kernel.RunAsync(contextVariables, chatFunction);
+        var result = await kernel.RunAsync(contextVariables, chatFunction);
+        var botMessage = result.GetValue<string>();
         var userMessage = string.Empty;
 
         static void HorizontalRule(string title, string style = "white bold")
@@ -115,7 +116,7 @@ public class PromptChatCommand : Command
                     var result = await kernel.RunAsync(contextVariables, chatFunction);
 
                     task.StopTask();
-                    return result;
+                    return result.GetValue<string>();
                 });
         }
     }
