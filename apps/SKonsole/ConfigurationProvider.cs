@@ -35,13 +35,15 @@ public class ConfigurationProvider
         };
 
         bool hasChanged = false;
-
         foreach (var defaultConfigItem in defaultConfig)
         {
-            if (string.IsNullOrWhiteSpace(this._config[defaultConfigItem.Key]))
+            if (this._config.TryGetValue(defaultConfigItem.Key, out string? value))
             {
-                this._config[defaultConfigItem.Key] = defaultConfigItem.Value;
-                hasChanged = true;
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    this._config[defaultConfigItem.Key] = defaultConfigItem.Value;
+                    hasChanged = true;
+                }
             }
         }
 
