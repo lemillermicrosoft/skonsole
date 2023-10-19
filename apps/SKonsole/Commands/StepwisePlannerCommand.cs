@@ -163,8 +163,8 @@ public class StepwisePlannerCommand : Command
             // var result = await plan.InvokeAsync();
 
             // Option 3 - Respond to the history with prompt
-            var plan = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message.");
-            var result = await this._kernel.RunAsync(plan, cancellationToken: cancellationToken);
+            var plan = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message. Questions for the user should be considered a 'Final Answer'");
+            var result = await this._kernel.RunAsync(variables: context.Variables, cancellationToken: cancellationToken, plan);
 
             // Extract metadata and result string into new SKContext -- Is there a better way?
             var functionResult = result?.FunctionResults?.FirstOrDefault();
