@@ -119,6 +119,7 @@ public class StepwisePlannerCommand : Command
 
                 var p = gitProcessPlan.Describe();
                 kernel.ImportPlan(gitProcessPlan);
+
                 validPlugins.Add("Plan");
             }
         }
@@ -135,7 +136,7 @@ public class StepwisePlannerCommand : Command
         }
 
         [SKFunction, Description("Respond to a message.")]
-        public async Task<SKContext?> RespondTo(string message, string history, string validPlugins, CancellationToken cancellationToken = default)
+        public async Task<SKContext> RespondTo(string message, string history, string validPlugins, SKContext context, CancellationToken cancellationToken = default)
         {
             var config = new StepwisePlannerConfig();
             var plugins = JsonSerializer.Deserialize<List<string>>(validPlugins);
@@ -167,16 +168,14 @@ public class StepwisePlannerCommand : Command
 
             // Extract metadata and result string into new SKContext -- Is there a better way?
             var functionResult = result?.FunctionResults?.FirstOrDefault();
-            if (functionResult == null)
+            if (functionResult != null)
             {
-                return null;
-            }
-
-            var context = this._kernel.CreateNewContext();
-            context.Variables.Update(functionResult.GetValue<string>());
-            foreach (var key in functionResult.Metadata.Keys)
-            {
-                context.Variables.Set(key, functionResult.Metadata[key]?.ToString());
+                // var context = this._kernel.CreateNewContext();
+                context.Variables.Update(functionResult.GetValue<string>());
+                foreach (var key in functionResult.Metadata.Keys)
+                {
+                    context.Variables.Set(key, functionResult.Metadata[key]?.ToString());
+                }
             }
 
             return context;
@@ -193,7 +192,7 @@ public class StepwisePlannerCommand : Command
         contextVariables.Set("history", history);
         contextVariables.Set("validPlugins", JsonSerializer.Serialize(validPlugins));
 
-        KernelResult botMessage = KernelResult.FromFunctionResults("Hello!", new List<FunctionResult>());
+        contextVariables.Update("Hello!");
 
         var userMessage = string.Empty;
 
@@ -206,8 +205,7 @@ public class StepwisePlannerCommand : Command
 
         while (userMessage != "exit")
         {
-            var functionResult = botMessage.FunctionResults.FirstOrDefault();
-            if (functionResult is not null && functionResult.TryGetMetadataValue("functionCount", out string? functionCount) && functionCount != "0 ()")
+            if (contextVariables.TryGetValue("functionCount", out string? functionCount) && functionCount != "0 ()")
             {
                 HorizontalRule($"AI - {functionCount}", "green bold");
             }
@@ -217,10 +215,10 @@ public class StepwisePlannerCommand : Command
             }
 
             AnsiConsole.Foreground = ConsoleColor.Green;
-            var message = botMessage.GetValue<string>() ?? string.Empty;
+            var message = contextVariables.Input;
             if (message.Contains("Result not found"))
             {
-                if (functionResult is not null && functionResult.TryGetMetadataValue("stepsTaken", out string? stepsTaken))
+                if (contextVariables.TryGetValue("stepsTaken", out string? stepsTaken))
                 {
                     message += $"\n{stepsTaken}";
                 }
@@ -236,11 +234,11 @@ public class StepwisePlannerCommand : Command
                 break;
             }
 
-            history += $"AI: {botMessage.GetValue<string>()}\nHuman: {userMessage} \n";
+            history += $"AI: {message}\nHuman: {userMessage} \n";
             contextVariables.Set("history", history);
             contextVariables.Set("message", userMessage);
 
-            var kernelResult = await AnsiConsole.Progress()
+            await AnsiConsole.Progress()
                 .AutoClear(true)
                 .Columns(new ProgressColumn[]
                 {
@@ -256,7 +254,6 @@ public class StepwisePlannerCommand : Command
                     task.StopTask();
                     return result;
                 });
-            botMessage = kernelResult ?? botMessage;
         }
     }
 
