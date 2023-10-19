@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <PackageId>SKonsole</PackageId>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <Authors>Lee Miller</Authors>
     <Owners>lemiller</Owners>
     <PackageIcon>icon.png</PackageIcon>
