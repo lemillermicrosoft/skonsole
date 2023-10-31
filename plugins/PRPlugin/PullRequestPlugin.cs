@@ -86,7 +86,7 @@ public class PullRequestPlugin
             var PRPlugin = kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);
             this._condensePlugin = new CondensePlugin(kernel);
 
-            this._kernel = Kernel.Builder
+            this._kernel = new KernelBuilder()
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .Build();
             this._kernel.ImportSemanticFunctionsFromDirectory(folder, SEMANTIC_FUNCTION_PATH);

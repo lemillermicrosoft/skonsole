@@ -12,7 +12,7 @@ public class KernelProvider
 
     public IKernel Get()
     {
-        var kernelBuilder = Kernel.Builder;
+        var kernelBuilder = new KernelBuilder();
 
         kernelBuilder = Configuration.ConfigOption(ConfigConstants.LLM_PROVIDER) switch
         {

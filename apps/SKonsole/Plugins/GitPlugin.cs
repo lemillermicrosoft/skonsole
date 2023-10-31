@@ -28,7 +28,7 @@ public class GitPlugin
         this._logger = kernel.LoggerFactory.CreateLogger(this.GetType());
         this._condensePlugin = new CondensePlugin(kernel);
 
-        this._kernel = Kernel.Builder
+        this._kernel = new KernelBuilder()
             .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
             .Build();
 
