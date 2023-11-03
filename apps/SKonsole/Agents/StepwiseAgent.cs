@@ -40,7 +40,8 @@ public class StepwiseAgent : ConversableAgent
         }
 
         var history = string.Join("\n", messages!.Where(m => m.Role != AuthorRole.System).Select(m => $"{m.Role}: {m.Content}"));
-        var plan = this._planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message. Reply \"TERMINATE\" in the end when everything is done.");
+        var goal = $"{history}\n---\nGiven the conversation history, respond to the most recent message. Todays date is: {string.Format("{0:dddd, MMMM d, yyyy}", DateTime.Now)}. Reply \"TERMINATE\" in the end when everything is done.";
+        var plan = this._planner.CreatePlan(goal);
         var result = await this._kernel.RunAsync(plan);
 
         var functionResult = result?.FunctionResults?.FirstOrDefault();
