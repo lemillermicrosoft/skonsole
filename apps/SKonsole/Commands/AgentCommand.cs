@@ -23,38 +23,9 @@ public class AgentCommand : Command
 
     private static async Task Run(CancellationToken token, ILogger logger, string message = "")
     {
-        var stepwiseKernel = StepwisePlannerCommand.LoadOptionSet("bing++");
         var assistantKernel = KernelProvider.Instance.Get();
+        var stepwiseKernel = StepwisePlannerCommand.LoadOptionSet("bing++");
         var userKernel = KernelProvider.Instance.Get();
-        // var functions = stepKernel.ImportFunctions(new StepwiseSkill(kernel), "stepwise");
-
-        // await RunChat(stepKernel, null, functions["RespondTo"]).ConfigureAwait(false);
-
-        // # create an AssistantAgent named "assistant"
-        //         assistant = autogen.AssistantAgent(
-        //             name = "assistant",
-        //             llm_config ={
-        //             "seed": 42,  # seed for caching and reproducibility
-        //         "config_list": config_list,  # a list of OpenAI API configurations
-        //         "temperature": 0,  # temperature for sampling
-        //     },  # configuration for autogen's enhanced inference API which is compatible with OpenAI API
-        // )
-        // # create a UserProxyAgent instance named "user_proxy"
-        // user_proxy = autogen.UserProxyAgent(
-        //     name = "user_proxy",
-        //     human_input_mode = "NEVER",
-        //     max_consecutive_auto_reply = 10,
-        //     is_termination_msg = lambda x: x.get("content", "").rstrip().endswith("TERMINATE"),
-        //     code_execution_config ={
-        //             "work_dir": "coding",
-        //         "use_docker": False,  # set to True or image name like "python:3" to use docker
-        //     },
-        // )
-        // # the assistant receives a message from the user_proxy, which contains the task description
-        // user_proxy.initiate_chat(
-        //     assistant,
-        //     message = """What date is today? Compare the year-to-date gain for META and TESLA.""",
-        // )
 
         // Depends on the userProxy being able to *do* something.
         var assistant = new SKonsole.Agents.AssistantAgent(
@@ -77,8 +48,7 @@ public class AgentCommand : Command
                 { "use_docker", false } // set to True or image name like "python:3" to use docker
             });
 
-        // await userProxy.StartChatAsync(stepwiseAssistant, context: new Dictionary<string, object>() { { "message", "What date is today? Compare the year-to-date gain for META and TESLA." } });
-        await userProxy.StartChatAsync(assistant, context: new Dictionary<string, object>() { { "message", "What date is today? Compare the year-to-date gain for META and TESLA." } });
+        await userProxy.StartChatAsync(stepwiseAssistant, context: new Dictionary<string, object>() { { "message", "what's the current Microsoft stock price?" } });
     }
 
     private readonly ILogger _logger;
