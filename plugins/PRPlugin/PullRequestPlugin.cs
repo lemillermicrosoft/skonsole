@@ -199,6 +199,8 @@ public class RedirectTextCompletion : ITextCompletion
     {
         throw new NotImplementedException(); // TODO
     }
+
+    public IReadOnlyDictionary<string, string> Attributes => new Dictionary<string, string>();
 }
 
 internal sealed class RedirectTextCompletionResult : ITextResult

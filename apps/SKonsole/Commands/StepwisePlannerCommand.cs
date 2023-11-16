@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -150,7 +151,7 @@ public class StepwisePlannerCommand : Command
                     .Where(f => plugins is null || plugins.Contains(f.PluginName))
                     .OrderBy(f => $"{f.PluginName}.{f.Name}");
 
-                return Task.FromResult(filteredViews);
+                return Task.FromResult(filteredViews.AsEnumerable());
             };
             var planner = new StepwisePlanner(this._kernel, config);
 
