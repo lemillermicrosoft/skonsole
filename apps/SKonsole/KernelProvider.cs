@@ -19,7 +19,7 @@ public class KernelProvider
             ConfigConstants.OpenAI => kernelBuilder.WithOpenAIChatCompletionService(
                                                    Configuration.ConfigVar(ConfigConstants.OPENAI_CHAT_MODEL_ID),
                                                    Configuration.ConfigVar(ConfigConstants.OPENAI_API_KEY)),
-            _ => kernelBuilder.WithAzureChatCompletionService(
+            _ => kernelBuilder.WithAzureOpenAIChatCompletionService(
                                                    Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME),
                                                    Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_API_ENDPOINT),
                                                    Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_API_KEY)),
