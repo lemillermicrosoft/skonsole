@@ -56,6 +56,9 @@ internal sealed class ExecuteCommand : Command
 
         var result = output.GetValue<string>();
 
-        Console.WriteLine(result);
+        using var streamWriter = new StreamWriter(Console.OpenStandardOutput());
+        streamWriter.AutoFlush = true;
+        Console.SetOut(streamWriter);
+        Console.Write(result);
     }
 }
