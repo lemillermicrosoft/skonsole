@@ -13,7 +13,8 @@ var rootCommand = new RootCommand(description: "SKonsole is a powerful command-l
     new PRCommand(ConfigurationProvider.Instance),
     new PlannerCommand(ConfigurationProvider.Instance),
     new StepwisePlannerCommand(ConfigurationProvider.Instance),
-    new PromptChatCommand(ConfigurationProvider.Instance)
+    new PromptChatCommand(ConfigurationProvider.Instance),
+    new ExecuteCommand(ConfigurationProvider.Instance),
 };
 
 return await rootCommand.InvokeAsync(args);
