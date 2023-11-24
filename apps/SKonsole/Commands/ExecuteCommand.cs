@@ -33,9 +33,8 @@ internal sealed class ExecuteCommand : Command
         this.AddOption(templateOption);
 
         var outputOption = new Option<string>(
-                          new string[] { "--output", "-o" },
-                          () => { return ""; },
-                          "Output the result to the specified file.");
+                          new string[] { "--outputFile", "-o" },
+                          description: "Output the result to the specified file.");
         this.AddOption(outputOption);
 
         this.SetHandler(async context => await RunExecuteAsync(context.GetCancellationToken(),
