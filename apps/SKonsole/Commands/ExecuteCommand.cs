@@ -8,7 +8,7 @@ internal sealed class ExecuteCommand : Command
 {
     private ILogger _logger;
 
-    public ExecuteCommand(ConfigurationProvider config, ILogger? logger = null) : base("exec", "Execute semantic function directly.")
+    public ExecuteCommand(ConfigurationProvider config, ILogger? logger = null) : base("exec", "Execute semantic function.")
     {
         if (logger is null)
         {
@@ -21,7 +21,7 @@ internal sealed class ExecuteCommand : Command
         }
 
         var promptArgument = new Argument<string>
-            ("prompt", "An argument that is parsed as a string.");
+            ("prompt", "The semantic function prompt or input for direct execution");
 
         this.AddArgument(promptArgument);
 
@@ -34,7 +34,7 @@ internal sealed class ExecuteCommand : Command
 
         var outputOption = new Option<string>(
                           new string[] { "--output", "-o" },
-                          () => { return "{{$output}}"; },
+                          () => { return ""; },
                           "Output the result to the specified file.");
         this.AddOption(outputOption);
 
