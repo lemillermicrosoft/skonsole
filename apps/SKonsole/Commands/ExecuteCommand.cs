@@ -28,19 +28,27 @@ internal sealed class ExecuteCommand : Command
         var templateOption = new Option<string>(
                             new string[] { "--template", "-t" },
                             () => { return "{{$input}}"; },
-                           "The template to use for the semantic function.");
+                           "The template (file) to use for the semantic function.");
 
         this.AddOption(templateOption);
+
+        var outputOption = new Option<string>(
+                          new string[] { "--output", "-o" },
+                          () => { return "{{$output}}"; },
+                          "Output the result to the specified file.");
+        this.AddOption(outputOption);
 
         this.SetHandler(async context => await RunExecuteAsync(context.GetCancellationToken(),
             context.BindingContext.ParseResult.GetValueForArgument<string>(promptArgument),
             context.BindingContext.ParseResult.GetValueForOption<string>(templateOption),
+            context.BindingContext.ParseResult.GetValueForOption<string>(outputOption),
             this._logger));
     }
 
     private static async Task RunExecuteAsync(CancellationToken cancellationToken,
         string prompt,
         string? template = null,
+        string? outputFile = null,
         ILogger? logger = null)
     {
         var kernel = KernelProvider.Instance.Get();
@@ -49,6 +57,14 @@ internal sealed class ExecuteCommand : Command
         {
             template = "{{$input}}";
         }
+        else if (Path.Exists(template))
+        {
+            template = await File.ReadAllTextAsync(template, cancellationToken);
+        }
+        else if (Path.Exists(Path.Combine(template, "skprompt.txt")))
+        {
+            template = await File.ReadAllTextAsync(Path.Combine(template, "skprompt.txt"), cancellationToken);
+        }
 
         var func = kernel.CreateSemanticFunction(template);
 
@@ -56,9 +72,18 @@ internal sealed class ExecuteCommand : Command
 
         var result = output.GetValue<string>();
 
-        using var streamWriter = new StreamWriter(Console.OpenStandardOutput());
-        streamWriter.AutoFlush = true;
-        Console.SetOut(streamWriter);
-        Console.Write(result);
+        if (!string.IsNullOrWhiteSpace(outputFile))
+        {
+            var directory = Path.GetDirectoryName(outputFile);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            System.IO.File.WriteAllText(outputFile, result);
+        }
+        else
+        {
+            Console.WriteLine(result);
+        }
     }
 }
