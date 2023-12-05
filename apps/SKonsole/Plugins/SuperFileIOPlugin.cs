@@ -15,7 +15,7 @@ public class SuperFileIOPlugin
     /// </example>
     /// <param name="path"> Source file </param>
     /// <returns> File content </returns>
-    [SKFunction, Description("Read a file")]
+    [KernelFunction, Description("Read a file")]
     public async Task<string> ReadAsync([Description("Source file")] string path)
     {
         path = string.IsNullOrEmpty(path) ? Directory.GetCurrentDirectory() : path;
@@ -23,7 +23,7 @@ public class SuperFileIOPlugin
         return await reader.ReadToEndAsync().ConfigureAwait(false);
     }
 
-    [SKFunction, Description("List files in a directory")]
+    [KernelFunction, Description("List files in a directory")]
     public string List([Description("Source directory")] string path)
     {
         path = string.IsNullOrEmpty(path) ? Directory.GetCurrentDirectory() : path;
@@ -31,7 +31,7 @@ public class SuperFileIOPlugin
         return string.Join("\n", files);
     }
 
-    [SKFunction, Description("List directories in a directory")]
+    [KernelFunction, Description("List directories in a directory")]
     public string ListDirs([Description("Source directory")] string path)
     {
         path = string.IsNullOrEmpty(path) ? Directory.GetCurrentDirectory() : path;
@@ -39,7 +39,7 @@ public class SuperFileIOPlugin
         return string.Join("\n", files);
     }
 
-    [SKFunction, Description("Search files in a directory")]
+    [KernelFunction, Description("Search files in a directory")]
     public string Search([Description("Source directory")] string path, [Description("Search pattern")] string pattern)
     {
         path = string.IsNullOrEmpty(path) ? Directory.GetCurrentDirectory() : path;
@@ -47,7 +47,7 @@ public class SuperFileIOPlugin
         return string.Join("\n", files);
     }
 
-    [SKFunction, Description("Search files in a directory, recursively")]
+    [KernelFunction, Description("Search files in a directory, recursively")]
     public string SearchAll([Description("Source directory")] string path, [Description("Search pattern")] string pattern)
     {
         path = string.IsNullOrEmpty(path) ? Directory.GetCurrentDirectory() : path;
@@ -55,7 +55,7 @@ public class SuperFileIOPlugin
         return string.Join("\n", files);
     }
 
-    [SKFunction, Description("Get current directory")]
+    [KernelFunction, Description("Get current directory")]
     public string CurrentDirectory()
     {
         return Directory.GetCurrentDirectory();
@@ -70,7 +70,7 @@ public class SuperFileIOPlugin
     /// <param name="path">The destination file path</param>
     /// <param name="content">The file content to write</param>
     /// <returns> An awaitable task </returns>
-    [SKFunction, Description("Write a file")]
+    [KernelFunction, Description("Write a file")]
     public async Task WriteAsync(
         [Description("Destination file")] string path,
         [Description("File content")] string content)
