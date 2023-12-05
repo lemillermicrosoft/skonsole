@@ -1,7 +1,7 @@
 ﻿using System.CommandLine;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SKonsole.Plugins;
@@ -43,23 +43,16 @@ public class PlannerCommand : Command
     {
         var kernel = KernelProvider.Instance.Get();
 
-        // Eventually, Kernel will be smarter about what plugins it uses for an ask.
-        // kernel.ImportFunctions(new EmailPlugin(), "email");
-        // kernel.ImportFunctions(new GitPlugin(), "git");
-        // kernel.ImportFunctions(new SearchUrlPlugin(), "url");
-        // kernel.ImportFunctions(new HttpPlugin(), "http");
-        // kernel.ImportFunctions(new PRPlugin.PullRequestPlugin(kernel), "PullRequest");
-
-        kernel.ImportFunctions(new WriterPlugin(kernel), "writer");
+        kernel.ImportPluginFromObject(new WriterPlugin(kernel), "writer");
         var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
         var bing = new WebSearchEnginePlugin(bingConnector);
-        var search = kernel.ImportFunctions(bing, "bing");
+        var search = kernel.ImportPluginFromObject(bing, "bing");
 
         // var planner = new ActionPlanner();
-        var planner = new SequentialPlanner(kernel);
-        var plan = await planner.CreatePlanAsync(message);
+        var planner = new HandlebarsPlanner();
+        var plan = await planner.CreatePlanAsync(kernel, message, token);
 
-        await kernel.RunAsync(plan);
+        plan.Invoke(kernel, new KernelArguments(), token);
     }
 
     private readonly ILogger _logger;

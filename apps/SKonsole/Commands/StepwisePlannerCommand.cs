@@ -1,12 +1,9 @@
 ﻿using System.CommandLine;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -38,15 +35,15 @@ public class StepwisePlannerCommand : Command
 
     private static async Task RunCreatePlan(CancellationToken token, ILogger logger, string message = "", string optionSet = "")
     {
-        (IKernel kernel, var validPlugins) = LoadOptionSet(optionSet);
+        (Kernel kernel, var validPlugins) = LoadOptionSet(optionSet);
 
         var stepKernel = KernelProvider.Instance.Get();
-        var functions = stepKernel.ImportFunctions(new StepwisePlugin(kernel), "stepwise");
+        var functions = stepKernel.ImportPluginFromObject(new StepwisePlugin(kernel), "stepwise");
 
         await RunChat(stepKernel, validPlugins, null, functions["RespondTo"]).ConfigureAwait(false);
     }
 
-    private static (IKernel, List<string>) LoadOptionSet(string optionSet)
+    private static (Kernel, List<string>) LoadOptionSet(string optionSet)
     {
         var kernel = KernelProvider.Instance.Get();
         List<string> validPlugins = new();
@@ -55,73 +52,74 @@ public class StepwisePlannerCommand : Command
         {
             var bingConnector = new BingConnector(Configuration.ConfigVar("BING_API_KEY"));
             var bing = new WebSearchEnginePlugin(bingConnector);
-            var search = kernel.ImportFunctions(bing, "bing");
+            var search = kernel.ImportPluginFromObject(bing, "bing");
             validPlugins.Add("bing");
         }
 
         if (optionSet.Contains("++"))
         {
-            kernel.ImportFunctions(new TimePlugin(), "time");
+            kernel.ImportPluginFromObject(new TimePlugin(), "time");
             validPlugins.Add("time");
-            kernel.ImportFunctions(new ConversationSummaryPlugin(kernel), "summary");
+            kernel.ImportPluginFromObject(new ConversationSummaryPlugin(), "summary");
             validPlugins.Add("summary");
-            kernel.ImportFunctions(new SuperFileIOPlugin(), "file");
+            kernel.ImportPluginFromObject(new SuperFileIOPlugin(), "file");
             validPlugins.Add("file");
         }
         else
         {
             if (optionSet.Contains("time"))
             {
-                kernel.ImportFunctions(new TimePlugin(), "time");
+                kernel.ImportPluginFromObject(new TimePlugin(), "time");
                 validPlugins.Add("time");
             }
 
             if (optionSet.Contains("summary"))
             {
-                kernel.ImportFunctions(new ConversationSummaryPlugin(kernel), "summary");
+                kernel.ImportPluginFromObject(new ConversationSummaryPlugin(), "summary");
                 validPlugins.Add("summary");
             }
 
             if (optionSet.Contains("file"))
             {
-                kernel.ImportFunctions(new SuperFileIOPlugin(), "file");
+                kernel.ImportPluginFromObject(new SuperFileIOPlugin(), "file");
                 validPlugins.Add("file");
             }
 
             if (optionSet.Contains("git"))
             {
-                var gitPlugin = kernel.ImportFunctions(new GitPlugin(kernel), "git");
+                // TODO Redo this with a native function
+                // var gitPlugin = kernel.ImportPluginFromObject(new GitPlugin(kernel), "git");
 
-                Plan gitProcessPlan = new("Execute a 'git diff' command and execute semantic reasoning over the output.");
-                gitProcessPlan.Name = "GenerateDynamicGitDiffResult";
+                // Plan gitProcessPlan = new("Execute a 'git diff' command and execute semantic reasoning over the output.");
+                // gitProcessPlan.Name = "GenerateDynamicGitDiffResult";
 
-                // It'd be nice if I could even just use this to set default values. An option -- doesn't work right now.
-                // gitProcessPlan.Parameters.Set("filter", "-- . \":!*.md\" \":!*skprompt.txt\" \":!*encoder.json\" \":!*vocab.bpe\" \":!*dict.txt\"");
-                // gitProcessPlan.Parameters.Set("target", "HEAD");
-                // gitProcessPlan.Parameters.Set("source", "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
+                // // It'd be nice if I could even just use this to set default values. An option -- doesn't work right now.
+                // // gitProcessPlan.Parameters.Set("filter", "-- . \":!*.md\" \":!*skprompt.txt\" \":!*encoder.json\" \":!*vocab.bpe\" \":!*dict.txt\"");
+                // // gitProcessPlan.Parameters.Set("target", "HEAD");
+                // // gitProcessPlan.Parameters.Set("source", "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
+                // // gitProcessPlan.Parameters.Set("instructions", "");
+                // gitProcessPlan.Parameters.Set("filter", "");
+                // gitProcessPlan.Parameters.Set("target", "");
+                // gitProcessPlan.Parameters.Set("source", "");
                 // gitProcessPlan.Parameters.Set("instructions", "");
-                gitProcessPlan.Parameters.Set("filter", "");
-                gitProcessPlan.Parameters.Set("target", "");
-                gitProcessPlan.Parameters.Set("source", "");
-                gitProcessPlan.Parameters.Set("instructions", "");
 
-                gitProcessPlan.AddSteps(gitPlugin["GitDiffDynamic"]);
-                gitProcessPlan.Steps[0].Outputs.Add("gitDiffResult");
+                // gitProcessPlan.AddSteps(gitPlugin["GitDiffDynamic"]);
+                // gitProcessPlan.Steps[0].Outputs.Add("gitDiffResult");
 
-                gitProcessPlan.AddSteps(gitPlugin["GenerateDynamic"]);
+                // gitProcessPlan.AddSteps(gitPlugin["GenerateDynamic"]);
 
-                // This is the only way to connect to parameters. It's not great.
-                // Since they are optional, if nothing is supplied `Plan` will not replace the parameter. Should file an issue.
-                gitProcessPlan.Steps[0].Parameters.Set("filter", "$filter");
-                gitProcessPlan.Steps[0].Parameters.Set("target", "$target");
-                gitProcessPlan.Steps[0].Parameters.Set("source", "$source");
-                gitProcessPlan.Steps[1].Parameters.Set("fullDiff", "$gitDiffResult");
-                gitProcessPlan.Steps[1].Parameters.Set("instructions", "$instructions");
+                // // This is the only way to connect to parameters. It's not great.
+                // // Since they are optional, if nothing is supplied `Plan` will not replace the parameter. Should file an issue.
+                // gitProcessPlan.Steps[0].Parameters.Set("filter", "$filter");
+                // gitProcessPlan.Steps[0].Parameters.Set("target", "$target");
+                // gitProcessPlan.Steps[0].Parameters.Set("source", "$source");
+                // gitProcessPlan.Steps[1].Parameters.Set("fullDiff", "$gitDiffResult");
+                // gitProcessPlan.Steps[1].Parameters.Set("instructions", "$instructions");
 
-                var p = gitProcessPlan.Describe();
-                kernel.ImportPlan(gitProcessPlan);
+                // var p = gitProcessPlan.Describe();
+                // kernel.ImportPlan(gitProcessPlan);
 
-                validPlugins.Add("Plan");
+                // validPlugins.Add("Plan");
             }
         }
 
@@ -130,30 +128,28 @@ public class StepwisePlannerCommand : Command
 
     public class StepwisePlugin
     {
-        private readonly IKernel _kernel;
-        public StepwisePlugin(IKernel kernel)
+        private readonly Kernel _kernel;
+        public StepwisePlugin(Kernel kernel)
         {
             this._kernel = kernel;
         }
 
-        [SKFunction, Description("Respond to a message.")]
-        public async Task<SKContext> RespondTo(string message, string history, string validPlugins, SKContext context, CancellationToken cancellationToken = default)
+        [KernelFunction, Description("Respond to a message.")]
+        public async Task<FunctionCallingStepwisePlannerResult> RespondTo(string message, string history, string validPlugins, KernelArguments context, CancellationToken cancellationToken = default)
         {
-            var config = new StepwisePlannerConfig();
+            var config = new FunctionCallingStepwisePlannerConfig();
             var plugins = JsonSerializer.Deserialize<List<string>>(validPlugins);
-
             config.GetAvailableFunctionsAsync = (plannerConfig, filter, token) =>
             {
-                var functions = this._kernel.Functions;
-                var functionViews = functions.GetFunctionViews();
+                var functionViews = this._kernel.Plugins.GetFunctionsMetadata();
 
                 var filteredViews = functionViews
-                    .Where(f => plugins is null || plugins.Contains(f.PluginName))
+                    .Where(f => plugins is null || plugins.Contains(f.PluginName ?? string.Empty))
                     .OrderBy(f => $"{f.PluginName}.{f.Name}");
 
                 return Task.FromResult(filteredViews.AsEnumerable());
             };
-            var planner = new StepwisePlanner(this._kernel, config);
+            var planner = new FunctionCallingStepwisePlanner(config);
 
             // Option 1 - Respond to just the message
             // var plan = planner.CreatePlan(message);
@@ -164,36 +160,23 @@ public class StepwisePlannerCommand : Command
             // var result = await plan.InvokeAsync();
 
             // Option 3 - Respond to the history with prompt
-            var plan = planner.CreatePlan($"{history}\n---\nGiven the conversation history, respond to the most recent message.");
-            var result = await this._kernel.RunAsync(plan, cancellationToken: cancellationToken);
+            var result = await planner.ExecuteAsync(this._kernel, $"{history}\n---\nGiven the conversation history, respond to the most recent message.", cancellationToken);
 
-            // Extract metadata and result string into new SKContext -- Is there a better way?
-            var functionResult = result?.FunctionResults?.FirstOrDefault();
-            if (functionResult != null)
-            {
-                // var context = this._kernel.CreateNewContext();
-                context.Variables.Update(functionResult.GetValue<string>());
-                foreach (var key in functionResult.Metadata.Keys)
-                {
-                    context.Variables.Set(key, functionResult.Metadata[key]?.ToString());
-                }
-            }
-
-            return context;
+            return result;
         }
     }
 
-    private static async Task RunChat(IKernel kernel, IList<string> validPlugins, ILogger? logger, ISKFunction chatFunction, CancellationToken cancellationToken = default)
+    private static async Task RunChat(Kernel kernel, IList<string> validPlugins, ILogger? logger, KernelFunction chatFunction, CancellationToken cancellationToken = default)
     {
         AnsiConsole.MarkupLine("[grey]Press Enter twice to send a message.[/]");
         AnsiConsole.MarkupLine("[grey]Enter 'exit' to exit.[/]");
-        var contextVariables = new ContextVariables();
+        var contextVariables = new KernelArguments();
 
         var history = string.Empty;
-        contextVariables.Set("history", history);
-        contextVariables.Set("validPlugins", JsonSerializer.Serialize(validPlugins));
+        contextVariables["history"] = history;
+        contextVariables["validPlugins"] = JsonSerializer.Serialize(validPlugins);
 
-        contextVariables.Update("Hello!");
+        contextVariables[KernelArguments.InputParameterName] = "Hello!";
 
         var userMessage = string.Empty;
 
@@ -206,7 +189,7 @@ public class StepwisePlannerCommand : Command
 
         while (userMessage != "exit")
         {
-            if (contextVariables.TryGetValue("functionCount", out string? functionCount) && functionCount != "0 ()")
+            if (contextVariables.TryGetValue("functionCount", out object? functionCount) && functionCount?.ToString() != "0 ()")
             {
                 HorizontalRule($"AI - {functionCount}", "green bold");
             }
@@ -216,10 +199,10 @@ public class StepwisePlannerCommand : Command
             }
 
             AnsiConsole.Foreground = ConsoleColor.Green;
-            var message = contextVariables.Input;
+            var message = contextVariables[KernelArguments.InputParameterName]?.ToString() ?? string.Empty;
             if (message.Contains("Result not found"))
             {
-                if (contextVariables.TryGetValue("stepsTaken", out string? stepsTaken))
+                if (contextVariables.TryGetValue("stepsTaken", out object? stepsTaken))
                 {
                     message += $"\n{stepsTaken}";
                 }
@@ -236,8 +219,8 @@ public class StepwisePlannerCommand : Command
             }
 
             history += $"AI: {message}\nHuman: {userMessage} \n";
-            contextVariables.Set("history", history);
-            contextVariables.Set("message", userMessage);
+            contextVariables["history"] = history;
+            contextVariables["message"] = userMessage;
 
             await AnsiConsole.Progress()
                 .AutoClear(true)
@@ -250,7 +233,14 @@ public class StepwisePlannerCommand : Command
                 {
                     var task = ctx.AddTask("[green]Thinking...[/]", autoStart: true).IsIndeterminate();
 
-                    var result = await kernel.RunAsync(contextVariables, chatFunction);
+                    var result = (await kernel.InvokeAsync(chatFunction, contextVariables)).GetValue<FunctionCallingStepwisePlannerResult>();
+
+                    if (result is not null)
+                    {
+                        contextVariables["functionCount"] = result.Iterations;
+                        contextVariables["stepsTaken"] = result.ChatHistory;
+                        contextVariables[KernelArguments.InputParameterName] = result.FinalAnswer;
+                    }
 
                     task.StopTask();
                     return result;

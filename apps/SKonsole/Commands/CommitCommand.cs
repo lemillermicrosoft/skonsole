@@ -99,7 +99,7 @@ public class CommitCommand : Command
             }
         }
 
-        var pullRequestPlugin = kernel.ImportFunctions(new PRPlugin.PullRequestPlugin(kernel));
+        var pullRequestPlugin = kernel.ImportPluginFromObject(new PRPlugin.PullRequestPlugin(kernel));
 
         static void HorizontalRule(string title, string style = "white bold")
         {
@@ -119,12 +119,13 @@ public class CommitCommand : Command
             .StartAsync(async ctx =>
             {
                 var task = ctx.AddTask("[green]Thinking...[/]", autoStart: true).IsIndeterminate();
-                var kernelResponse = await kernel.RunAsync(output, token, pullRequestPlugin["GenerateCommitMessage"]);
+                var kernelResponse = await kernel.InvokeAsync(pullRequestPlugin["GenerateCommitMessage"], output, token);
                 task.StopTask();
 
-                var result = kernelResponse.GetValue<string>() ?? string.Empty;
-                await ClipboardService.SetTextAsync(result);
-                return result;
+                var result = kernelResponse.GetValue<KernelArguments>();
+                var message = result?[KernelArguments.InputParameterName]?.ToString() ?? string.Empty;
+                await ClipboardService.SetTextAsync(message);
+                return message;
             });
 
         AnsiConsole.WriteLine(botMessage);

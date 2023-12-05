@@ -3,9 +3,6 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using SKonsole.Utils;
 using Spectre.Console;
 
@@ -47,9 +44,9 @@ public class PromptChatCommand : Command
     AI:
     ";
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.ModelSettings.Add(
-            new AIRequestSettings()
+        var chatFunction = kernel.CreateFunctionFromPrompt(
+            SkPrompt,
+            new PromptExecutionSettings()
             {
                 ExtensionData = new Dictionary<string, object>()
                 {
@@ -58,24 +55,21 @@ public class PromptChatCommand : Command
                     { "MaxTokens", 2000 },
                     { "StopSequences", new List<string> { "Human:", "AI:" } }
                 }
-            }
-        );
-        var engine = new BasicPromptTemplateFactory(kernel.LoggerFactory);
-        var promptTemplate = engine.Create(SkPrompt, promptConfig);
-        var chatFunction = kernel.RegisterSemanticFunction("PromptBot", "Chat", promptConfig, promptTemplate);
+            },
+            "Chat");
         await RunChat(kernel, logger, chatFunction);
     }
 
-    private static async Task RunChat(IKernel kernel, ILogger? logger, ISKFunction chatFunction)
+    private static async Task RunChat(Kernel kernel, ILogger? logger, KernelFunction chatFunction)
     {
         AnsiConsole.MarkupLine("[grey]Press Enter twice to send a message.[/]");
         AnsiConsole.MarkupLine("[grey]Enter 'exit' to exit.[/]");
-        var contextVariables = new ContextVariables();
+        var contextVariables = new KernelArguments();
 
         var history = string.Empty;
-        contextVariables.Set("history", history);
+        contextVariables["history"] = history;
 
-        var result = await kernel.RunAsync(contextVariables, chatFunction);
+        var result = await kernel.InvokeAsync(chatFunction, contextVariables);
         var botMessage = result.GetValue<string>();
         var userMessage = string.Empty;
 
@@ -102,7 +96,7 @@ public class PromptChatCommand : Command
             }
 
             history += $"AI: {botMessage}\nHuman: {userMessage} \n";
-            contextVariables.Set("history", history);
+            contextVariables["history"] = history;
 
             botMessage = await AnsiConsole.Progress()
                 .AutoClear(true)
@@ -115,7 +109,7 @@ public class PromptChatCommand : Command
                 {
                     var task = ctx.AddTask("[green]Thinking...[/]", autoStart: true).IsIndeterminate();
 
-                    var result = await kernel.RunAsync(contextVariables, chatFunction);
+                    var result = await kernel.InvokeAsync(chatFunction, contextVariables);
 
                     task.StopTask();
                     return result.GetValue<string>();
