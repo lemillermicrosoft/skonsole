@@ -5,13 +5,15 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <!-- <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.0.0" /> -->
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.21.0-preview.23266.6"/>
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.0.0-beta8" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Planners.Core" Version="1.0.0-beta8" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Plugins.Web" Version="1.0.0-beta8" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Reliability.Basic" Version="1.0.0-beta8" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.0.0-rc1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Planners.Handlebars" Version="1.0.0-rc1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Planners.OpenAI" Version="1.0.0-rc1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Plugins.Web" Version="1.0.0-rc1" />
     <PackageVersion Include="Spectre.Console" Version="0.47.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="TextCopy" Version="6.2.1" />
