@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+
 using SKonsole.Utils;
 
 namespace SKonsole;
@@ -10,27 +11,22 @@ public class KernelProvider
 
     private static readonly ILoggerFactory s_loggerFactory = Logging.GetFactory();
 
-    public IKernel Get()
+    public Kernel Get()
     {
         var kernelBuilder = new KernelBuilder();
 
         kernelBuilder = Configuration.ConfigOption(ConfigConstants.LLM_PROVIDER) switch
         {
-            ConfigConstants.OpenAI => kernelBuilder.WithOpenAIChatCompletionService(
+            ConfigConstants.OpenAI => kernelBuilder.WithOpenAIChatCompletion(
                                                    Configuration.ConfigVar(ConfigConstants.OPENAI_CHAT_MODEL_ID),
                                                    Configuration.ConfigVar(ConfigConstants.OPENAI_API_KEY)),
-            _ => kernelBuilder.WithAzureOpenAIChatCompletionService(
+            _ => kernelBuilder.WithAzureOpenAIChatCompletion(
                                                    Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME),
+                                                   "gpt-4", // functioncalling planner needs this to resolve execution_settings. Kind of mysterious, how would we enable users to configure this?
                                                    Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_API_ENDPOINT),
                                                    Configuration.ConfigVar(ConfigConstants.AZURE_OPENAI_API_KEY)),
         };
         var _kernel = kernelBuilder
-            .WithRetryBasic(new()
-            {
-                MaxRetryCount = 3,
-                MinRetryDelay = TimeSpan.FromSeconds(8),
-                UseExponentialBackoff = true,
-            })
             .WithLoggerFactory(s_loggerFactory)
             .Build();
 

@@ -3,7 +3,9 @@ using System.CommandLine.Invocation;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
+
+// using Microsoft.SemanticKernel;
+// using Microsoft.SemanticKernel.Orchestration;
 using SKonsole.Utils;
 
 namespace SKonsole.Commands;
@@ -108,9 +110,9 @@ public class PRCommand : Command
 
         string output = await process.StandardOutput.ReadToEndAsync();
 
-        var pullRequestPlugin = kernel.ImportFunctions(new PRPlugin.PullRequestPlugin(kernel));
+        var pullRequestPlugin = kernel.ImportPluginFromObject(new PRPlugin.PullRequestPlugin(kernel));
 
-        var kernelResponse = await kernel.RunAsync(output, token, pullRequestPlugin["GeneratePullRequestFeedback"]);
+        var kernelResponse = await kernel.InvokeAsync(pullRequestPlugin["GeneratePullRequestFeedback"], output, token);
 
         logger.LogInformation("Pull Request Feedback:\n{result}", kernelResponse.GetValue<string>());
     }
@@ -121,13 +123,14 @@ public class PRCommand : Command
 
         var output = await FetchDiff(targetBranch, diffInputFile);
 
-        var pullRequestPlugin = kernel.ImportFunctions(new PRPlugin.PullRequestPlugin(kernel));
+        var pullRequestPlugin = kernel.ImportPluginFromObject(new PRPlugin.PullRequestPlugin(kernel));
 
-        var contextVariables = new ContextVariables(output);
-        contextVariables.Set("outputFormatInstructions", PRPlugin.Utils.FormatInstructionsProvider.GetOutputFormatInstructions(outputFormat));
+        var contextVariables = new KernelArguments();
+        contextVariables[KernelArguments.InputParameterName] = output;
+        contextVariables["outputFormatInstructions"] = PRPlugin.Utils.FormatInstructionsProvider.GetOutputFormatInstructions(outputFormat);
 
-        var kernelResponse = await kernel.RunAsync(contextVariables, token, pullRequestPlugin["GeneratePR"]);
-        logger.LogInformation("Pull Request Description:\n{result}", kernelResponse.GetValue<string>());
+        var kernelResponse = await kernel.InvokeAsync(pullRequestPlugin["GeneratePR"], contextVariables, token);
+        logger.LogInformation("Pull Request Description:\n{result}", kernelResponse.GetValue<KernelArguments>()?[KernelArguments.InputParameterName]);
 
         if (!string.IsNullOrEmpty(outputFile))
         {

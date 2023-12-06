@@ -7,15 +7,15 @@ internal sealed class WriterPlugin
 {
     private const int MaxTokens = 1024;
 
-    private readonly ISKFunction _funnyPoemFunction;
+    private readonly KernelFunction _funnyPoemFunction;
 
-    public WriterPlugin(IKernel kernel)
+    public WriterPlugin(Kernel kernel)
     {
-        this._funnyPoemFunction = kernel.CreateSemanticFunction(
+        this._funnyPoemFunction = kernel.CreateFunctionFromPrompt(
             FunnyPoemDefinition,
-            pluginName: nameof(WriterPlugin),
+            // pluginName: nameof(WriterPlugin),
             description: "Given a input topic or description or list, write a funny poem.",
-            requestSettings: new AIRequestSettings()
+            executionSettings: new PromptExecutionSettings()
             {
                 ExtensionData = new Dictionary<string, object>()
                 {
@@ -24,6 +24,10 @@ internal sealed class WriterPlugin
                     { "MaxTokens", MaxTokens }
                 }
             });
+
+        var plugin = new KernelPlugin(this.GetType().Name);
+        plugin.AddFunction(this._funnyPoemFunction);
+        kernel.Plugins.Add(plugin);
     }
 
     private const string FunnyPoemDefinition =
