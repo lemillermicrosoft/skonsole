@@ -24,6 +24,10 @@ internal sealed class WriterPlugin
                     { "MaxTokens", MaxTokens }
                 }
             });
+
+        var plugin = new KernelPlugin(this.GetType().Name);
+        plugin.AddFunction(this._funnyPoemFunction);
+        kernel.Plugins.Add(plugin);
     }
 
     private const string FunnyPoemDefinition =
