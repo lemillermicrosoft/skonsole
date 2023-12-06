@@ -130,7 +130,7 @@ public class PRCommand : Command
         contextVariables["outputFormatInstructions"] = PRPlugin.Utils.FormatInstructionsProvider.GetOutputFormatInstructions(outputFormat);
 
         var kernelResponse = await kernel.InvokeAsync(pullRequestPlugin["GeneratePR"], contextVariables, token);
-        logger.LogInformation("Pull Request Description:\n{result}", kernelResponse.GetValue<string>());
+        logger.LogInformation("Pull Request Description:\n{result}", kernelResponse.GetValue<KernelArguments>()?[KernelArguments.InputParameterName]);
 
         if (!string.IsNullOrEmpty(outputFile))
         {
